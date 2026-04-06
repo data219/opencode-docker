@@ -1,9 +1,16 @@
+# Environment files
 .env
 .env.local
 .env.*
 !.env.example
+
+# Bind mount directories (created at runtime)
 opencode-config/
 opencode-data/
+opencode-state/
 opencode-workspace/
+skills/
+
+# Build artifacts
 *.tar
 *.tar.gz

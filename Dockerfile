@@ -4,6 +4,12 @@
 
 FROM debian:bookworm-slim
 
+# --- Optional language build args ---
+ARG INSTALL_JAVA=false
+ARG INSTALL_RUBY=false
+ARG INSTALL_SWIFT=false
+ARG INSTALL_ELIXIR=false
+
 # --- System packages (with BuildKit cache for apt) ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -16,6 +22,21 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        libpq-dev libsqlite3-dev libffi-dev libzip-dev \
        libicu-dev libonig-dev sqlite3 zip \
     && rm -rf /var/lib/apt/lists/*
+
+# --- Install PHP via sury.org ---
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    curl -fsSL https://packages.sury.org/php/apt.gpg | gpg --dearmor -o /usr/share/keyrings/sury-php.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/sury-php.gpg] https://packages.sury.org/php $(. /etc/os-release && echo "$VERSION_CODENAME") main" > /etc/apt/sources.list.d/sury-php.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends php8.4-cli php8.4-dev php8.4-mbstring php8.4-xml php8.4-curl php8.4-sqlite3 php8.4-pgsql php8.4-intl php8.4-zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Optional: Elixir + Erlang/OTP 27 (requires root for apt-get) ---
+RUN if [ "$INSTALL_ELIXIR" = "true" ]; then \
+      apt-get update && apt-get install -y --no-install-recommends erlang elixir \
+      && rm -rf /var/lib/apt/lists/*; \
+    fi
 
 # --- Create non-root user ---
 RUN groupadd -g 1000 opencode \
@@ -83,6 +104,41 @@ RUN bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/
 
 # --- Install bun for OmO ---
 RUN curl -fsSL https://bun.sh/install | bash
+
+# --- Install Composer ---
+RUN curl -fsSL https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# --- Install golangci-lint ---
+RUN GO_LINT_VERSION=1.62.0 \
+    && curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${GO_LINT_VERSION}/golangci-lint-${GO_LINT_VERSION}-linux-amd64.tar.gz" \
+       -o /tmp/golangci-lint.tar.gz \
+    && tar -xzf /tmp/golangci-lint.tar.gz -C /tmp \
+    && mv /tmp/golangci-lint-${GO_LINT_VERSION}-linux-amd64/golangci-lint /home/opencode/.local/go/go/bin/ \
+    && rm -rf /tmp/golangci-lint*
+
+# --- Optional: Java (Temurin JDK 21) ---
+RUN if [ "$INSTALL_JAVA" = "true" ]; then \
+      curl -fsSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.3%2B9/OpenJDK21U-jdk_x64_linux_hotspot_21.0.3_9.tar.gz -o /tmp/openjdk.tar.gz \
+      && mkdir -p /home/opencode/.local/java \
+      && tar -xzf /tmp/openjdk.tar.gz -C /home/opencode/.local/java --strip-components=1 \
+      && rm -f /tmp/openjdk.tar.gz; \
+    fi
+
+# --- Optional: Ruby 3.3 ---
+RUN if [ "$INSTALL_RUBY" = "true" ]; then \
+      curl -fsSL https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.6.tar.gz -o /tmp/ruby.tar.gz \
+      && tar -xzf /tmp/ruby.tar.gz -C /tmp \
+      && cd /tmp/ruby-3.3.6 && ./configure --prefix=/home/opencode/.local/ruby && make -j"$(nproc)" && make install \
+      && rm -rf /tmp/ruby*; \
+    fi
+
+# --- Optional: Swift 6.0 ---
+RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
+      curl -fsSL https://download.swift.org/swift-6.0-release/ubuntu2404/swift-6.0-RELEASE/swift-6.0-RELEASE-ubuntu24.04.tar.gz -o /tmp/swift.tar.gz \
+      && mkdir -p /home/opencode/.local/swift \
+      && tar -xzf /tmp/swift.tar.gz -C /home/opencode/.local/swift --strip-components=1 \
+      && rm -f /tmp/swift.tar.gz; \
+    fi
 
 # --- Install Oh-My-OpenAgent ---
 ARG OMO_VERSION=3.14.0
