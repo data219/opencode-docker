@@ -1,0 +1,9 @@
+.env
+.env.local
+.env.*
+!.env.example
+opencode-config/
+opencode-data/
+opencode-workspace/
+*.tar
+*.tar.gz
