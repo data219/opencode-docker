@@ -1,0 +1,8 @@
+{
+  "provider": {
+    "zai-coding-plan": {
+      "api_key": "{env:ZHIPU_API_KEY}"
+    }
+  },
+  "plugins": ["oh-my-opencode"]
+}
