@@ -1,8 +1,14 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "provider": {
     "zai-coding-plan": {
-      "api_key": "{env:ZHIPU_API_KEY}"
+      "options": {
+        "baseURL": "https://api.z.ai/api/coding/paas/v4",
+        "apiKey": "{env:ZHIPU_API_KEY}"
+      }
     }
   },
-  "plugins": ["oh-my-opencode"]
+  "plugin": [
+    "oh-my-openagent"
+  ]
 }

@@ -10,8 +10,8 @@
   grep -q 'useradd.*opencode' Dockerfile
 }
 
-@test "Dockerfile USER is opencode" {
-  grep -q '^USER opencode' Dockerfile
+@test "Dockerfile does NOT set USER opencode (entrypoint handles user switch)" {
+  ! grep -q '^USER opencode' Dockerfile
 }
 
 @test "Dockerfile sets ENTRYPOINT" {

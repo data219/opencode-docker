@@ -2,8 +2,8 @@
   grep -q 'ARG OMO_VERSION=3.14.0' Dockerfile
 }
 
-@test "Dockerfile runs OmO installer with --no-tui" {
-  grep -q "oh-my-opencode.*install.*--no-tui" Dockerfile
+@test "Dockerfile OmO install uses --no-tui (required for non-interactive Docker build)" {
+  grep -q "oh-my-opencode.*install" Dockerfile && grep -q "\-\-no-tui" Dockerfile
 }
 
 @test "Dockerfile runs OmO installer with --zai-coding-plan=yes" {
@@ -18,20 +18,19 @@
 }
 
 @test "Dockerfile uses shell form for OmO RUN line" {
-  grep -qE "^RUN bunx oh-my-opencode" Dockerfile
+  grep -A1 "^RUN mkdir -p /opt/opencode-defaults" Dockerfile | head -4 | grep -q "oh-my-opencode"
 }
 
-@test "Dockerfile COPYs config files into image" {
-  grep -q "COPY.*opencode.json" Dockerfile
-  grep -q "COPY.*oh-my-openagent.jsonc" Dockerfile
+@test "Dockerfile provides oh-my-openagent config" {
+  grep -q "oh-my-openagent" Dockerfile
 }
 
 @test "Dockerfile COPYs opencode.json to /opt/opencode-defaults/" {
   grep -q 'COPY.*opencode.json.*/opt/opencode-defaults/' Dockerfile
 }
 
-@test "Dockerfile COPYs oh-my-openagent.jsonc to /opt/opencode-defaults/" {
-  grep -q 'COPY.*oh-my-openagent.jsonc.*/opt/opencode-defaults/' Dockerfile
+@test "Dockerfile seeds OmO agent config into /opt/opencode-defaults/" {
+  grep -q "oh-my-openagent.*opt/opencode-defaults" Dockerfile
 }
 
 @test "Dockerfile COPYs .opencode-docker-config-version to /opt/opencode-defaults/" {

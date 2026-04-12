@@ -51,6 +51,7 @@ teardown_init_test_env() {
   echo '// user modified' > "$CONFIG_DIR/opencode.json"
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
+  # init should NOT overwrite existing user config
   [ "$(cat "$CONFIG_DIR/opencode.json")" = "// user modified" ]
   teardown_init_test_env
 }

@@ -42,6 +42,12 @@ RUN if [ "$INSTALL_ELIXIR" = "true" ]; then \
 RUN groupadd -g 1000 opencode \
     && useradd -u 1000 -g opencode -m -s /bin/bash opencode
 
+# --- Install gosu for privilege drop ---
+RUN ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://github.com/tianon/gosu/releases/download/1.17/gosu-${ARCH}" -o /usr/local/bin/gosu \
+    && chmod +x /usr/local/bin/gosu \
+    && gosu --version
+
 # --- ENV vars for version managers ---
 ENV NVM_DIR=/home/opencode/.nvm
 ENV PYENV_ROOT=/home/opencode/.pyenv
@@ -73,21 +79,22 @@ RUN GH_VERSION=2.42.1 \
     && mv /tmp/gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin/gh \
     && rm -rf /tmp/gh.tar.gz /tmp/gh_${GH_VERSION}_linux_amd64
 
+# --- Install Composer (needs root for /usr/local/bin) ---
+RUN curl -fsSL https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 # --- Switch to opencode user for language runtimes ---
-USER opencode
+# USER opencode — entrypoint handles user switch
 
-# --- Install nvm (with BuildKit cache) ---
-RUN --mount=type=cache,target=/home/opencode/.nvm/.cache \
-    curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+# --- Install nvm ---
+RUN mkdir -p /home/opencode/.nvm \
+    && curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
-# --- Install pyenv (with BuildKit cache) ---
-RUN --mount=type=cache,target=/home/opencode/.pyenv/build \
-    curl -fsSL https://pyenv.run | bash
+# --- Install pyenv ---
+RUN curl -fsSL https://pyenv.run | bash
 
-# --- Install rustup (with BuildKit cache) ---
-RUN --mount=type=cache,target=/home/opencode/.rustup/registry \
-    --mount=type=cache,target=/home/opencode/.cargo/registry \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --no-modify-path
+# --- Install rustup ---
+RUN mkdir -p /home/opencode/.rustup /home/opencode/.cargo \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --no-modify-path
 
 # --- Install Go directly from go.dev ---
 RUN GO_VERSION=1.24.0 \
@@ -100,13 +107,12 @@ ENV GOROOT=/home/opencode/.local/go/go
 ENV PATH="${GOROOT}/bin:${PATH}"
 
 # --- Install gvm (Go Version Manager) ---
-RUN bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer) || true
+RUN mkdir -p /home/opencode/.gvm /home/opencode/go \
+    && bash -c 'bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer))' || true
 
 # --- Install bun for OmO ---
-RUN curl -fsSL https://bun.sh/install | bash
-
-# --- Install Composer ---
-RUN curl -fsSL https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN mkdir -p /home/opencode/.bun \
+    && curl -fsSL https://bun.sh/install | bash
 
 # --- Install golangci-lint ---
 RUN GO_LINT_VERSION=1.62.0 \
@@ -143,7 +149,15 @@ RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
 # --- Install Oh-My-OpenAgent ---
 ARG OMO_VERSION=3.14.0
 # NOTE: Shell form required. Do not convert to exec form.
-RUN bunx oh-my-opencode@${OMO_VERSION} install --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=no --copilot=no
+# NOTE: --no-tui skips the interactive TUI prompt during Docker build (no TTY in container).
+#       This does NOT affect the opencode runtime — both WebUI and TUI work at runtime.
+# NOTE: OmO writes to XDG_CONFIG_HOME/opencode/. We redirect it via HOME to a temp dir,
+#       then pick the agent config. Our opencode.json seed (with {env:} provider) takes priority.
+RUN mkdir -p /opt/opencode-defaults \
+  && HOME=/tmp/omo-install /home/opencode/.bun/bin/bunx oh-my-opencode@${OMO_VERSION} install \
+    --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=no --copilot=no \
+  && cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-openagent-omo.json \
+  && rm -rf /tmp/omo-install
 
 # --- Build PATH ---
 ENV PATH="/home/opencode/.cargo/bin:/home/opencode/.pyenv/shims:/home/opencode/.pyenv/bin:/home/opencode/.nvm/versions/node/$(ls /home/opencode/.nvm/versions/node/ 2>/dev/null | head -1)/bin:/home/opencode/.bun/bin:/home/opencode/.local/go/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -158,6 +172,19 @@ RUN mkdir -p /opt/opencode-defaults
 COPY config/opencode.json /opt/opencode-defaults/opencode.json
 COPY config/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc
 COPY config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
+
+# --- Create volume mount points and seed with defaults ---
+# These directories MUST exist in the image for Docker bind mounts to work correctly.
+RUN mkdir -p /home/opencode/.config/opencode \
+    /home/opencode/.local/share/opencode \
+    /home/opencode/.local/state/opencode \
+    /home/opencode/workspace \
+    /home/opencode/.agents/skills \
+  && cp -a /opt/opencode-defaults/opencode.json /home/opencode/.config/opencode/opencode.json \
+  && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc /home/opencode/.config/opencode/oh-my-openagent.jsonc \
+  && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
+  && cp -a /opt/opencode-defaults/oh-my-openagent-omo.json /home/opencode/.config/opencode/oh-my-openagent-omo.json 2>/dev/null || true \
+  && chown -R opencode:opencode /home/opencode
 
 # --- Copy scripts ---
 COPY scripts/docker-init.sh /scripts/docker-init.sh
@@ -177,4 +204,4 @@ ENTRYPOINT ["/scripts/docker-entrypoint.sh"]
 CMD ["web"]
 
 # --- Final user ---
-USER opencode
+# USER opencode — entrypoint handles user switch

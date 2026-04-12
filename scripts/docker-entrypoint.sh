@@ -58,7 +58,7 @@ case "$MODE" in
 esac
 
 if [ "$(id -u)" = "0" ]; then
-  exec /bin/bash -lc 'exec "$@"' -- opencode "${CMD[@]}"
+  exec gosu opencode "${CMD[@]}"
 else
   exec "${CMD[@]}"
 fi

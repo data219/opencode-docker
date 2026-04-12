@@ -33,7 +33,7 @@
 }
 
 @test "ZHIPU_API_KEY is required (compose errors if missing)" {
-  run bash -c 'unset ZHIPU_API_KEY && docker compose config 2>&1'
+  run bash -c 'ZHIPU_API_KEY= docker compose config --env-file /dev/null 2>&1'
   [ "$status" -ne 0 ]
 }
 

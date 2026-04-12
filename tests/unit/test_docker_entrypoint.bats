@@ -117,8 +117,8 @@ run_entrypoint() {
   ! grep -q '\-\-password' scripts/docker-entrypoint.sh
 }
 
-@test "entrypoint uses /bin/bash -lc for privilege drop" {
-  grep -q "/bin/bash -lc" scripts/docker-entrypoint.sh
+@test "entrypoint uses gosu for privilege drop" {
+  grep -q "gosu opencode" scripts/docker-entrypoint.sh
 }
 
 @test "entrypoint has no auth.json creation" {

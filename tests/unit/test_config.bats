@@ -3,31 +3,41 @@
   [ "$status" -eq 0 ]
 }
 
-@test "opencode.json has provider.zai-coding-plan.api_key with env syntax" {
-  run jq -r '.provider."zai-coding-plan".api_key' config/opencode.json
+@test "opencode.json uses correct plugin key (singular)" {
+  jq -e '.plugin' config/opencode.json > /dev/null
+}
+
+@test "opencode.json has oh-my-openagent plugin" {
+  run jq '.plugin[] | select(. == "oh-my-openagent")' config/opencode.json
+  [ "$status" -eq 0 ]
+}
+
+@test "opencode.json does NOT use legacy plugins key (plural)" {
+  ! jq -e '.plugins' config/opencode.json 2>/dev/null
+}
+
+@test "opencode.json has provider with options.apiKey using env syntax" {
+  run jq -r '.provider."zai-coding-plan".options.apiKey' config/opencode.json
   [ "$status" -eq 0 ]
   [ "$output" = "{env:ZHIPU_API_KEY}" ]
 }
 
-@test "opencode.json has oh-my-opencode plugin" {
-  run jq '.plugins[] | select(. == "oh-my-opencode")' config/opencode.json
+@test "opencode.json has provider options.baseURL" {
+  run jq -r '.provider."zai-coding-plan".options.baseURL' config/opencode.json
   [ "$status" -eq 0 ]
+  [[ "$output" == *"z.ai"* ]]
 }
 
-@test "opencode.json does NOT use shell variable syntax" {
-  ! grep -q '\${' config/opencode.json
-}
-
-@test "opencode.json has zai-coding-plan provider" {
-  jq -e '.provider["zai-coding-plan"]' config/opencode.json > /dev/null
+@test "opencode.json has schema reference" {
+  grep -q "opencode.ai/config.json" config/opencode.json
 }
 
 @test "opencode.json does NOT contain version comment" {
   ! grep -q 'opencode-docker-config' config/opencode.json
 }
 
-@test "opencode.json uses {env:ZHIPU_API_KEY} syntax" {
-  grep -q '{env:ZHIPU_API_KEY}' config/opencode.json
+@test "opencode.json does NOT use shell variable syntax" {
+  ! grep -q '\${' config/opencode.json
 }
 
 @test "oh-my-openagent.jsonc has version comment" {
