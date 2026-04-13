@@ -5,10 +5,7 @@
 !.env.example
 
 # Bind mount directories (created at runtime)
-opencode-config/
-opencode-data/
-opencode-state/
-opencode-workspace/
+data/
 skills/
 
 # Build artifacts

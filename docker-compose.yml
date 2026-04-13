@@ -12,10 +12,10 @@ services:
     ports:
       - "${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCODE_PORT:-4000}:${OPENCODE_PORT:-4000}"
     volumes:
-      - ./opencode-config:/home/opencode/.config/opencode
-      - ./opencode-data:/home/opencode/.local/share/opencode
-      - ./opencode-state:/home/opencode/.local/state/opencode
-      - ./opencode-workspace:/home/opencode/workspace
+      - ./data/config:/home/opencode/.config/opencode
+      - ./data/share:/home/opencode/.local/share/opencode
+      - ./data/state:/home/opencode/.local/state/opencode
+      - ./data/workspace:/home/opencode/workspace
       - ./skills:/home/opencode/.agents/skills:ro
     environment:
       # WARNING: Container binds 0.0.0.0 internally (required for port forwarding).
