@@ -31,7 +31,7 @@
       "model": "zai-coding-plan/glm-4.5-air"
     },
     "multimodal-looker": {
-      "model": "zai-coding-plan/glm-4.7"
+      "model": "google-aistudio/gemini-2.5-flash"
     },
     "sisyphus-junior": {
       "model": "zai-coding-plan/glm-5-turbo"

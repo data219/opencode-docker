@@ -24,6 +24,18 @@
           "limit": { "context": 128000, "output": 98304 }
         }
       }
+    },
+    "google-aistudio": {
+      "options": {
+        "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "apiKey": "{env:GEMINI_API_KEY}"
+      },
+      "models": {
+        "gemini-2.5-flash": {
+          "name": "Gemini 2.5 Flash",
+          "limit": { "context": 1048576, "output": 65536 }
+        }
+      }
     }
   },
   "plugin": [

@@ -88,6 +88,28 @@ docker exec -it opencode -- opencode
 
 > **Note:** Args after the mode are silently ignored. Use environment variables for all OpenCode configuration.
 
+### Optional providers
+
+#### Google AI Studio (Optional)
+
+The `multimodal-looker` agent can use **Google Gemini 2.5 Flash** for vision and multimodal tasks. This is entirely optional — without a Gemini API key, the agent falls back to the default Z.AI model.
+
+**How to get the API key:**
+
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+2. Sign in with your Google account
+3. Click **"Create API Key"**
+
+Then set `GEMINI_API_KEY` in your `.env` file:
+
+```bash
+GEMINI_API_KEY=your-key-here
+```
+
+| Variable          | Default     | What it configures                                              |
+| ----------------- | ----------- | --------------------------------------------------------------- |
+| `GEMINI_API_KEY`  | *(empty)*   | Google AI Studio API key for Gemini vision model (optional)     |
+
 ## Bind mount structure
 
 | Host Path            | Container Path                    | Description                                              |
