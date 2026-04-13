@@ -87,7 +87,7 @@ Regular files are only copied if they don't exist yet. Once the user has edited 
 
 ## Skills Sync
 
-`scripts/docker-init.sh` syncs `bootstrap/skills/` into `/home/opencode/.agents/skills/`:
+`scripts/docker-init.sh` syncs `bootstrap/skills/` into `/home/opencode/.config/opencode/skills/`:
 
 - `FORCE_SKILL_SYNC=false` (default): merge — new skills are copied, existing skills get missing files added, user modifications preserved
 - `FORCE_SKILL_SYNC=true`: full reset — all skills replaced with bootstrap defaults

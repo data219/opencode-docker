@@ -61,7 +61,7 @@ Rules:
 ## Script Paths
 
 ```bash
-SKILL_DIR="/home/jan/.dotfiles/.agents/skills/atlcli"
+SKILL_DIR="/home/jan/.dotfiles/.config/opencode/skills/atlcli"
 $SKILL_DIR/scripts/atl_md_links.sh --help
 $SKILL_DIR/scripts/safe_wiki_sync.sh ./docs --profile work
 ```

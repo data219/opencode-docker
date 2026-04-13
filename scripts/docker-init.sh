@@ -11,7 +11,7 @@ IMAGE_VERSION_FILE="$DEFAULTS_DIR/.opencode-docker-config-version"
 # Fix ownership of bind-mounted directories BEFORE seeding.
 # Docker creates bind mount targets as root when they don't exist on host.
 if [ "$(id -u)" = "0" ]; then
-  for dir in .config .config/opencode .local .local/share .local/state .local/share/opencode .agents .agents/skills workspace; do
+  for dir in .config .config/opencode .config/opencode/skills .local .local/share .local/state .local/share/opencode workspace; do
     dir_path="/home/opencode/$dir"
     if [ -d "$dir_path" ] && [ "$(stat -c %U "$dir_path" 2>/dev/null)" = "root" ]; then
       chown -R opencode:opencode "$dir_path"
@@ -75,7 +75,7 @@ fi
 
 # --- Sync bootstrap skills ---
 if [ -d "$DEFAULTS_DIR/skills" ]; then
-  SKILLS_DIR="/home/opencode/.agents/skills"
+  SKILLS_DIR="/home/opencode/.config/opencode/skills"
   mkdir -p "$SKILLS_DIR"
   if [ "${FORCE_SKILL_SYNC:-false}" = "true" ]; then
     # Full reset: remove all skills and re-copy from bootstrap

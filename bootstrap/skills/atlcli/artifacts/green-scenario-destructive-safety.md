@@ -16,7 +16,7 @@ Recorded transcript:
 
 Verification method:
 ```bash
-/home/jan/.dotfiles/.agents/skills/atlcli/scripts/verify_skill_evidence.sh /home/jan/.dotfiles/.agents/skills/atlcli
+/home/jan/.dotfiles/.config/opencode/skills/atlcli/scripts/verify_skill_evidence.sh /home/jan/.dotfiles/.config/opencode/skills/atlcli
 ```
 
 Observed pass:

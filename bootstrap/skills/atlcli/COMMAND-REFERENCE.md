@@ -31,7 +31,7 @@ Evidence artifacts committed in `artifacts/`:
 Reproduction commands:
 
 ```bash
-SKILL_DIR="/home/jan/.dotfiles/.agents/skills/atlcli"
+SKILL_DIR="/home/jan/.dotfiles/.config/opencode/skills/atlcli"
 TAG="2026-03-31"
 atlcli --version > "$SKILL_DIR/artifacts/atlcli-version-$TAG.txt"
 atlcli --help > "$SKILL_DIR/artifacts/atlcli-help-$TAG.txt"

@@ -15,7 +15,7 @@ Recorded transcript:
 
 Verification method:
 ```bash
-sha256sum -c /home/jan/.dotfiles/.agents/skills/atlcli/artifacts/baseline-pre-fix-skill-snippets-2026-03-31.sha256
+sha256sum -c /home/jan/.dotfiles/.config/opencode/skills/atlcli/artifacts/baseline-pre-fix-skill-snippets-2026-03-31.sha256
 ```
 
 Observed failure:

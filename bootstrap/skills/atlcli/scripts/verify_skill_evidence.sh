@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SKILL_DIR="${1:-/home/jan/.dotfiles/.agents/skills/atlcli}"
+SKILL_DIR="${1:-/home/jan/.dotfiles/.config/opencode/skills/atlcli}"
 ART="$SKILL_DIR/artifacts"
 
 sha256sum -c "$ART/baseline-pre-fix-skill-snippets-2026-03-31.sha256"

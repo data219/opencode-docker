@@ -17,7 +17,7 @@
 ## Repeatable extraction (time-dependent)
 
 ```bash
-SKILL_DIR="/home/jan/.dotfiles/.agents/skills/atlcli"
+SKILL_DIR="/home/jan/.dotfiles/.config/opencode/skills/atlcli"
 TAG="2026-03-31"
 curl -fsSL https://atlcli.sh/sitemap-index.xml > "$SKILL_DIR/artifacts/sitemap-index-$TAG.xml"
 curl -fsSL https://atlcli.sh/sitemap-0.xml > "$SKILL_DIR/artifacts/sitemap-0-$TAG.xml"

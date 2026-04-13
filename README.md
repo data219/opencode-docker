@@ -118,7 +118,7 @@ GEMINI_API_KEY=your-key-here
 | `./data/share/`      | `/home/opencode/.local/share/opencode` | OpenCode persistent data                            |
 | `./data/state/`      | `/home/opencode/.local/state/opencode`  | OpenCode state                                     |
 | `./data/workspace/`  | `/home/opencode/workspace`        | Project workspace (writable)                            |
-| `./data/skills/`     | `/home/opencode/.agents/skills`   | Skills (synced from bootstrap on start)                 |
+| `./data/skills/`     | `/home/opencode/.config/opencode/skills`   | Skills (synced from bootstrap on start)                 |
 
 All directories are created automatically on first start.
 

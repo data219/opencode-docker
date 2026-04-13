@@ -24,15 +24,15 @@
 }
 
 @test "docker-compose.yml has skills bind mount (read-write)" {
-  grep -q './data/skills:/home/opencode/.agents/skills' docker-compose.yml
+  grep -q './data/skills:/home/opencode/.config/opencode/skills' docker-compose.yml
 }
 
 @test "skills mount is NOT read-only" {
   ! grep -q './data/skills:.*:ro' docker-compose.yml
 }
 
-@test "skills mount targets .agents/skills (not /skills)" {
-  grep -q '/home/opencode/.agents/skills' docker-compose.yml
+@test "skills mount targets .config/opencode/skills (not /skills)" {
+  grep -q '/home/opencode/.config/opencode/skills' docker-compose.yml
   ! grep -q '/home/opencode/skills:' docker-compose.yml
 }
 

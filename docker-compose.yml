@@ -17,7 +17,7 @@ services:
       - ./data/share:/home/opencode/.local/share/opencode
       - ./data/state:/home/opencode/.local/state/opencode
       - ./data/workspace:/home/opencode/workspace
-      - ./data/skills:/home/opencode/.agents/skills
+      - ./data/skills:/home/opencode/.config/opencode/skills
     environment:
       # WARNING: Container binds 0.0.0.0 internally (required for port forwarding).
       # Set OPENCODE_BIND_ADDRESS (host-level) and OPENCODE_SERVER_PASSWORD to restrict access.
