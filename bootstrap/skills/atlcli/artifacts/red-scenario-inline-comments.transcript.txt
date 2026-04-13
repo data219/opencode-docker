@@ -1,0 +1,4 @@
+timestamp_utc=2026-03-31T13:35:00Z
+command=sha256sum -c artifacts/baseline-pre-fix-skill-snippets-2026-03-31.sha256
+command=grep -q "add-inline" artifacts/baseline-pre-fix-skill-snippets-2026-03-31.txt || true
+result=baseline verified; inline workflow absent in immutable baseline snapshot

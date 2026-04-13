@@ -1,0 +1,5 @@
+atlcli v0.14.0
+https://atlcli.sh
+
+Jira and Confluence are trademarks of Atlassian Corporation Plc.
+atlcli is not affiliated with, endorsed by, or sponsored by Atlassian.

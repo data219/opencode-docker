@@ -1,0 +1,3 @@
+/home/jan/.dotfiles/.agents/skills/atlcli/artifacts/baseline-pre-fix-skill-snippets-2026-03-31.txt: OK
+/home/jan/.dotfiles/.agents/skills/atlcli/artifacts/current-post-fix-skill-snippets-2026-03-31.txt: OK
+PASS: baseline/current evidence assertions succeeded

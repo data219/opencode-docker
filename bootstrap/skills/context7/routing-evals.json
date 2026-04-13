@@ -1,0 +1,17 @@
+[
+  {
+    "prompt": "Find the Symfony voter documentation and explain how voteOnAttribute works.",
+    "expected_route": "context7-first",
+    "web_fallback_allowed": false
+  },
+  {
+    "prompt": "Look up the latest Next.js middleware docs and summarize the redirect pattern.",
+    "expected_route": "context7-first",
+    "web_fallback_allowed": false
+  },
+  {
+    "prompt": "Context7 could not find the requested package docs. Use the web to find the official docs and cite them.",
+    "expected_route": "context7-then-web-fallback",
+    "web_fallback_allowed": true
+  }
+]

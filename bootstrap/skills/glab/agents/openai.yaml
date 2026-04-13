@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitLab CLI (glab)"
+  short_description: "Use glab for complete GitLab CLI workflows"
+  default_prompt: "Use glab to authenticate and execute GitLab workflows (issues, MRs, CI/CD, releases, repositories, variables, tokens, and API calls). Validate targets with read/list commands before mutations, and use glab api for unsupported endpoints."

@@ -1,0 +1,16 @@
+started_at_utc=2026-03-31T13:30:22.154653+00:00
+finished_at_utc=2026-03-31T13:30:27.689115+00:00
+tag=2026-03-31
+python=3.14.2
+platform=Linux-6.19.10-1-cachyos-x86_64-with-glibc2.43
+allow_partial=false
+script_sha256=bba0985045ef0fa1b19886fd895c9925ce5fa1f6589ed05257f3219838edc848
+sitemap_index_sha256=af17c5fe3c74c73b7a451ccc3d0ba0462aa0f02144fc803d6ea18c8ad45ad253
+sitemap_sources=1
+error_count=0
+doc_urls=56
+commands=909
+doc_urls_file=doc-urls-2026-03-31.txt
+commands_file=extracted-commands-2026-03-31.txt
+manifest_file=crawl-manifest-2026-03-31.tsv
+sitemap_hashes_file=sitemap-hashes-2026-03-31.tsv

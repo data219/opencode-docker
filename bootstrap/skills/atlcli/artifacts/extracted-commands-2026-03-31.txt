@@ -1,0 +1,909 @@
+atlcli --version
+atlcli -v
+atlcli audit wiki --all
+atlcli audit wiki --all --fix
+atlcli audit wiki --all --fix --dry-run
+atlcli audit wiki --all --fix --fix-label <label>
+atlcli audit wiki --all --include-remote
+atlcli audit wiki --all --json
+atlcli audit wiki --all --json > audit.json
+atlcli audit wiki --all --label documentation --exclude-label archived
+atlcli audit wiki --all --markdown
+atlcli audit wiki --all --markdown > AUDIT-REPORT.md
+atlcli audit wiki --all --stale-high 12
+atlcli audit wiki --all --stale-high 12 --fix
+atlcli audit wiki --all --stale-high 12 --fix --dry-run
+atlcli audit wiki --all --stale-high 12 --markdown > AUDIT-REPORT.md
+atlcli audit wiki --all --under-page 123456789
+atlcli audit wiki --archived
+atlcli audit wiki --broken-links
+atlcli audit wiki --broken-links --check-external
+atlcli audit wiki --check-external
+atlcli audit wiki --dir <path>
+atlcli audit wiki --drafts
+atlcli audit wiki --exclude-label <label>
+atlcli audit wiki --export-graph
+atlcli audit wiki --export-graph > knowledge-graph.json
+atlcli audit wiki --external-links
+atlcli audit wiki --folders
+atlcli audit wiki --high-churn <n>
+atlcli audit wiki --inactive-contributors
+atlcli audit wiki --include-remote
+atlcli audit wiki --label <label>
+atlcli audit wiki --missing-label "approved" --restricted --drafts
+atlcli audit wiki --missing-label "reviewed" --drafts --archived
+atlcli audit wiki --missing-label <label>
+atlcli audit wiki --orphans
+atlcli audit wiki --orphans --broken-links --check-external
+atlcli audit wiki --rebuild-graph
+atlcli audit wiki --refresh-users
+atlcli audit wiki --restricted
+atlcli audit wiki --single-contributor
+atlcli audit wiki --single-contributor --inactive-contributors --refresh-users
+atlcli audit wiki --stale-high 12 --stale-medium 6 --stale-low 3
+atlcli audit wiki --under-page <id>
+atlcli auth delete <name>
+atlcli auth delete <name> --delete-keychain
+atlcli auth delete old-profile
+atlcli auth delete old-profile --delete-keychain
+atlcli auth init
+atlcli auth init --profile client-acme
+atlcli auth init --profile personal
+atlcli auth init --profile work
+atlcli auth list
+atlcli auth login
+atlcli auth login --bearer --site <url> --token <token>
+atlcli auth login --bearer --site <url> --username <user>
+atlcli auth login --bearer --site <url> --username <user> --token <pat>
+atlcli auth login --bearer --site https://jira.company.com --token YOUR_NEW_PAT
+atlcli auth login --bearer --site https://jira.company.com --token YOUR_PAT
+atlcli auth login --bearer --site https://jira.company.com --username myuser
+atlcli auth login --bearer --site https://jira.company.com --username myuser --token YOUR_PAT
+atlcli auth login --profile work --site <url>
+atlcli auth login --profile work --site https://work.atlassian.net
+atlcli auth login --site <url> --email <email> --token <token>
+atlcli auth login --site https://company.atlassian.net --email you@company.com --token YOUR_TOKEN
+atlcli auth logout
+atlcli auth logout <name>
+atlcli auth logout work
+atlcli auth rename <old> <new>
+atlcli auth rename old-name new-name
+atlcli auth status
+atlcli auth status --json
+atlcli auth switch <name>
+atlcli auth switch correct-profile
+atlcli auth switch personal
+atlcli auth switch work
+atlcli completion __complete
+atlcli completion __complete jira
+atlcli completion bash >> ~/.bashrc
+atlcli completion zsh > ~/.atlcli-completion.zsh
+atlcli completion zsh >> ~/.zshrc
+atlcli config get defaults.project
+atlcli config list
+atlcli config set defaults.board 123
+atlcli config set defaults.project PROJ
+atlcli config set defaults.space DOCS
+atlcli config set logging.global true
+atlcli config set logging.level debug
+atlcli config unset defaults.project
+atlcli doctor
+atlcli doctor --fix
+atlcli doctor --json
+atlcli flag get <name>
+atlcli flag get helloworld
+atlcli flag list
+atlcli flag ls
+atlcli flag rm <name>
+atlcli flag set <name> <value>
+atlcli flag set audit true --global
+atlcli flag set export.backend libreoffice --global
+atlcli flag set helloworld false
+atlcli flag set helloworld true
+atlcli flag unset <name>
+atlcli flag unset helloworld --global
+atlcli hello
+atlcli helloworld
+atlcli jira analyze burndown --sprint 456
+atlcli jira analyze burndown --sprint <id>
+atlcli jira analyze burndown --sprint <id> --ideal
+atlcli jira analyze predictability --board 123
+atlcli jira analyze predictability --board <id>
+atlcli jira analyze velocity --board $BOARD_ID
+atlcli jira analyze velocity --board $BOARD_ID --sprints 1
+atlcli jira analyze velocity --board 123
+atlcli jira analyze velocity --board 123 --field "customfield_10016"
+atlcli jira analyze velocity --board 123 --json
+atlcli jira analyze velocity --board <id>
+atlcli jira analyze velocity --board <id> --sprints <n>
+atlcli jira board backlog --id 123
+atlcli jira board backlog --id <id>
+atlcli jira board get --id 123
+atlcli jira board get --id <id>
+atlcli jira board issues --id 123
+atlcli jira board issues --id <id>
+atlcli jira board list
+atlcli jira board list --name "Team"
+atlcli jira board list --name <pattern>
+atlcli jira board list --project <key>
+atlcli jira board list --project PROJ
+atlcli jira board list --type scrum
+atlcli jira bulk delete --jql "project = PROJ AND labels = test" --confirm
+atlcli jira bulk delete --jql "project = TEST AND created < -90d" --confirm
+atlcli jira bulk delete --jql "project = TEST AND created < -90d" --dry-run
+atlcli jira bulk delete --jql <query> --confirm
+atlcli jira bulk edit --issues PROJ-1,PROJ-2,PROJ-3 --set "priority=Low"
+atlcli jira bulk edit --jql "..." --set "priority=High" --dry-run
+atlcli jira bulk edit --jql "..." --set "priority=High" --json
+atlcli jira bulk edit --jql "project = PROJ AND labels = cleanup" --set "labels=backend,tech-debt"
+atlcli jira bulk edit --jql "project = PROJ AND priority is EMPTY" --set priority=Medium
+atlcli jira bulk edit --jql "project = PROJ AND type = Bug" --set "priority=High"
+atlcli jira bulk edit --jql <query> --dry-run --limit <n>
+atlcli jira bulk edit --jql <query> --set "field=value"
+atlcli jira bulk edit --jql <query> --set "priority=High"
+atlcli jira bulk label add <label> --jql <query>
+atlcli jira bulk label add bug --jql "project = PROJ AND type = Bug AND labels is EMPTY"
+atlcli jira bulk label add feature --jql "project = PROJ AND type = Story AND labels is EMPTY"
+atlcli jira bulk label add release-2.0 --jql "sprint in openSprints()"
+atlcli jira bulk label add reviewed --jql "..." --dry-run
+atlcli jira bulk label remove <label> --jql <query>
+atlcli jira bulk label remove deprecated --jql "project = PROJ"
+atlcli jira bulk move --jql "labels = release-2.0" --sprint 456
+atlcli jira bulk move --jql "sprint = 123 AND status = 'To Do'" --backlog
+atlcli jira bulk transition --jql "project = PROJ AND status = 'To Do'" --to "In Progress"
+atlcli jira bulk transition --jql <query> --to <status>
+atlcli jira bulk transition --jql <query> --to <status> --dry-run
+atlcli jira component create --project <key> --name <name>
+atlcli jira component create --project PROJ --name "Mobile" --lead dave@company.com
+atlcli jira component delete --id <id> --confirm
+atlcli jira component delete 10100 --confirm
+atlcli jira component list --project <key>
+atlcli jira component list --project PROJ
+atlcli jira component update --id <id> --name <name>
+atlcli jira component update 10100 --name "Backend API" --lead alice@company.com
+atlcli jira epic add
+atlcli jira epic add <issues...> --epic <key>
+atlcli jira epic add ATLCLI-101 ATLCLI-102 ATLCLI-103 --epic ATLCLI-100
+atlcli jira epic create --project <key> --summary <text>
+atlcli jira epic create --project ATLCLI --summary "User Authentication"
+atlcli jira epic get <key>
+atlcli jira epic get ATLCLI-100
+atlcli jira epic issues <key>
+atlcli jira epic issues ATLCLI-100
+atlcli jira epic list --board 123
+atlcli jira epic list --board <id>
+atlcli jira epic list --project <key>
+atlcli jira epic list --project <key> --done
+atlcli jira epic list --project ATLCLI
+atlcli jira epic list --project ATLCLI --done
+atlcli jira epic list --project ATLCLI --json
+atlcli jira epic progress <key>
+atlcli jira epic progress ATLCLI-100
+atlcli jira epic remove <issues...>
+atlcli jira epic remove ATLCLI-101
+atlcli jira export --jql "project = PROJ" --format csv -o issues.csv
+atlcli jira export --jql "project = PROJ" --format json -o issues.json
+atlcli jira export --jql <query> --fields key,summary,status
+atlcli jira export --jql <query> -o <file>.csv
+atlcli jira export --jql <query> -o <file>.json
+atlcli jira field get --id <id>
+atlcli jira field get --id customfield_10001
+atlcli jira field list
+atlcli jira field list --custom
+atlcli jira field list --json
+atlcli jira field list --system
+atlcli jira field list --type issuetype
+atlcli jira field options --id <id>
+atlcli jira field options --id customfield_10001
+atlcli jira field options customfield_10077
+atlcli jira field search
+atlcli jira field search "story points"
+atlcli jira field search "story"
+atlcli jira field search <query>
+atlcli jira filter create --name "My Open Bugs" --jql "assignee = currentUser() AND type = Bug AND status != Done"
+atlcli jira filter create --name <name> --jql <query>
+atlcli jira filter delete --id <id> --confirm
+atlcli jira filter delete 12345 --confirm
+atlcli jira filter get --id <id>
+atlcli jira filter get 12345
+atlcli jira filter list
+atlcli jira filter run --id <id>
+atlcli jira filter share --id <id> --group <name>
+atlcli jira filter share --id <id> --user <email>
+atlcli jira filter share 12345 --group developers
+atlcli jira filter share 12345 --project PROJ
+atlcli jira filter share 12345 --user alice@company.com
+atlcli jira filter update --id <id> --jql <query>
+atlcli jira filter update 12345 --jql "assignee = currentUser() AND status = 'In Progress'"
+atlcli jira import --file <path> --dry-run
+atlcli jira import --file <path>.csv --project <key>
+atlcli jira import --file <path>.json --project <key>
+atlcli jira import --file data.csv --map-field "Title=summary" --map-field "Bug Type=issuetype"
+atlcli jira import --file issues.csv --project PROJ
+atlcli jira import --file issues.json --project PROJ
+atlcli jira issue assign --key <key> --assignee <email>
+atlcli jira issue assign --key <key> --assignee none
+atlcli jira issue assign --key PROJ-123 --assignee alice@company.com
+atlcli jira issue assign --key PROJ-123 --assignee none
+atlcli jira issue attach --key <key> <file>
+atlcli jira issue attach PROJ-123 ./build.log --comment "Build failed - see attached log"
+atlcli jira issue attach PROJ-123 ./error.log --comment "Error logs from production"
+atlcli jira issue attach PROJ-123 ./file1.png ./file2.pdf ./logs.zip
+atlcli jira issue attach PROJ-123 ./screenshot.png
+atlcli jira issue attach PROJ-123 ./screenshots/*.png
+atlcli jira issue attach PROJ-200 /tmp/migrate/*
+atlcli jira issue attachment delete 10001 --confirm
+atlcli jira issue attachment download 10001 -o ./downloads/
+atlcli jira issue attachment download PROJ-123 screenshot.png -o ./downloads/
+atlcli jira issue attachments PROJ-123
+atlcli jira issue attachments PROJ-123 --json
+atlcli jira issue comment --key <key> "Comment text"
+atlcli jira issue comment --key PROJ-123 "Working on this"
+atlcli jira issue comment --key PROJ-123 --body "Working on this"
+atlcli jira issue create --project <key> --type <type> --summary <text>
+atlcli jira issue create --project PROJ --type Task --summary "Fix bug"
+atlcli jira issue create --project PROJ --type Task --summary "Fix login bug"
+atlcli jira issue delete --key <key> --confirm
+atlcli jira issue delete --key PROJ-123 --confirm
+atlcli jira issue get --key $KEY
+atlcli jira issue get --key <key>
+atlcli jira issue get --key <key> --expand all
+atlcli jira issue get --key PROJ-123
+atlcli jira issue get --key PROJ-123 --expand changelog
+atlcli jira issue get --key PROJ-123 --json
+atlcli jira issue get --key PROJ-124
+atlcli jira issue link --from <key> --to <key> --type <type>
+atlcli jira issue link --from PROJ-123 --to PROJ-456 --type "blocks"
+atlcli jira issue link-page --key <key> --page <id>
+atlcli jira issue link-page --key <key> --page <id> --comment
+atlcli jira issue link-page --key PROJ-123 --page 12345
+atlcli jira issue open <key>
+atlcli jira issue pages --key <key>
+atlcli jira issue pages --key PROJ-123
+atlcli jira issue pages --key PROJ-123 --space TEAM
+atlcli jira issue transition --key $ISSUE_KEY --to Done
+atlcli jira issue transition --key $KEY --to "$STATUS"
+atlcli jira issue transition --key <key> --to <status>
+atlcli jira issue transition --key PROJ-123 --to "Done"
+atlcli jira issue transition --key PROJ-123 --to "In Progress"
+atlcli jira issue transitions --key $KEY
+atlcli jira issue transitions --key <key>
+atlcli jira issue transitions --key PROJ-123
+atlcli jira issue unlink-page --key <key> --link <id>
+atlcli jira issue unlink-page --key PROJ-123 --page 12345
+atlcli jira issue update --key $KEY --add-labels "$LABELS"
+atlcli jira issue update --key $KEY --assignee "$ASSIGNEE"
+atlcli jira issue update --key $KEY --priority "$PRIORITY"
+atlcli jira issue update --key <key> --add-labels <labels>
+atlcli jira issue update --key <key> --assignee <account-id>
+atlcli jira issue update --key <key> --field customfield_10028=8
+atlcli jira issue update --key <key> --priority <name>
+atlcli jira issue update --key <key> --remove-labels <labels>
+atlcli jira issue update --key <key> --summary <text>
+atlcli jira issue update --key PROJ-123 --add-labels reviewed,verified
+atlcli jira issue update --key PROJ-123 --assignee none
+atlcli jira issue update --key PROJ-123 --field customfield_10001=8
+atlcli jira issue update --key PROJ-123 --summary "Updated summary"
+atlcli jira me
+atlcli jira my
+atlcli jira my --all
+atlcli jira my --limit 50
+atlcli jira my --limit <n>
+atlcli jira my --project <key>
+atlcli jira my --project PROJ
+atlcli jira my --status "In Progress"
+atlcli jira my --type Bug
+atlcli jira project get PROJ
+atlcli jira project get PROJ --json
+atlcli jira project list
+atlcli jira project list --json | jq '.projects[] | select(.name | contains("Support"))'
+atlcli jira project list --json | jq -r '.projects[] | "\(.key): \(.name) (\(.projectTypeKey))"'
+atlcli jira project list --type software
+atlcli jira project types PROJ
+atlcli jira project types PROJ --json | jq -r '.issueTypes[] | select(.subtask == false) | .name'
+atlcli jira search --assignee <email>
+atlcli jira search --assignee me
+atlcli jira search --assignee me --json
+atlcli jira search --assignee me --profile work
+atlcli jira search --assignee me --status "In Progress"
+atlcli jira search --assignee me --status Open --project PROJ
+atlcli jira search --assignee me --type Bug
+atlcli jira search --filter 12345
+atlcli jira search --jql "'Story Points' > 3"
+atlcli jira search --jql "..." --json
+atlcli jira search --jql "..." --limit 50
+atlcli jira search --jql "assignee = currentUser() AND updated > -1d AND status = Done"
+atlcli jira search --jql "assignee is EMPTY AND priority = High"
+atlcli jira search --jql "cf[10001] > 3"
+atlcli jira search --jql "fixVersion = ${{ github.ref_name }}"
+atlcli jira search --jql "project = PROJ AND sprint in openSprints() ORDER BY priority DESC"
+atlcli jira search --jql "project = PROJ AND sprint in openSprints()"
+atlcli jira search --jql "project = PROJ"
+atlcli jira search --jql "sprint in openSprints() AND assignee = currentUser()"
+atlcli jira search --jql "status = 'In Progress'"
+atlcli jira search --jql "status = In Progress"
+atlcli jira search --jql <query>
+atlcli jira search --label <label>
+atlcli jira search --label backend --status "In Progress"
+atlcli jira search --limit <n>
+atlcli jira search --project <key>
+atlcli jira search --project PROJ
+atlcli jira search --project PROJ --type Bug --status Open
+atlcli jira search --sprint <id>
+atlcli jira search --sprint current --project PROJ
+atlcli jira search --sprint current --status Open --json | jq '.total'
+atlcli jira search --status "In Progress"
+atlcli jira search --type Bug
+atlcli jira search --type Bug --status Open
+atlcli jira search --type Bug,Task
+atlcli jira sprint add
+atlcli jira sprint add <issues...> --sprint <id>
+atlcli jira sprint add PROJ-1 PROJ-2 PROJ-3 --sprint 456
+atlcli jira sprint close --id 456
+atlcli jira sprint close --id <id>
+atlcli jira sprint create --board 123 --name "Sprint 15"
+atlcli jira sprint create --board <id> --name <name>
+atlcli jira sprint delete --id <id> --confirm
+atlcli jira sprint get --id $SPRINT_ID
+atlcli jira sprint get --id 456
+atlcli jira sprint get --id <id>
+atlcli jira sprint list --board $BOARD_ID --state active
+atlcli jira sprint list --board 123
+atlcli jira sprint list --board 123 --json
+atlcli jira sprint list --board 123 --state active
+atlcli jira sprint list --board 123 --state future
+atlcli jira sprint list --board <id>
+atlcli jira sprint remove <issues...>
+atlcli jira sprint remove PROJ-1 PROJ-2
+atlcli jira sprint report --id 456
+atlcli jira sprint report --id 456 --json > sprint-report.json
+atlcli jira sprint report 456
+atlcli jira sprint report 456 --json > sprint-14-report.json
+atlcli jira sprint report <id>
+atlcli jira sprint start --id 456
+atlcli jira sprint start --id <id>
+atlcli jira subtask create $BUG --summary "$task"
+atlcli jira subtask create $STORY --summary "API implementation" --assignee bob@company.com
+atlcli jira subtask create $STORY --summary "Database schema design" --assignee alice@company.com
+atlcli jira subtask create $STORY --summary "End-to-end tests" --assignee alice@company.com
+atlcli jira subtask create $STORY --summary "Frontend integration" --assignee carol@company.com
+atlcli jira subtask create --parent <key> --summary <text>
+atlcli jira subtask create PROJ-123 --summary "$task"
+atlcli jira subtask create PROJ-123 --summary "Implement API endpoint"
+atlcli jira subtask list --parent <key>
+atlcli jira subtask list PROJ-123
+atlcli jira subtask list PROJ-123 --json
+atlcli jira template apply
+atlcli jira template apply <name> --project <key> --summary <text>
+atlcli jira template apply bug-report --project PROJ --summary "Login fails on mobile"
+atlcli jira template delete <name> --confirm
+atlcli jira template delete bug-report --confirm
+atlcli jira template export <name> -o <file>
+atlcli jira template export bug-report -o ./templates/bug-report.json
+atlcli jira template get <name>
+atlcli jira template get bug-report
+atlcli jira template import --file ./templates/bug-report.json
+atlcli jira template import --file <path>
+atlcli jira template import --file <path> --project <key>
+atlcli jira template list
+atlcli jira template list --all
+atlcli jira template list --expand
+atlcli jira template list --level global
+atlcli jira template list --level profile
+atlcli jira template list --level project
+atlcli jira template list --search <text>
+atlcli jira template list --tag <tag>
+atlcli jira template list --type Bug
+atlcli jira template save <name> --issue <key>
+atlcli jira template save <name> --issue <key> --force
+atlcli jira template save <name> --issue <key> --level profile
+atlcli jira template save <name> --issue <key> --project <key>
+atlcli jira template save <name> --issue <key> --tags bug,urgent
+atlcli jira template save bug-report --issue PROJ-123
+atlcli jira template save my-template --issue PROJ-123
+atlcli jira template save my-template --issue PROJ-123 --level profile
+atlcli jira template save my-template --issue PROJ-123 --level project
+atlcli jira unwatch <key>
+atlcli jira unwatch PROJ-123
+atlcli jira version create --project <key> --name <name>
+atlcli jira version create --project PROJ --name "v2.1" --release-date 2025-06-01
+atlcli jira version create --project PROJ --name "v2.1" --start-date $(date +%Y-%m-%d)
+atlcli jira version delete --id <id> --confirm
+atlcli jira version delete 10202 --confirm
+atlcli jira version list --project <key>
+atlcli jira version list --project PROJ
+atlcli jira version release --id <id>
+atlcli jira version release 10202
+atlcli jira version release 10202 --move-unfixed 10203
+atlcli jira version update 10202 --name "v2.0.0" --release-date 2025-04-01
+atlcli jira watch <key>
+atlcli jira watch PROJ-123
+atlcli jira watchers <key>
+atlcli jira watchers PROJ-123
+atlcli jira webhook delete <id>
+atlcli jira webhook list
+atlcli jira webhook refresh <id>
+atlcli jira webhook register --url <url> --events <events>
+atlcli jira webhook register --url <url> --events jira:issue_created --jql <filter>
+atlcli jira webhook serve
+atlcli jira webhook serve --port 3000
+atlcli jira webhook serve --port 3000 --events jira:issue_updated
+atlcli jira webhook serve --port 3000 --projects PROJ,TEAM
+atlcli jira webhook serve --secret <secret>
+atlcli jira worklog add <key> 1h --round 15m
+atlcli jira worklog add <key> 1h30m --started <datetime>
+atlcli jira worklog add <key> 2h --comment <text>
+atlcli jira worklog add <key> <duration>
+atlcli jira worklog add PROJ-123 "1 hour 30 minutes"
+atlcli jira worklog add PROJ-123 "1w 2d"
+atlcli jira worklog add PROJ-123 --time 2h
+atlcli jira worklog add PROJ-123 --time 2h --comment "Code review"
+atlcli jira worklog add PROJ-123 1.5h
+atlcli jira worklog add PROJ-123 1:30
+atlcli jira worklog add PROJ-123 1h --started "2026-01-14T09:00:00"
+atlcli jira worklog add PROJ-123 1h30m
+atlcli jira worklog add PROJ-123 2h
+atlcli jira worklog add PROJ-123 2h --started "2026-01-14T09:00:00"
+atlcli jira worklog add PROJ-123 2h --started 09:00
+atlcli jira worklog add PROJ-123 2h --started yesterday
+atlcli jira worklog add PROJ-123 30m --comment "Bug investigation"
+atlcli jira worklog add PROJ-123 37m --round 15m
+atlcli jira worklog delete --issue <key> --id <id> --confirm
+atlcli jira worklog delete --issue PROJ-123 --id 10001 --confirm
+atlcli jira worklog list --issue <key>
+atlcli jira worklog list --issue PROJ-123
+atlcli jira worklog list --issue PROJ-123 --json
+atlcli jira worklog report
+atlcli jira worklog report --group-by date
+atlcli jira worklog report --group-by issue
+atlcli jira worklog report --since 1d
+atlcli jira worklog report --since 2026-01-01 --until 2026-01-14
+atlcli jira worklog report --since 7d --json
+atlcli jira worklog report --user <user> --since <date> --until <date>
+atlcli jira worklog report --user john@example.com
+atlcli jira worklog timer cancel
+atlcli jira worklog timer start <key>
+atlcli jira worklog timer start <key> --comment <text>
+atlcli jira worklog timer start PROJ-123
+atlcli jira worklog timer start PROJ-123 --comment "Starting code review"
+atlcli jira worklog timer status
+atlcli jira worklog timer stop
+atlcli jira worklog timer stop --round 15m
+atlcli jira worklog timer stop PROJ-123
+atlcli jira worklog update --issue <key> --id <id> --time <duration>
+atlcli jira worklog update --issue PROJ-123 --id 10001 --comment "Updated description"
+atlcli jira worklog update --issue PROJ-123 --id 10001 --time 3h
+atlcli log clear --before 30d --confirm
+atlcli log clear --before 7d --global --confirm
+atlcli log clear --before 7d --project --confirm
+atlcli log clear --before <duration> --confirm
+atlcli log clear --before <duration> --global --confirm
+atlcli log clear --before <duration> --project --confirm
+atlcli log list
+atlcli log list --json
+atlcli log list --json | jq ".entries[] | select(.data.requestId == \"$REQUEST_ID\")"
+atlcli log list --json | jq '.entries[] | select(.data.status >= 400)'
+atlcli log list --level debug
+atlcli log list --level error
+atlcli log list --level error --json | jq 'group_by(.type) | map({type: .[0].type, count: length})'
+atlcli log list --level info
+atlcli log list --level warn
+atlcli log list --limit 5
+atlcli log list --limit 50
+atlcli log list --limit <n>
+atlcli log list --since "2025-01-01" --until "2025-01-14"
+atlcli log list --since 1h
+atlcli log list --since 24h
+atlcli log list --since 7d
+atlcli log list --since <date> --until <date>
+atlcli log list --since <duration>
+atlcli log list --type api
+atlcli log list --type api --level error --since 24h
+atlcli log list --type auth
+atlcli log list --type cli.command
+atlcli log list --type sync
+atlcli log show <id>
+atlcli log show abc123-uuid-here
+atlcli log tail --project
+atlcli log tail -f
+atlcli log tail -f --level error
+atlcli plugin disable <name>
+atlcli plugin disable git
+atlcli plugin enable <name>
+atlcli plugin enable example
+atlcli plugin enable git
+atlcli plugin install ./my-plugin
+atlcli plugin install <path>
+atlcli plugin install @atlcli/plugin-example
+atlcli plugin install @atlcli/plugin-git
+atlcli plugin install https://github.com/user/atlcli-plugin-custom.git
+atlcli plugin list
+atlcli plugin list --enabled
+atlcli plugin remove <name>
+atlcli plugin remove custom
+atlcli update
+atlcli update --check
+atlcli update --check --json
+atlcli update v0.5.0
+atlcli version
+atlcli webhook delete wh-001 --confirm
+atlcli webhook list
+atlcli webhook register --url https://your-server.com/webhook --events page_created,page_updated
+atlcli webhook server --port 8080
+atlcli webhook server --port 8080 --handler ./audit-log.sh
+atlcli webhook server --port 8080 --handler ./process-event.sh
+atlcli webhook server --port 8080 --handler ./slack-notify.sh
+atlcli wiki docs add
+atlcli wiki docs add ./docs/guide.md --parent 12345
+atlcli wiki docs add ./docs/meeting.md --template meeting-notes
+atlcli wiki docs add ./docs/new-page.md
+atlcli wiki docs add <dir> --template <name>
+atlcli wiki docs add <file> [options]
+atlcli wiki docs check ./docs
+atlcli wiki docs check ./docs --json
+atlcli wiki docs check ./docs --strict
+atlcli wiki docs check ./docs --strict && atlcli wiki docs push ./docs
+atlcli wiki docs check ./docs/api-reference.md
+atlcli wiki docs check ./docs/page.md
+atlcli wiki docs check <dir>
+atlcli wiki docs commit -m "Update API documentation"
+atlcli wiki docs commit -m "Update user guide"
+atlcli wiki docs convert ./docs --to-new-editor --confirm
+atlcli wiki docs convert ./docs --to-new-editor --dry-run
+atlcli wiki docs convert ./docs/old-page.md --to-new-editor
+atlcli wiki docs convert ./docs/page.md --to-legacy-editor
+atlcli wiki docs convert <dir> --to-new-editor --confirm
+atlcli wiki docs convert <dir> --to-new-editor --dry-run
+atlcli wiki docs convert <file> --to-legacy-editor
+atlcli wiki docs convert <file> --to-new-editor
+atlcli wiki docs diff ./docs/api-reference.md
+atlcli wiki docs diff ./docs/api-reference.md --json
+atlcli wiki docs diff ./docs/my-folder/index.md
+atlcli wiki docs diff ./docs/my-folder/index.md --json
+atlcli wiki docs diff <dir>
+atlcli wiki docs diff <file>
+atlcli wiki docs ignore-check ./docs "api-reference.md"
+atlcli wiki docs ignore-check ./docs "drafts/test.md"
+atlcli wiki docs init
+atlcli wiki docs init ./docs --ancestor 12345
+atlcli wiki docs init ./docs --page-id 12345
+atlcli wiki docs init ./docs --space TEAM
+atlcli wiki docs init ./team-docs --space TEAM
+atlcli wiki docs init <dir> --space <key>
+atlcli wiki docs preview
+atlcli wiki docs preview <dir>
+atlcli wiki docs pull
+atlcli wiki docs pull ./docs
+atlcli wiki docs pull ./docs --comments
+atlcli wiki docs pull ./docs --force
+atlcli wiki docs pull ./docs --ignore "generated/**"
+atlcli wiki docs pull ./docs --include-comments
+atlcli wiki docs pull ./docs --label api-docs
+atlcli wiki docs pull ./docs --no-attachments
+atlcli wiki docs pull ./docs --no-gitignore
+atlcli wiki docs pull ./docs --page-id 12345 --version 3
+atlcli wiki docs pull ./docs --profile client-acme
+atlcli wiki docs pull ./docs --verbose
+atlcli wiki docs pull ./my-docs --space TEAM
+atlcli wiki docs pull ./team-docs
+atlcli wiki docs pull ./team-docs --force
+atlcli wiki docs pull <dir>
+atlcli wiki docs pull <dir> --label <name>
+atlcli wiki docs pull <dir> --page-id <id>
+atlcli wiki docs pull <dir> --version <n>
+atlcli wiki docs pull ~/docs
+atlcli wiki docs push
+atlcli wiki docs push --force
+atlcli wiki docs push --page-id 12345
+atlcli wiki docs push ./docs
+atlcli wiki docs push ./docs --ignore "local-only/**"
+atlcli wiki docs push ./docs --validate
+atlcli wiki docs push ./docs --validate --strict
+atlcli wiki docs push ./docs/page.md
+atlcli wiki docs push ./team-docs
+atlcli wiki docs push ./team-docs --dry-run
+atlcli wiki docs push ./team-docs --force
+atlcli wiki docs push <dir>
+atlcli wiki docs push <dir> --dry-run
+atlcli wiki docs push <dir> --force
+atlcli wiki docs push <dir> --legacy-editor
+atlcli wiki docs resolve ./docs/file.md --accept local
+atlcli wiki docs resolve <dir>
+atlcli wiki docs resolve docs/api.md --accept local
+atlcli wiki docs resolve docs/api.md --accept merged
+atlcli wiki docs resolve docs/api.md --accept remote
+atlcli wiki docs status
+atlcli wiki docs status ./docs
+atlcli wiki docs status ./docs --json
+atlcli wiki docs status ./docs --show-ignored
+atlcli wiki docs status <dir>
+atlcli wiki docs sync
+atlcli wiki docs sync ./docs
+atlcli wiki docs sync ./docs --ancestor 12345
+atlcli wiki docs sync ./docs --json
+atlcli wiki docs sync ./docs --no-poll
+atlcli wiki docs sync ./docs --on-conflict <strategy>
+atlcli wiki docs sync ./docs --page-id 12345
+atlcli wiki docs sync ./docs --poll-interval 10000
+atlcli wiki docs sync ./docs --poll-interval 120000
+atlcli wiki docs sync ./docs --poll-interval 60000
+atlcli wiki docs sync ./docs --space TEAM
+atlcli wiki docs sync ./docs --space TEAM --auto-create
+atlcli wiki docs sync ./docs --watch --webhook-port 8080
+atlcli wiki docs sync ./team-docs --watch
+atlcli wiki docs sync <dir> --watch
+atlcli wiki docs sync <dir> [options]
+atlcli wiki docs template apply <name> --space <key> --title <title>
+atlcli wiki docs template delete <name>
+atlcli wiki docs template export <name> -o <file>
+atlcli wiki docs template get <name>
+atlcli wiki docs template import --file <path>
+atlcli wiki docs template list
+atlcli wiki docs template save --page <id> --name <name>
+atlcli wiki export "DOCS:Architecture Overview" -t report -o ./arch.docx
+atlcli wiki export 12345 -t book -o book.docx --include-children
+atlcli wiki export 12345 -t book -o book.docx --include-children --no-merge
+atlcli wiki export 12345 -t report -o out.docx --no-toc-prompt
+atlcli wiki export 12345 -t report -o report.docx --no-images
+atlcli wiki export 12345 -t report -o report.docx --no-toc-prompt
+atlcli wiki export 12345678 --template basic --output ./page.docx
+atlcli wiki export 12345678 --template corporate --output ./report.docx
+atlcli wiki export template delete old-template --confirm
+atlcli wiki export template list
+atlcli wiki export template save corporate --file ./template.docx --level global
+atlcli wiki my
+atlcli wiki my --contributed
+atlcli wiki my --label <name>
+atlcli wiki my --label api
+atlcli wiki my --limit 50
+atlcli wiki my --limit <n>
+atlcli wiki my --space <key>
+atlcli wiki my --space TEAM
+atlcli wiki page archive --cql "space = TEAM AND label = deprecated" --confirm
+atlcli wiki page archive --cql "space = TEAM AND lastModified < now('-180d')" --confirm
+atlcli wiki page archive --cql "space = TEAM AND lastModified < now('-180d')" --dry-run
+atlcli wiki page archive --cql <query> --dry-run
+atlcli wiki page archive --id 12345 --confirm
+atlcli wiki page archive --id <id> --confirm
+atlcli wiki page children --id 12345
+atlcli wiki page children --id <id>
+atlcli wiki page children --id <id> --limit <n> --json
+atlcli wiki page comments add --id 12345 "Great documentation!"
+atlcli wiki page comments add --id 12345 --file ./comment.txt
+atlcli wiki page comments add --id <id> "Comment text"
+atlcli wiki page comments add-inline --id 12345 --selection "common phrase" --match-index 2 "Comment on third occurrence"
+atlcli wiki page comments add-inline --id 12345 --selection "text to match" "Consider rewording this"
+atlcli wiki page comments add-inline --id <id> --selection <text> "Comment"
+atlcli wiki page comments delete --comment 67890 --confirm
+atlcli wiki page comments delete --comment 67890 --type inline --confirm
+atlcli wiki page comments delete --id <id> --comment <comment-id> --confirm
+atlcli wiki page comments list --id $page --json > "comments-$page.json"
+atlcli wiki page comments list --id 12345
+atlcli wiki page comments list --id 12345 --inline
+atlcli wiki page comments list --id 12345 --json
+atlcli wiki page comments list --id 12345 --json | jq '.comments[] | select(.resolved == false)'
+atlcli wiki page comments list --id <id>
+atlcli wiki page comments list --id <id> --inline
+atlcli wiki page comments reopen --comment 67890
+atlcli wiki page comments reopen --id <id> --comment <comment-id>
+atlcli wiki page comments reply --id 12345 --parent 67890 "Thanks for the feedback!"
+atlcli wiki page comments reply --id <id> --parent <comment-id> "Reply text"
+atlcli wiki page comments resolve --comment 67890
+atlcli wiki page comments resolve --comment 67890 --type inline
+atlcli wiki page comments resolve --id <id> --comment <comment-id>
+atlcli wiki page comments update --id <id> --comment <comment-id> "Updated text"
+atlcli wiki page convert --id <id> --to-legacy-editor
+atlcli wiki page convert --id <id> --to-new-editor
+atlcli wiki page copy --id 12345 --title "API Docs" --space NEW_SPACE
+atlcli wiki page copy --id 12345 --title "Copy of Page"
+atlcli wiki page copy --id 12345 --title "Page Copy"
+atlcli wiki page copy --id 12345 --title "Page Copy" --space DOCS
+atlcli wiki page copy --id <id> --title <title>
+atlcli wiki page copy --id <id> --title <title> --space <key>
+atlcli wiki page create --space <key> --title <title> --body <file>
+atlcli wiki page create --space <key> --title <title> --body <file> --parent <id>
+atlcli wiki page create --space TEAM --title "API Guide" --body ./api-guide.md
+atlcli wiki page create --space TEAM --title "Child Page" --body ./child.md --parent 12345
+atlcli wiki page create --space TEAM --title "New Page" --body ./content.md
+atlcli wiki page create --template meeting-notes --space TEAM
+atlcli wiki page delete --cql "space = ARCHIVE AND lastModified < now('-365d')" --confirm
+atlcli wiki page delete --cql "space = ARCHIVE AND lastModified < now('-365d')" --dry-run
+atlcli wiki page delete --cql "space = TEAM AND label = deprecated" --confirm
+atlcli wiki page delete --cql <query> --confirm
+atlcli wiki page delete --cql <query> --dry-run
+atlcli wiki page delete --id 12345 --confirm
+atlcli wiki page delete --id <child-id> --confirm
+atlcli wiki page delete --id <id> --confirm
+atlcli wiki page diff --id <id> --from <n> --to <n>
+atlcli wiki page diff --id <id> --version <n>
+atlcli wiki page diff 12345 --from 1 --to 5 | grep "^-"
+atlcli wiki page diff 12345 --from 2 --to 4
+atlcli wiki page diff 12345 --version $(atlcli wiki page history 12345 --json | jq '.versions[1].number')
+atlcli wiki page diff 12345 --version 3
+atlcli wiki page get --id 12345
+atlcli wiki page get --id <id>
+atlcli wiki page get --id <id> --version <n>
+atlcli wiki page get 12345 --version 3
+atlcli wiki page get 12345 --version 3 > old-version.md
+atlcli wiki page history $id --json > "history-$id.json"
+atlcli wiki page history --id <id>
+atlcli wiki page history --id <id> --limit <n>
+atlcli wiki page history 12345
+atlcli wiki page history 12345 --json
+atlcli wiki page issues --id 12345
+atlcli wiki page issues --id 12345 --project PROJ
+atlcli wiki page issues --id <id>
+atlcli wiki page issues --id <id> --project <key>
+atlcli wiki page label add <label> --cql <query> --confirm
+atlcli wiki page label add <label> --cql <query> --dry-run
+atlcli wiki page label add <label> [<label>...] --id <id>
+atlcli wiki page label add api --id 12345
+atlcli wiki page label add api documentation v2 --id 12345
+atlcli wiki page label add approved --id 12345
+atlcli wiki page label add archived --cql "space=OLD" --confirm
+atlcli wiki page label add archived --cql "space=OLD" --dry-run
+atlcli wiki page label add needs-review --id 12345
+atlcli wiki page label add team-backend component-api --id 12345
+atlcli wiki page label add v2.0 --id 12345
+atlcli wiki page label list --id 12345
+atlcli wiki page label list --id 12345 --json
+atlcli wiki page label list --id <id>
+atlcli wiki page label remove <label> --cql <query> --confirm
+atlcli wiki page label remove <label> --id <id>
+atlcli wiki page label remove deprecated --id 12345
+atlcli wiki page label remove draft --cql "label=draft AND space=DEV" --confirm
+atlcli wiki page label remove needs-review --id 12345
+atlcli wiki page link-issue --id 12345 --issue PROJ-123
+atlcli wiki page link-issue --id 12345 --issue PROJ-456 --comment
+atlcli wiki page link-issue --id <id> --issue <key>
+atlcli wiki page link-issue --id <id> --issue <key> --comment
+atlcli wiki page list --cql <query>
+atlcli wiki page list --label <name>
+atlcli wiki page list --space <key>
+atlcli wiki page list --space DEV --no-log
+atlcli wiki page list --space TEAM
+atlcli wiki page list --space TEAM --json
+atlcli wiki page list --space TEAM --profile work
+atlcli wiki page move --id $id --parent 99999
+atlcli wiki page move --id 12345 --parent 67890
+atlcli wiki page move --id 12345 --position 3
+atlcli wiki page move --id <id> --parent <id>
+atlcli wiki page move --id <id> --position <n>
+atlcli wiki page move ./docs/appendix.md --first
+atlcli wiki page move ./docs/appendix.md --last
+atlcli wiki page move ./docs/page.md --after ./docs/setup.md
+atlcli wiki page move ./docs/page.md --before ./docs/intro.md
+atlcli wiki page move <file> --after <target>
+atlcli wiki page move <file> --before <target>
+atlcli wiki page move <file> --first
+atlcli wiki page move <file> --last
+atlcli wiki page open <id>
+atlcli wiki page restore --id <id> --version <n>
+atlcli wiki page restore --id <id> --version <n> --message <text> --confirm
+atlcli wiki page restore 12345 --version 3
+atlcli wiki page restore 12345 --version 3 --message "Reverting breaking changes" --confirm
+atlcli wiki page sort --id $parent --natural --dry-run
+atlcli wiki page sort --id 12345 --alphabetical --dry-run
+atlcli wiki page sort --id <id> --by modified --reverse
+atlcli wiki page sort ./docs/api.md --alphabetical
+atlcli wiki page sort ./docs/changelog.md --by created
+atlcli wiki page sort ./docs/changelog.md --by modified --reverse
+atlcli wiki page sort ./docs/chapters.md --natural
+atlcli wiki page sort <file> --alphabetical
+atlcli wiki page sort <file> --by created
+atlcli wiki page sort <file> --natural
+atlcli wiki page unlink-issue --id 12345 --issue PROJ-123
+atlcli wiki page unlink-issue --id <id> --issue <key>
+atlcli wiki page update --id 12345 --body ./guide.md --title "New Title"
+atlcli wiki page update --id 12345 --body ./updated-content.md
+atlcli wiki page update --id 12345 --body ./updated-guide.md
+atlcli wiki page update --id <id> --body <file>
+atlcli wiki page update --id <id> --body <file> --title <title>
+atlcli wiki recent
+atlcli wiki recent --days 30
+atlcli wiki recent --label <name>
+atlcli wiki recent --label api
+atlcli wiki recent --limit 50
+atlcli wiki recent --limit <n>
+atlcli wiki recent --space <key>
+atlcli wiki recent --space TEAM
+atlcli wiki search "API documentation"
+atlcli wiki search "API" --space TEAM
+atlcli wiki search "API" --space TEAM --json
+atlcli wiki search "query" --ancestor 12345
+atlcli wiki search "query" --limit 25 --start 0
+atlcli wiki search "query" --limit 25 --start 25
+atlcli wiki search "query" --space TEAM
+atlcli wiki search "query" --space TEAM,DOCS,API
+atlcli wiki search "query" --type attachment
+atlcli wiki search "query" --type blogpost
+atlcli wiki search "query" --type page
+atlcli wiki search --ancestor <id>
+atlcli wiki search --cql "lastModified < now('-90d') AND space = DOCS"
+atlcli wiki search --cql "space = TEAM AND label = api AND lastModified > now('-7d')"
+atlcli wiki search --cql "space = TEAM AND label IS EMPTY"
+atlcli wiki search --cql <query>
+atlcli wiki search --created-since "30d"
+atlcli wiki search --created-since <duration>
+atlcli wiki search --creator "alice@company.com"
+atlcli wiki search --creator <email>
+atlcli wiki search --creator currentUser()
+atlcli wiki search --creator currentUser() --modified-since 7d
+atlcli wiki search --format compact
+atlcli wiki search --label "api,v2"
+atlcli wiki search --label "v2.0"
+atlcli wiki search --label <label>
+atlcli wiki search --label api
+atlcli wiki search --label api --json | jq -r '.results[].id'
+atlcli wiki search --label api --space TEAM
+atlcli wiki search --label draft --space TEAM
+atlcli wiki search --label team-backend --space DOCS
+atlcli wiki search --limit <n> --start <n>
+atlcli wiki search --modified-since "2025-01-01"
+atlcli wiki search --modified-since "7d"
+atlcli wiki search --modified-since <duration>
+atlcli wiki search --title "installation guide"
+atlcli wiki search --title <text>
+atlcli wiki search --type page
+atlcli wiki search --verbose
+atlcli wiki search <query>
+atlcli wiki search <query> --space <key>
+atlcli wiki space create --key <key> --name <name>
+atlcli wiki space create --key <key> --name <name> --description <text>
+atlcli wiki space create --key NEWSPACE --name "New Documentation Space"
+atlcli wiki space get --key <key>
+atlcli wiki space get --key TEAM
+atlcli wiki space list
+atlcli wiki space list --json
+atlcli wiki space list --limit <n>
+atlcli wiki template copy meeting-notes --from-level global --to-profile work
+atlcli wiki template copy meeting-notes team-meeting --from-level global --to-space TEAM
+atlcli wiki template create --interactive
+atlcli wiki template create meeting-notes
+atlcli wiki template create meeting-notes --file ./meeting.md
+atlcli wiki template create meeting-notes --file ./template.md
+atlcli wiki template create meeting-notes --file ./updated.md --force
+atlcli wiki template create runbook --space TEAM --file ./runbook.md
+atlcli wiki template create standup --profile work --file ./standup.md
+atlcli wiki template delete meeting-notes
+atlcli wiki template delete meeting-notes --force
+atlcli wiki template delete standup --profile work --force
+atlcli wiki template edit meeting-notes
+atlcli wiki template edit standup --profile work
+atlcli wiki template export --profile work -o ./work-templates
+atlcli wiki template export -o ./my-templates
+atlcli wiki template export meeting-notes
+atlcli wiki template export meeting-notes -o ./meeting-notes.md
+atlcli wiki template import ./my-templates
+atlcli wiki template import ./templates --replace
+atlcli wiki template import ./templates --to-profile work
+atlcli wiki template import ./templates meeting-notes standup
+atlcli wiki template import https://example.com/templates.tar.gz
+atlcli wiki template import https://github.com/user/template-pack
+atlcli wiki template init meeting-template --from "Team Meetings" --from-space TEAM
+atlcli wiki template init meeting-template --from ./docs/meetings.md
+atlcli wiki template init meeting-template --from 12345
+atlcli wiki template init retro --from 12345 --to-profile work
+atlcli wiki template list
+atlcli wiki template list --all
+atlcli wiki template list --json
+atlcli wiki template list --level global
+atlcli wiki template list --profile work
+atlcli wiki template list --search retro
+atlcli wiki template list --space TEAM
+atlcli wiki template list --tag meeting
+atlcli wiki template rename old-name new-name
+atlcli wiki template rename standup daily-standup --profile work
+atlcli wiki template render meeting-notes --interactive
+atlcli wiki template render meeting-notes --var title="Sprint Planning"
+atlcli wiki template render meeting-notes --var title="Test"
+atlcli wiki template render meeting-notes --var title="Test" --json
+atlcli wiki template render meeting-notes --var title="Test" > output.md
+atlcli wiki template show meeting-notes
+atlcli wiki template show standup --profile work
+atlcli wiki template update
+atlcli wiki template update --source https://github.com/user/template-pack
+atlcli wiki template update meeting-notes standup
+atlcli wiki template validate --all
+atlcli wiki template validate --file ./template.md
+atlcli wiki template validate meeting-notes

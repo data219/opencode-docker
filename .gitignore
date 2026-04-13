@@ -6,7 +6,6 @@
 
 # Bind mount directories (created at runtime)
 data/
-bootstrap/skills/
 
 # Build artifacts
 *.tar

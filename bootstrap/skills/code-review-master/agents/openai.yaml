@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Review Master"
+  short_description: "Review PRs with senior-level rigor"
+  default_prompt: "Review this code/PR as a senior engineer. Focus on architecture/design, security/performance, code quality, and functionality. Output: Overall Assessment, Key Strengths, Critical Issues, Suggestions, Specific Feedback."

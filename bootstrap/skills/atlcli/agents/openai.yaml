@@ -1,0 +1,4 @@
+interface:
+  display_name: "AtlCLI"
+  short_description: "Use atlcli for Jira and Confluence workflows"
+  default_prompt: "Use atlcli to authenticate, query or update Jira issues, and sync Confluence docs with safe defaults and JSON output for automation. In all user-facing output, render every linkable Atlassian entity as a Markdown link using canonical URLs from CLI data."

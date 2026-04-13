@@ -1,0 +1,24 @@
+atlcli v0.14.0 • https://atlcli.sh • © Björn Schotte
+
+atlcli <command>
+
+Commands:
+  auth        Authenticate and manage profiles
+  completion  Generate shell completion scripts
+  config      Manage CLI configuration
+  doctor      Diagnose common issues
+  flag        Manage feature flags
+  wiki        Confluence operations (page, space, docs, search)
+  jira        Jira operations (issue, board, sprint, epic)
+  log         Query and manage logs
+  plugin      Manage plugins
+  update      Check for and install updates
+  version     Show version
+
+Global options:
+  --profile <name>   Use specific auth profile
+  --json             JSON output
+  --no-log           Disable logging for this command
+  --help, -h         Show help
+  --version, -v      Show version
+

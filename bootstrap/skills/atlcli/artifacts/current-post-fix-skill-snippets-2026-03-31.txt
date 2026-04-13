@@ -1,0 +1,23 @@
+# Current Post-Fix Skill Snippets (Immutable Snapshot)
+
+Source captured: post-fix skill content snapshot on 2026-03-31.
+
+## Snippet A: Safety gates and high-impact definition
+
+For any non-read-only command (for example `create`, `update`, `delete`, `transition`, `bulk`, `push`, `resolve`, `assign`, `comment`, `attach`, `link`, `start/stop`, `add/remove`, `import/export`, `apply`, `share`, `set/unset`, `clear`, `install/enable/disable`):
+1. Run read-first preview when an equivalent read exists (`get/list/search --json`); otherwise use `diff/status/check --strict` or a dry-run command.
+2. Scope check: explicit key/ID/filter and impact count.
+3. Use explicit `--profile <name>`.
+4. High-impact operations always require explicit user ACK in this thread before execution.
+5. Post-write verify via read command and include resulting URL/ID.
+6. If no preview/dry-run/verification path exists, stop and ask for explicit risk acceptance before proceeding.
+
+High-impact definition:
+- Any command with `delete`, `bulk`, `archive`, `restore`, `push`, `resolve`, `--fix`, `update`, `import`, `export`, `install`, `enable`, `disable`, `switch`, `logout`, `login`, or wildcard-wide filters (for example broad JQL/CQL without tight key/ID scope).
+
+## Snippet B: Inline comments workflow
+
+atlcli --profile work wiki page comments add-inline --id 12345 --selection "target text" "Please clarify"
+atlcli --profile work wiki page comments add-inline --id 12345 --selection "target text" --match-index 2 "Third match"
+atlcli --profile work wiki page comments list --id 12345 --inline
+atlcli --profile work wiki page comments resolve --comment 67890 --type inline

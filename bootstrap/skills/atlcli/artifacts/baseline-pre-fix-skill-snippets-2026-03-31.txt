@@ -1,0 +1,43 @@
+# Baseline Pre-Fix Skill Snippets (Immutable Snapshot)
+
+Source captured: pre-fix skill content snapshot on 2026-03-31.
+
+## Snippet A: Confluence wiki section lacked inline comment workflow
+
+Before bulk/delete operations, always run a `search` with the exact same filter to verify scope.
+
+## Confluence / Wiki Playbooks
+
+### Page and space operations
+
+```bash
+atlcli wiki space list
+atlcli wiki page list --space TEAM
+atlcli wiki page get --id 12345
+atlcli wiki search "architecture" --space TEAM
+```
+
+### Local docs sync lifecycle
+
+```bash
+atlcli wiki docs init ./docs --space TEAM
+atlcli wiki docs pull ./docs
+atlcli wiki docs status ./docs
+atlcli wiki docs check ./docs --strict
+atlcli wiki docs diff ./docs/page.md
+atlcli wiki docs push ./docs --validate
+```
+
+## Snippet B: safety gate lacked deterministic high-impact ACK rule
+
+```bash
+atlcli jira issue create --project PROJ --type Task --summary "Implement feature X"
+atlcli jira issue update --key PROJ-123 --summary "Updated summary"
+atlcli jira issue transition --key PROJ-123 --to "In Progress"
+atlcli jira issue comment --key PROJ-123 "Work started"
+```
+
+```bash
+atlcli jira bulk transition --jql "project = PROJ AND status = \"To Do\"" --to "In Progress"
+atlcli jira issue delete --key PROJ-123 --confirm
+```
