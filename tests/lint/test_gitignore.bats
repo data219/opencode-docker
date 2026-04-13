@@ -6,12 +6,12 @@
   grep -q '^.env' .gitignore
 }
 
-@test ".gitignore excludes opencode-config/" {
-  grep -q 'opencode-config/' .gitignore
+@test ".gitignore excludes data/" {
+  grep -q '^data/' .gitignore
 }
 
-@test ".gitignore excludes opencode-data/" {
-  grep -q 'opencode-data/' .gitignore
+@test ".gitignore excludes skills/ (old path)" {
+  grep -q '^skills/' .gitignore
 }
 
 @test ".gitignore allows .env.example" {

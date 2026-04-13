@@ -16,7 +16,7 @@ Forked from [nimbleflux/opencode-docker](https://github.com/nimbleflux/opencode-
 - **Multi-language development environment**: Python (pyenv), Node.js (nvm), Go, Rust, PHP 8.4, Bun
 - **Optional languages** via build args: Java (Temurin 21), Ruby 3.3, Swift 6.0, Elixir/OTP 27
 - **Developer tooling**: golangci-lint, Composer, gh CLI, yq
-- **Custom skills** support via read-only bind mount at `/home/opencode/.agents/skills`
+- **Custom skills** support via bind mount at `/home/opencode/.agents/skills`
 - **BuildKit cache mounts** for fast rebuilds
 - **Config seeding**: defaults copied on first run, user edits persist
 - **Config drift detection**: warns when image defaults change
@@ -97,38 +97,28 @@ All configuration is done via environment variables in `.env`:
 
 ## Custom Skills
 
-Mount a local `skills/` directory containing skill folders. Each skill is a folder with a `SKILL.md` file:
-
-```
-skills/
-└── my-skill/
-    └── SKILL.md
-```
-
-The skills directory is mounted read-only (`:ro`) at `/home/opencode/.agents/skills` inside the container. OpenCode discovers skills from this path automatically.
+Skills are managed via the `bootstrap/skills/` directory in the repo. On container start, the init script syncs bootstrap skills to `/home/opencode/.agents/skills/` inside the container:
+- New skills are copied entirely
+- Existing skills: only missing files are added, user modifications are preserved
+- Set `FORCE_SKILL_SYNC=true` in your `.env` to reset all skills to bootstrap defaults
 
 ## Bind Mount Structure
 
 | Host Path | Container Path | Description |
 |-----------|---------------|-------------|
-| `./opencode-config/` | `/home/opencode/.config/opencode` | OpenCode + OmO config (seeded on first run) |
-| `./opencode-data/` | `/home/opencode/.local/share/opencode` | OpenCode persistent data |
-| `./opencode-state/` | `/home/opencode/.local/state/opencode` | OpenCode state |
-| `./opencode-workspace/` | `/home/opencode/workspace` | Project workspace |
-| `./skills/` | `/home/opencode/.agents/skills` | Custom skills (read-only) |
+| `./data/config/` | `/home/opencode/.config/opencode` | OpenCode + OmO config (seeded, version-tracked) |
+| `./data/share/` | `/home/opencode/.local/share/opencode` | OpenCode persistent data |
+| `./data/state/` | `/home/opencode/.local/state/opencode` | OpenCode state |
+| `./data/workspace/` | `/home/opencode/workspace` | Project workspace |
+| `./data/skills/` | `/home/opencode/.agents/skills` | Skills (synced from bootstrap on start) |
 
-All bind mount directories are created automatically on first start. Config files are seeded from `/opt/opencode-defaults/` only when the target does not exist — user edits are never overwritten.
+All bind mount directories are created automatically on first start. Managed config files (`.managed` suffix) are overwritten on version upgrade. Non-managed files and skills are only seeded if they don't exist — user edits are preserved.
 
 ## Config Drift Detection
 
-The image includes a config version marker (`.opencode-docker-config-version`). When you pull a new image with updated defaults, the entrypoint detects the version mismatch and prints a warning:
+The image includes a config version marker (`.opencode-docker-config-version`). When you pull a new image with updated defaults, the init script detects the version mismatch and automatically re-seeds managed config files (`.managed` suffix). Non-managed files and skills are preserved.
 
-```
-WARNING: Config version mismatch. Image defaults are v2 but your config is v1.
-  Your config is NOT overwritten. To update manually:
-    docker exec -it <container> -- cat /opt/opencode-defaults/opencode.json > /home/opencode/.config/opencode/opencode.json
-  Then update the version marker to match.
-```
+Set `FORCE_SKILL_SYNC=true` in your `.env` to reset all skills to bootstrap defaults.
 
 ## Security Notes
 

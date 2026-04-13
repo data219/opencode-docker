@@ -7,29 +7,33 @@
   ! grep -q "^volumes:" docker-compose.yml
 }
 
-@test "docker-compose.yml has opencode-config bind mount" {
-  grep -q "./opencode-config:/home/opencode/.config/opencode" docker-compose.yml
+@test "docker-compose.yml has config bind mount under data/" {
+  grep -q './data/config:/home/opencode/.config/opencode' docker-compose.yml
 }
 
-@test "docker-compose.yml has opencode-data bind mount" {
-  grep -q "./opencode-data:/home/opencode/.local/share/opencode" docker-compose.yml
+@test "docker-compose.yml has share bind mount under data/" {
+  grep -q './data/share:/home/opencode/.local/share/opencode' docker-compose.yml
 }
 
-@test "docker-compose.yml has opencode-state bind mount" {
-  grep -q "./opencode-state:/home/opencode/.local/state/opencode" docker-compose.yml
+@test "docker-compose.yml has state bind mount under data/" {
+  grep -q './data/state:/home/opencode/.local/state/opencode' docker-compose.yml
 }
 
-@test "docker-compose.yml has workspace bind mount" {
-  grep -q "./opencode-workspace:/home/opencode/workspace" docker-compose.yml
+@test "docker-compose.yml has workspace bind mount under data/" {
+  grep -q './data/workspace:/home/opencode/workspace' docker-compose.yml
 }
 
-@test "docker-compose.yml has skills bind mount as read-only" {
-  grep -q "./skills:/home/opencode/.agents/skills:ro" docker-compose.yml
+@test "docker-compose.yml has skills bind mount (read-write)" {
+  grep -q './data/skills:/home/opencode/.agents/skills' docker-compose.yml
+}
+
+@test "skills mount is NOT read-only" {
+  ! grep -q './data/skills:.*:ro' docker-compose.yml
 }
 
 @test "skills mount targets .agents/skills (not /skills)" {
-  grep -q "/home/opencode/.agents/skills" docker-compose.yml
-  ! grep -q "/home/opencode/skills:" docker-compose.yml
+  grep -q '/home/opencode/.agents/skills' docker-compose.yml
+  ! grep -q '/home/opencode/skills:' docker-compose.yml
 }
 
 @test "ZHIPU_API_KEY is required (compose errors if missing)" {
