@@ -1,6 +1,6 @@
 # opencode-docker
 
-`opencode-docker` is a Docker Compose stack for [OpenCode](https://github.com/opencode-ai/opencode) with [Oh-My-OpenAgent](https://github.com/nimbleflux/oh-my-opencode) pre-configured for Z.AI Coding Plan (GLM-5). Built for practical day-to-day use with strong host separation, reproducible tooling, and persistent configuration.
+`opencode-docker` is a Docker Compose stack for [OpenCode](https://github.com/opencode-ai/opencode) with [Oh My OpenAgent](https://github.com/nicepkg/oh-my-openagent) pre-configured for Z.AI Coding Plan (GLM-5). Built for practical day-to-day use with strong host separation, reproducible tooling, and persistent configuration.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@
 
 - AI coding assistant:
   - [OpenCode](https://github.com/opencode-ai/opencode)
-  - [Oh-My-OpenAgent](https://github.com/nimbleflux/oh-my-opencode) with GLM-5 model mappings for all agent roles
+  - [Oh My OpenAgent](https://github.com/nicepkg/oh-my-openagent) with GLM-5 model mappings for all agent roles
 
 - Platform tools:
   - [GitHub CLI (`gh`)](https://cli.github.com/manual/)
