@@ -175,13 +175,15 @@ COPY config/opencode.json /opt/opencode-defaults/opencode.json.managed
 COPY config/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc.managed
 COPY config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
 
+# --- Copy skills for OpenCode agents ---
+COPY skills/ /home/opencode/.agents/skills/
+
 # --- Create volume mount points and seed with defaults ---
 # These directories MUST exist in the image for Docker bind mounts to work correctly.
 RUN mkdir -p /home/opencode/.config/opencode \
     /home/opencode/.local/share/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace \
-    /home/opencode/.agents/skills \
   && cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/opencode/opencode.json \
   && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc.managed /home/opencode/.config/opencode/oh-my-openagent.jsonc \
   && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
