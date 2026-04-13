@@ -48,10 +48,10 @@
       "model": "zai-coding-plan/glm-5.1"
     },
     "visual-engineering": {
-      "model": "zai-coding-plan/glm-5.1"
+      "model": "google-aistudio/gemini-2.5-flash"
     },
     "artistry": {
-      "model": "zai-coding-plan/glm-5.1"
+      "model": "google-aistudio/gemini-2.5-flash"
     },
     "writing": {
       "model": "zai-coding-plan/glm-4.7"
