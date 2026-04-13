@@ -58,6 +58,23 @@
   [ "$output" = "128000" ]
 }
 
+@test "opencode.json has google-aistudio provider with correct baseURL" {
+  run jq -r '.provider."google-aistudio".options.baseURL' bootstrap/config/opencode.json
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"generativelanguage.googleapis.com"* ]]
+}
+
+@test "opencode.json declares google-aistudio/gemini-2.5-flash model" {
+  run jq -e '.provider."google-aistudio".models."gemini-2.5-flash"' bootstrap/config/opencode.json
+  [ "$status" -eq 0 ]
+}
+
+@test "opencode.json google-aistudio provider uses GEMINI_API_KEY" {
+  run jq -r '.provider."google-aistudio".options.apiKey' bootstrap/config/opencode.json
+  [ "$status" -eq 0 ]
+  [ "$output" = "{env:GEMINI_API_KEY}" ]
+}
+
 @test "oh-my-openagent.jsonc has version comment" {
   head -1 bootstrap/config/oh-my-openagent.jsonc | grep -q 'opencode-docker-config'
 }
@@ -101,16 +118,28 @@ jsonc() {
   [ "$output" = "zai-coding-plan/glm-4.5-air" ]
 }
 
-@test "oh-my-openagent.jsonc assigns glm-4.7 to multimodal-looker" {
+@test "oh-my-openagent.jsonc assigns google-aistudio/gemini-2.5-flash to multimodal-looker" {
   run jsonc bootstrap/config/oh-my-openagent.jsonc '.agents."multimodal-looker".model'
   [ "$status" -eq 0 ]
-  [ "$output" = "zai-coding-plan/glm-4.7" ]
+  [ "$output" = "google-aistudio/gemini-2.5-flash" ]
 }
 
 @test "oh-my-openagent.jsonc assigns glm-5-turbo to sisyphus-junior" {
   run jsonc bootstrap/config/oh-my-openagent.jsonc '.agents."sisyphus-junior".model'
   [ "$status" -eq 0 ]
   [ "$output" = "zai-coding-plan/glm-5-turbo" ]
+}
+
+@test "oh-my-openagent.jsonc assigns google-aistudio/gemini-2.5-flash to visual-engineering category" {
+  run jsonc bootstrap/config/oh-my-openagent.jsonc '.categories."visual-engineering".model'
+  [ "$status" -eq 0 ]
+  [ "$output" = "google-aistudio/gemini-2.5-flash" ]
+}
+
+@test "oh-my-openagent.jsonc assigns google-aistudio/gemini-2.5-flash to artistry category" {
+  run jsonc bootstrap/config/oh-my-openagent.jsonc '.categories."artistry".model'
+  [ "$status" -eq 0 ]
+  [ "$output" = "google-aistudio/gemini-2.5-flash" ]
 }
 
 @test "oh-my-openagent.jsonc configures all 11 agents" {

@@ -37,8 +37,13 @@
 }
 
 @test "ZHIPU_API_KEY is required (compose errors if missing)" {
-  run bash -c 'ZHIPU_API_KEY= docker compose config --env-file /dev/null 2>&1'
+  run bash -c 'ZHIPU_API_KEY= docker compose config 2>&1'
   [ "$status" -ne 0 ]
+}
+
+@test "GEMINI_API_KEY is optional (compose does NOT error if missing)" {
+  run bash -c 'ZHIPU_API_KEY=test docker compose config 2>&1'
+  [ "$status" -eq 0 ]
 }
 
 @test "OPENCODE_MODE defaults to web" {

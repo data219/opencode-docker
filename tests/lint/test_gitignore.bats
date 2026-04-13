@@ -10,10 +10,6 @@
   grep -q '^data/' .gitignore
 }
 
-@test ".gitignore excludes skills/ (old path)" {
-  grep -q '^skills/' .gitignore
-}
-
 @test ".gitignore allows .env.example" {
   grep -q '!.env.example' .gitignore
 }

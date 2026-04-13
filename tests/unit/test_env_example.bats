@@ -46,3 +46,11 @@
 @test ".env.example separates build args from runtime env vars" {
   grep -qi "BUILD.*ARG\|build.*time\|runtime" .env.example
 }
+
+@test ".env.example documents GEMINI_API_KEY" {
+  grep -q "GEMINI_API_KEY" .env.example
+}
+
+@test ".env.example marks GEMINI_API_KEY as optional" {
+  grep -qi "optional.*gemini\|gemini.*optional" .env.example
+}
