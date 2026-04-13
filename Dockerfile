@@ -63,7 +63,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Install OpenCode ---
-RUN npm install -g opencode-ai
+ARG OPENCODE_VERSION=1.4.3
+RUN npm install -g opencode-ai@${OPENCODE_VERSION}
 
 # --- Install yq v4.40.5 ---
 RUN YQ_VERSION=4.40.5 \

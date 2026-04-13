@@ -27,8 +27,12 @@
   [ "$cache_mounts" -ge 3 ]
 }
 
-@test "Dockerfile installs OpenCode" {
-  grep -q 'opencode-ai' Dockerfile
+@test "Dockerfile has OPENCODE_VERSION build arg" {
+  grep -q 'ARG OPENCODE_VERSION=' Dockerfile
+}
+
+@test "Dockerfile installs OpenCode with pinned version" {
+  grep -q 'opencode-ai@\${OPENCODE_VERSION}' Dockerfile
 }
 
 @test "Dockerfile installs OmO" {
