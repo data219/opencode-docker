@@ -1,15 +1,12 @@
 #!/bin/bash
-# docker-init.sh — One-time initialization
+# docker-init.sh — Config seeding with version-based re-seeding
 set -euo pipefail
 trap 'echo "ERROR: docker-init.sh failed at line $LINENO" >&2' ERR
 
-INIT_MARKER="${INIT_MARKER:-/home/opencode/.opencode-docker-initialized}"
 DEFAULTS_DIR="${DEFAULTS_DIR:-/opt/opencode-defaults}"
 CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
-
-if [ -f "$INIT_MARKER" ]; then
-  exit 0
-fi
+CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
+IMAGE_VERSION_FILE="$DEFAULTS_DIR/.opencode-docker-config-version"
 
 # Fix ownership of bind-mounted directories BEFORE seeding.
 # Docker creates bind mount targets as root when they don't exist on host.
@@ -24,23 +21,54 @@ fi
 
 mkdir -p "$CONFIG_DIR"
 
-# Seed default configs (only if not already present — Image already has them,
-# this covers empty bind-mount volumes on first container start).
-if [ -d "$DEFAULTS_DIR" ]; then
+# Determine if we need to seed configs.
+# We seed if:
+#   1. Config dir is empty (first start with empty volume), OR
+#   2. Image has a newer config version than what's in the volume
+NEED_SEED=false
+if [ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ]; then
+  NEED_SEED=true
+elif [ -f "$IMAGE_VERSION_FILE" ]; then
+  IMAGE_VERSION=$(cat "$IMAGE_VERSION_FILE" 2>/dev/null || echo "0")
+  VOLUME_VERSION=$(cat "$CONFIG_VERSION_FILE" 2>/dev/null || echo "0")
+  if [ "$IMAGE_VERSION" -gt "$VOLUME_VERSION" ] 2>/dev/null; then
+    echo "Config version upgraded: $VOLUME_VERSION → $IMAGE_VERSION. Re-seeding configs..."
+    NEED_SEED=true
+  fi
+fi
+
+if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
+  # Re-seed managed configs (version-tracked), but preserve user customizations.
+  # Files with ".managed" suffix are always overwritten from image defaults.
+  # The ".managed" suffix is stripped when copying to the config dir.
+  # Regular files are only copied if they don't exist yet.
   shopt -s dotglob nullglob
   for item in "$DEFAULTS_DIR"/*; do
     [ -e "$item" ] || continue
-    target="$CONFIG_DIR/$(basename "$item")"
-    if [ ! -e "$target" ]; then
+    base="$(basename "$item")"
+    if [[ "$base" == *.managed ]]; then
+      # Strip .managed suffix for the target filename
+      target_name="${base%.managed}"
+      target="$CONFIG_DIR/$target_name"
       cp -a -- "$item" "$target"
+    else
+      # Seed non-managed files only if they don't exist yet (first start)
+      target="$CONFIG_DIR/$base"
+      if [ ! -e "$target" ]; then
+        cp -a -- "$item" "$target"
+      fi
     fi
   done
   shopt -u dotglob nullglob
+
+  # Update version marker in volume
+  if [ -f "$IMAGE_VERSION_FILE" ]; then
+    cp -a -- "$IMAGE_VERSION_FILE" "$CONFIG_VERSION_FILE"
+  fi
 fi
 
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
+# Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.
 if [ ! -f "$CONFIG_DIR/oh-my-openagent.jsonc" ] && [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.json" ]; then
   cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
 fi
-
-touch "$INIT_MARKER"

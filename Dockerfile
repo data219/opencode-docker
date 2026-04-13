@@ -169,8 +169,10 @@ USER root
 RUN mkdir -p /opt/opencode-defaults
 
 # --- Copy default config files ---
-COPY config/opencode.json /opt/opencode-defaults/opencode.json
-COPY config/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc
+# Managed files (.managed suffix) are always overwritten on version upgrade.
+# Non-managed copies serve as initial seed only (first start with empty volume).
+COPY config/opencode.json /opt/opencode-defaults/opencode.json.managed
+COPY config/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc.managed
 COPY config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
 
 # --- Create volume mount points and seed with defaults ---
@@ -180,8 +182,8 @@ RUN mkdir -p /home/opencode/.config/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace \
     /home/opencode/.agents/skills \
-  && cp -a /opt/opencode-defaults/opencode.json /home/opencode/.config/opencode/opencode.json \
-  && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc /home/opencode/.config/opencode/oh-my-openagent.jsonc \
+  && cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/opencode/opencode.json \
+  && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc.managed /home/opencode/.config/opencode/oh-my-openagent.jsonc \
   && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
   && cp -a /opt/opencode-defaults/oh-my-openagent-omo.json /home/opencode/.config/opencode/oh-my-openagent-omo.json 2>/dev/null || true \
   && chown -R opencode:opencode /home/opencode

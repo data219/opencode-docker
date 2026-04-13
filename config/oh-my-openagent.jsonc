@@ -1,23 +1,66 @@
 // opencode-docker-config:1
+// Model mapping: OmO defaults → Z.AI Coding Plan GLM equivalents
+// Tiers: glm-5.1 (Opus-level, max quality), glm-5-turbo (Opus-level, fast), glm-4.7 (Sonnet-level), glm-4.5-air (Haiku-level)
 {
   "agents": {
     "sisyphus": {
-      "model": "zai-coding-plan/glm-5"
+      "model": "zai-coding-plan/glm-5.1"
+    },
+    "hephaestus": {
+      "model": "zai-coding-plan/glm-5-turbo"
     },
     "prometheus": {
-      "model": "zai-coding-plan/glm-5"
+      "model": "zai-coding-plan/glm-5.1"
     },
     "metis": {
-      "model": "zai-coding-plan/glm-5"
+      "model": "zai-coding-plan/glm-5.1"
     },
     "oracle": {
-      "model": "zai-coding-plan/glm-5"
+      "model": "zai-coding-plan/glm-5.1"
     },
     "momus": {
-      "model": "zai-coding-plan/glm-5"
+      "model": "zai-coding-plan/glm-5.1"
+    },
+    "atlas": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "explore": {
+      "model": "zai-coding-plan/glm-4.5-air"
+    },
+    "librarian": {
+      "model": "zai-coding-plan/glm-4.5-air"
     },
     "multimodal-looker": {
-      "model": "zai-coding-plan/glm-4.6v"
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "sisyphus-junior": {
+      "model": "zai-coding-plan/glm-5-turbo"
+    }
+  },
+  "categories": {
+    "quick": {
+      "model": "zai-coding-plan/glm-5-turbo"
+    },
+    "deep": {
+      "model": "zai-coding-plan/glm-5-turbo"
+    },
+    "ultrabrain": {
+      "model": "zai-coding-plan/glm-5.1"
+    },
+    "visual-engineering": {
+      "model": "zai-coding-plan/glm-5.1"
+    },
+    "artistry": {
+      "model": "zai-coding-plan/glm-5.1"
+    },
+    "writing": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "unspecified-low": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    "unspecified-high": {
+      "model": "zai-coding-plan/glm-5.1"
     }
   }
 }

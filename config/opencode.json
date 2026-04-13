@@ -5,6 +5,24 @@
       "options": {
         "baseURL": "https://api.z.ai/api/coding/paas/v4",
         "apiKey": "{env:ZHIPU_API_KEY}"
+      },
+      "models": {
+        "glm-5.1": {
+          "name": "GLM-5.1",
+          "limit": { "context": 128000, "output": 16384 }
+        },
+        "glm-5-turbo": {
+          "name": "GLM-5 Turbo",
+          "limit": { "context": 128000, "output": 16384 }
+        },
+        "glm-4.7": {
+          "name": "GLM-4.7",
+          "limit": { "context": 128000, "output": 16384 }
+        },
+        "glm-4.5-air": {
+          "name": "GLM-4.5 Air",
+          "limit": { "context": 128000, "output": 16384 }
+        }
       }
     }
   },
