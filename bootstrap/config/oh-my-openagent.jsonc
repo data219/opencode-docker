@@ -6,29 +6,48 @@
   "agents": {
     "sisyphus": {
       "model": "zai-coding-plan/glm-5.1",
-      "fallback_models": ["zai-coding-plan/glm-5-turbo", "zai-coding-plan/glm-4.7"]
+      "fallback_models": [
+        "zai-coding-plan/glm-5-turbo",
+        "zai-coding-plan/glm-4.7"
+      ],
+      "prompt_append": "Delegate heavily to hephaestus for implementation. Parallelize exploration. Always consult prometheus and atlas for planning. Never rush to implementation."
     },
     "hephaestus": {
       "model": "zai-coding-plan/glm-5.1",
-      "fallback_models": ["zai-coding-plan/glm-5-turbo", "zai-coding-plan/glm-4.7"]
+      "fallback_models": [
+        "zai-coding-plan/glm-5-turbo",
+        "zai-coding-plan/glm-4.7"
+      ],
+      "prompt_append": "You are the primary implementation agent. Own the codebase. Explore, decide, execute. Use LSP and AST-grep aggressively. Follow established plans precisely. Ask for clarification when plans are ambiguous. Explore thoroughly, then implement. Prefer small, testable changes."
     },
     "prometheus": {
       "model": "zai-coding-plan/glm-5.1",
-      "fallback_models": ["zai-coding-plan/glm-5-turbo", "zai-coding-plan/glm-4.7"]
+      "fallback_models": [
+        "zai-coding-plan/glm-5-turbo",
+        "zai-coding-plan/glm-4.7"
+      ],
+      "prompt_append": "Always interview first. Validate scope before planning. Interview extensively. Question assumptions. Build exhaustive plans with milestones, risks, and contingencies. Use deep & quick agents heavily in parallel for research."
     },
     "metis": {
       "model": "zai-coding-plan/glm-5.1",
-      "fallback_models": ["zai-coding-plan/glm-5-turbo"]
+      "fallback_models": [
+        "zai-coding-plan/glm-5-turbo"
+      ],
+      "prompt_append": "Critically evaluate plans. Identify gaps, risks, and improvements. Be thorough."
     },
     "oracle": {
       "model": "zai-coding-plan/glm-5.1",
-      "fallback_models": ["zai-coding-plan/glm-5-turbo"]
+      "fallback_models": [
+        "zai-coding-plan/glm-5-turbo"
+      ]
     },
     "momus": {
-      "model": "zai-coding-plan/glm-5.1"
+      "model": "zai-coding-plan/glm-5.1",
+      "prompt_append": "Challenge all assumptions in plans. Look for edge cases, failure modes, and overlooked requirements."
     },
     "atlas": {
-      "model": "zai-coding-plan/glm-4.7"
+      "model": "zai-coding-plan/glm-4.7",
+      "prompt_append": "Preserve context across long planning sessions. Track evolving decisions."
     },
     "explore": {
       "model": "zai-coding-plan/glm-4.5-air",
@@ -40,7 +59,9 @@
     },
     "multimodal-looker": {
       "model": "google-aistudio/gemini-2.5-flash",
-      "fallback_models": ["zai-coding-plan/glm-4.7"]
+      "fallback_models": [
+        "zai-coding-plan/glm-4.7"
+      ]
     },
     "sisyphus-junior": {
       "model": "zai-coding-plan/glm-5-turbo"
@@ -58,11 +79,15 @@
     },
     "visual-engineering": {
       "model": "google-aistudio/gemini-2.5-flash",
-      "fallback_models": ["zai-coding-plan/glm-4.7"]
+      "fallback_models": [
+        "zai-coding-plan/glm-4.7"
+      ]
     },
     "artistry": {
       "model": "google-aistudio/gemini-2.5-flash",
-      "fallback_models": ["zai-coding-plan/glm-4.7"]
+      "fallback_models": [
+        "zai-coding-plan/glm-4.7"
+      ]
     },
     "writing": {
       "model": "zai-coding-plan/glm-4.7"
@@ -76,7 +101,12 @@
   },
   "runtime_fallback": {
     "enabled": true,
-    "retry_on_errors": [400, 429, 503, 529],
+    "retry_on_errors": [
+      400,
+      429,
+      503,
+      529
+    ],
     "max_fallback_attempts": 3,
     "cooldown_seconds": 60
   },
@@ -89,5 +119,24 @@
       "zai-coding-plan/glm-5.1": 3,
       "zai-coding-plan/glm-5-turbo": 5
     }
+  },
+  "browser_automation_engine": {
+    "provider": "agent-browser"
+  },
+  "git_master": {
+    "commit_footer": true,
+    "include_co_authored_by": true,
+    "git_env_prefix": "GIT_"
+  },
+  "sisyphus_agent": {
+    "planner_enabled": true,
+    "replace_plan": true
+  },
+  // Enable all coding aids
+  "hashline_edit": true,
+  "experimental": {
+    "aggressive_truncation": true,
+    "task_system": true,
+    "auto_resume": true
   }
 }

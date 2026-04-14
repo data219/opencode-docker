@@ -2,13 +2,50 @@
 # Single-stage build with BuildKit cache mounts
 # Requires: DOCKER_BUILDKIT=1
 
-FROM debian:bookworm-slim
+FROM debian:12.13-slim
 
 # --- Optional language build args ---
 ARG INSTALL_JAVA=false
 ARG INSTALL_RUBY=false
 ARG INSTALL_SWIFT=false
 ARG INSTALL_ELIXIR=false
+# renovate: datasource=node-version depName=node versioning=node
+ARG NODE_VERSION=20.20.2
+# renovate: datasource=github-releases depName=composer/composer
+ARG COMPOSER_VERSION=2.9.7
+# renovate: datasource=github-tags depName=pyenv/pyenv
+ARG PYENV_VERSION=v2.6.27
+# renovate: datasource=github-releases depName=rust-lang/rustup
+ARG RUSTUP_VERSION=1.29.0
+# renovate: datasource=github-releases depName=rust-lang/rust
+ARG RUST_TOOLCHAIN_VERSION=1.95.0
+# renovate: datasource=git-refs depName=moovweb/gvm packageName=https://github.com/moovweb/gvm
+ARG GVM_REF=master
+ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
+# renovate: datasource=github-releases depName=oven-sh/bun
+ARG BUN_VERSION=1.3.12
+# renovate: datasource=github-releases depName=tianon/gosu
+ARG GOSU_VERSION=1.17
+# renovate: datasource=npm depName=opencode-ai
+ARG OPENCODE_VERSION=1.4.3
+# renovate: datasource=github-releases depName=mikefarah/yq
+ARG YQ_VERSION=4.40.5
+# renovate: datasource=github-releases depName=cli/cli
+ARG GH_VERSION=2.42.1
+# renovate: datasource=github-tags depName=nvm-sh/nvm
+ARG NVM_VERSION=v0.40.1
+# renovate: datasource=golang-version depName=go
+ARG GO_VERSION=1.24.0
+# renovate: datasource=github-releases depName=golangci/golangci-lint
+ARG GO_LINT_VERSION=1.62.0
+# renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=loose
+ARG JAVA_VERSION_TAG=jdk-21.0.3+9
+# renovate: datasource=ruby-version depName=ruby versioning=ruby
+ARG RUBY_VERSION=3.3.6
+# renovate: datasource=github-tags depName=swiftlang/swift versioning=loose
+ARG SWIFT_VERSION=swift-6.0-RELEASE
+# renovate: datasource=npm depName=oh-my-opencode
+ARG OMO_VERSION=3.14.0
 
 # --- System packages (with BuildKit cache for apt) ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -44,7 +81,7 @@ RUN groupadd -g 1000 opencode \
 
 # --- Install gosu for privilege drop ---
 RUN ARCH=$(dpkg --print-architecture) \
-    && curl -fsSL "https://github.com/tianon/gosu/releases/download/1.17/gosu-${ARCH}" -o /usr/local/bin/gosu \
+    && curl -fsSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${ARCH}" -o /usr/local/bin/gosu \
     && chmod +x /usr/local/bin/gosu \
     && gosu --version
 
@@ -57,49 +94,52 @@ ENV GVM_ROOT=/home/opencode/.gvm
 ENV GOPATH=/home/opencode/go
 ENV BUN_INSTALL=/home/opencode/.bun
 
-# --- Install Node.js 20 LTS (system) for OpenCode ---
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+# --- Install Node.js 20 LTS for OpenCode ---
+RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+       -o /tmp/node.tar.xz \
+    && tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 \
+    && rm -f /tmp/node.tar.xz
 
 # --- Install OpenCode ---
-ARG OPENCODE_VERSION=1.4.3
 RUN npm install -g opencode-ai@${OPENCODE_VERSION}
 
 # --- Install yq v4.40.5 ---
-RUN YQ_VERSION=4.40.5 \
-    && curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
+RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
        -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq
 
 # --- Install gh v2.42.1 ---
-RUN GH_VERSION=2.42.1 \
-    && curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+RUN curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
        -o /tmp/gh.tar.gz \
     && tar -xzf /tmp/gh.tar.gz -C /tmp \
     && mv /tmp/gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin/gh \
     && rm -rf /tmp/gh.tar.gz /tmp/gh_${GH_VERSION}_linux_amd64
 
 # --- Install Composer (needs root for /usr/local/bin) ---
-RUN curl -fsSL https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN curl -fsSL "https://getcomposer.org/download/${COMPOSER_VERSION}/composer.phar" \
+       -o /usr/local/bin/composer \
+    && chmod +x /usr/local/bin/composer
 
 # --- Switch to opencode user for language runtimes ---
 # USER opencode — entrypoint handles user switch
 
 # --- Install nvm ---
 RUN mkdir -p /home/opencode/.nvm \
-    && curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+    && curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 
 # --- Install pyenv ---
-RUN curl -fsSL https://pyenv.run | bash
+RUN git clone --branch "${PYENV_VERSION}" --depth 1 https://github.com/pyenv/pyenv.git /home/opencode/.pyenv
 
 # --- Install rustup ---
 RUN mkdir -p /home/opencode/.rustup /home/opencode/.cargo \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --no-modify-path
+    && curl --proto '=https' --tlsv1.2 -sSf "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
+       -o /tmp/rustup-init \
+    && chmod +x /tmp/rustup-init \
+    && /tmp/rustup-init -y --default-toolchain "${RUST_TOOLCHAIN_VERSION}" --no-modify-path \
+    && rm -f /tmp/rustup-init
 
 # --- Install Go directly from go.dev ---
-RUN GO_VERSION=1.24.0 \
-    && curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" \
+RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" \
        -o /tmp/go.tar.gz \
     && mkdir -p /home/opencode/.local/go \
     && tar -xzf /tmp/go.tar.gz -C /home/opencode/.local/go \
@@ -109,15 +149,19 @@ ENV PATH="${GOROOT}/bin:${PATH}"
 
 # --- Install gvm (Go Version Manager) ---
 RUN mkdir -p /home/opencode/.gvm /home/opencode/go \
-    && bash -c 'bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer))' || true
+    && bash -c "curl -fsSL https://raw.githubusercontent.com/moovweb/gvm/${GVM_COMMIT}/binscripts/gvm-installer | bash" || true
 
 # --- Install bun for OmO ---
-RUN mkdir -p /home/opencode/.bun \
-    && curl -fsSL https://bun.sh/install | bash
+RUN mkdir -p /home/opencode/.bun/bin \
+    && curl -fsSL "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
+       -o /tmp/bun.zip \
+    && unzip -q /tmp/bun.zip -d /tmp \
+    && mv /tmp/bun-linux-x64/bun /home/opencode/.bun/bin/bun \
+    && chmod +x /home/opencode/.bun/bin/bun \
+    && rm -rf /tmp/bun.zip /tmp/bun-linux-x64
 
 # --- Install golangci-lint ---
-RUN GO_LINT_VERSION=1.62.0 \
-    && curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${GO_LINT_VERSION}/golangci-lint-${GO_LINT_VERSION}-linux-amd64.tar.gz" \
+RUN curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${GO_LINT_VERSION}/golangci-lint-${GO_LINT_VERSION}-linux-amd64.tar.gz" \
        -o /tmp/golangci-lint.tar.gz \
     && tar -xzf /tmp/golangci-lint.tar.gz -C /tmp \
     && mv /tmp/golangci-lint-${GO_LINT_VERSION}-linux-amd64/golangci-lint /home/opencode/.local/go/go/bin/ \
@@ -125,7 +169,9 @@ RUN GO_LINT_VERSION=1.62.0 \
 
 # --- Optional: Java (Temurin JDK 21) ---
 RUN if [ "$INSTALL_JAVA" = "true" ]; then \
-      curl -fsSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.3%2B9/OpenJDK21U-jdk_x64_linux_hotspot_21.0.3_9.tar.gz -o /tmp/openjdk.tar.gz \
+      JAVA_ARCHIVE_VERSION="${JAVA_VERSION_TAG#jdk-}" \
+      && JAVA_ARCHIVE_VERSION="${JAVA_ARCHIVE_VERSION/+/_}" \
+      && curl -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/${JAVA_VERSION_TAG}/OpenJDK21U-jdk_x64_linux_hotspot_${JAVA_ARCHIVE_VERSION}.tar.gz" -o /tmp/openjdk.tar.gz \
       && mkdir -p /home/opencode/.local/java \
       && tar -xzf /tmp/openjdk.tar.gz -C /home/opencode/.local/java --strip-components=1 \
       && rm -f /tmp/openjdk.tar.gz; \
@@ -133,22 +179,23 @@ RUN if [ "$INSTALL_JAVA" = "true" ]; then \
 
 # --- Optional: Ruby 3.3 ---
 RUN if [ "$INSTALL_RUBY" = "true" ]; then \
-      curl -fsSL https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.6.tar.gz -o /tmp/ruby.tar.gz \
+      curl -fsSL "https://cache.ruby-lang.org/pub/ruby/${RUBY_VERSION%.*}/ruby-${RUBY_VERSION}.tar.gz" -o /tmp/ruby.tar.gz \
       && tar -xzf /tmp/ruby.tar.gz -C /tmp \
-      && cd /tmp/ruby-3.3.6 && ./configure --prefix=/home/opencode/.local/ruby && make -j"$(nproc)" && make install \
+      && cd "/tmp/ruby-${RUBY_VERSION}" && ./configure --prefix=/home/opencode/.local/ruby && make -j"$(nproc)" && make install \
       && rm -rf /tmp/ruby*; \
     fi
 
 # --- Optional: Swift 6.0 ---
 RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
-      curl -fsSL https://download.swift.org/swift-6.0-release/ubuntu2404/swift-6.0-RELEASE/swift-6.0-RELEASE-ubuntu24.04.tar.gz -o /tmp/swift.tar.gz \
+      SWIFT_RELEASE="${SWIFT_VERSION#swift-}" \
+      && SWIFT_RELEASE_LOWER="${SWIFT_RELEASE,,}" \
+      && curl -fsSL "https://download.swift.org/swift-${SWIFT_RELEASE_LOWER}/ubuntu2404/swift-${SWIFT_RELEASE}/swift-${SWIFT_RELEASE}-ubuntu24.04.tar.gz" -o /tmp/swift.tar.gz \
       && mkdir -p /home/opencode/.local/swift \
       && tar -xzf /tmp/swift.tar.gz -C /home/opencode/.local/swift --strip-components=1 \
       && rm -f /tmp/swift.tar.gz; \
     fi
 
 # --- Install Oh-My-OpenAgent ---
-ARG OMO_VERSION=3.14.0
 # NOTE: Shell form required. Do not convert to exec form.
 # NOTE: --no-tui skips the interactive TUI prompt during Docker build (no TTY in container).
 #       This does NOT affect the opencode runtime — both WebUI and TUI work at runtime.
@@ -156,7 +203,7 @@ ARG OMO_VERSION=3.14.0
 #       then pick the agent config. Our opencode.json seed (with {env:} provider) takes priority.
 RUN mkdir -p /opt/opencode-defaults \
   && HOME=/tmp/omo-install /home/opencode/.bun/bin/bunx oh-my-opencode@${OMO_VERSION} install \
-    --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=no --copilot=no \
+    --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=yes --copilot=no \
   && cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-openagent-omo.json \
   && rm -rf /tmp/omo-install
 

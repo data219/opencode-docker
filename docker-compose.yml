@@ -7,8 +7,6 @@ services:
         - INSTALL_RUBY=${INSTALL_RUBY:-false}
         - INSTALL_SWIFT=${INSTALL_SWIFT:-false}
         - INSTALL_ELIXIR=${INSTALL_ELIXIR:-false}
-        - OPENCODE_VERSION=${OPENCODE_VERSION:-1.4.3}
-        - OMO_VERSION=${OMO_VERSION:-3.14.0}
     container_name: opencode
     ports:
       - "${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCODE_PORT:-4000}:${OPENCODE_PORT:-4000}"
