@@ -2,7 +2,7 @@
 # Single-stage build with BuildKit cache mounts
 # Requires: DOCKER_BUILDKIT=1
 
-FROM debian:12.13-slim
+FROM debian:13.4-slim
 
 # --- Optional language build args ---
 ARG INSTALL_JAVA=false
