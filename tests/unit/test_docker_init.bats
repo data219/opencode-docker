@@ -95,6 +95,30 @@ teardown_init_test_env() {
   teardown_init_test_env
 }
 
+@test "docker-init.sh preserves bind-mount ownership for synced skills" {
+  if [ "$(id -u)" != "0" ]; then
+    skip "requires root to verify ownership normalization"
+  fi
+
+  setup_init_test_env
+
+  local skills_dir="/home/opencode/.config/opencode/skills"
+  local expected_owner="12345:12346"
+  rm -rf "$skills_dir"
+  mkdir -p "$DEFAULTS_DIR/skills/github" "$skills_dir"
+  chown "$expected_owner" "$skills_dir"
+  echo "bootstrap-new" > "$DEFAULTS_DIR/skills/github/new.txt"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(stat -c '%u:%g' "$skills_dir")" = "$expected_owner" ]
+  [ "$(stat -c '%u:%g' "$skills_dir/github")" = "$expected_owner" ]
+  [ "$(stat -c '%u:%g' "$skills_dir/github/new.txt")" = "$expected_owner" ]
+
+  rm -rf "$skills_dir"
+  teardown_init_test_env
+}
+
 @test "docker-init.sh fixes ownership for bind-mounted state directory" {
   if [ "$(id -u)" != "0" ]; then
     skip "requires root to verify chown behavior"

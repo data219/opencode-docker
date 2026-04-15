@@ -95,4 +95,14 @@ if [ -d "$DEFAULTS_DIR/skills" ]; then
       fi
     done
   fi
+
+  # Preserve the bind mount owner instead of the image source owner.
+  # This keeps the host user able to modify and delete synced skills even
+  # when docker-init.sh runs as root inside the container.
+  if [ "$(id -u)" = "0" ] && [ -d "$SKILLS_DIR" ]; then
+    skills_owner="$(stat -c '%u:%g' "$SKILLS_DIR" 2>/dev/null || true)"
+    if [ -n "$skills_owner" ]; then
+      chown -R "$skills_owner" "$SKILLS_DIR"
+    fi
+  fi
 fi
