@@ -79,6 +79,18 @@ docker exec -it opencode -- opencode
 | `OPENCODE_BIND_ADDRESS` | `127.0.0.1` | **Host-level only.** Which interface Docker listens on. Never passed into the container.       |
 | `FORCE_SKILL_SYNC`   | `false`   | `true` resets all skills to bootstrap defaults on startup; `false` preserves user modifications    |
 
+### Optional bind mount overrides
+
+These variables only affect Docker Compose host mounts. If unset, they fall back to the current `./data/*` layout.
+
+| Variable | Default | What it configures |
+| -------- | ------- | ------------------ |
+| `OPENCODE_CONFIG_DIR` | `./data/config` | Host path mounted to `/home/opencode/.config/opencode` |
+| `OPENCODE_SHARE_DIR` | `./data/share` | Host path mounted to `/home/opencode/.local/share/opencode` |
+| `OPENCODE_STATE_DIR` | `./data/state` | Host path mounted to `/home/opencode/.local/state/opencode` |
+| `OPENCODE_WORKSPACE_DIR` | `./data/workspace` | Host path mounted to `/home/opencode/workspace` |
+| `OPENCODE_SKILLS_DIR` | `./data/skills` | Host path mounted to `/home/opencode/.config/opencode/skills` |
+
 ### Host-level vs container-level binding
 
 `OPENCODE_BIND_ADDRESS` controls which host interface Docker exposes. The container always binds `0.0.0.0` internally (required for port forwarding).
@@ -114,11 +126,11 @@ GEMINI_API_KEY=your-key-here
 
 | Host Path            | Container Path                    | Description                                              |
 | -------------------- | --------------------------------- | -------------------------------------------------------- |
-| `./data/config/`     | `/home/opencode/.config/opencode` | OpenCode + OmO config (seeded on first run, version-tracked) |
-| `./data/share/`      | `/home/opencode/.local/share/opencode` | OpenCode persistent data                            |
-| `./data/state/`      | `/home/opencode/.local/state/opencode`  | OpenCode state                                     |
-| `./data/workspace/`  | `/home/opencode/workspace`        | Project workspace (writable)                            |
-| `./data/skills/`     | `/home/opencode/.config/opencode/skills`   | Skills (synced from bootstrap on start)                 |
+| `${OPENCODE_CONFIG_DIR:-./data/config}` | `/home/opencode/.config/opencode` | OpenCode + OmO config (seeded on first run, version-tracked) |
+| `${OPENCODE_SHARE_DIR:-./data/share}` | `/home/opencode/.local/share/opencode` | OpenCode persistent data |
+| `${OPENCODE_STATE_DIR:-./data/state}` | `/home/opencode/.local/state/opencode` | OpenCode state |
+| `${OPENCODE_WORKSPACE_DIR:-./data/workspace}` | `/home/opencode/workspace` | Project workspace (writable) |
+| `${OPENCODE_SKILLS_DIR:-./data/skills}` | `/home/opencode/.config/opencode/skills` | Skills (synced from bootstrap on start) |
 
 All directories are created automatically on first start.
 
