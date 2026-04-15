@@ -4,6 +4,7 @@ setup() {
   TEST_COMPOSE_PROJECT="opencode-stack-boot-${BATS_TEST_NUMBER}-$$"
   TEST_CONTAINER_NAME="opencode-stack-boot-${BATS_TEST_NUMBER}-$$"
   TEST_PORT="${TEST_OPENCODE_PORT:-4010}"
+  TEST_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-300}"
   TEST_COMPOSE_FILE="$(mktemp "${PWD}/.test-compose.XXXXXX.yml")"
   TEST_DATA_ROOT="$(mktemp -d "${PWD}/.test-data.XXXXXX")"
 
@@ -67,7 +68,11 @@ wait_for_http_health() {
   run compose_ci up -d
   [ "$status" -eq 0 ]
 
-  wait_for_http_health "http://127.0.0.1:${TEST_PORT}/health" 120
+  if ! wait_for_http_health "http://127.0.0.1:${TEST_PORT}/health" "$TEST_HEALTH_TIMEOUT"; then
+    compose_ci ps >&3 || true
+    compose_ci logs --tail=200 opencode >&3 || true
+    false
+  fi
 
   run curl -fsS "http://127.0.0.1:${TEST_PORT}/health"
   [ "$status" -eq 0 ]
