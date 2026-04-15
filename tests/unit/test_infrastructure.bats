@@ -6,40 +6,6 @@
 }
 
 # R4-M19: Unit tests use mktemp -d for /tmp/ isolation, consistent with MOCK_BIN_DIR pattern
-setup() {
-  TEST_TMPDIR="$(mktemp -d)"
-}
-
-teardown() {
-  rm -rf "$TEST_TMPDIR"
-}
-
-@test "assert_valid_json detects valid JSON" {
-  load ../test_helper
-  echo '{"key": "value"}' > "$TEST_TMPDIR/test-valid.json"
-  assert_valid_json "$TEST_TMPDIR/test-valid.json"
-}
-
-@test "assert_valid_json rejects invalid JSON" {
-  load ../test_helper
-  echo '{not json}' > "$TEST_TMPDIR/test-invalid.json"
-  run assert_valid_json "$TEST_TMPDIR/test-invalid.json"
-  [ "$status" -ne 0 ]
-}
-
-@test "assert_json_key finds existing key" {
-  load ../test_helper
-  echo '{"provider": {"zai-coding-plan": {}}}' > "$TEST_TMPDIR/test-key.json"
-  assert_json_key "$TEST_TMPDIR/test-key.json" '.provider["zai-coding-plan"]'
-}
-
-@test "assert_json_key fails on missing key" {
-  load ../test_helper
-  echo '{"provider": {}}' > "$TEST_TMPDIR/test-nokey.json"
-  run assert_json_key "$TEST_TMPDIR/test-nokey.json" '.provider["nonexistent"]'
-  [ "$status" -ne 0 ]
-}
-
 @test "wait_for_healthy returns 0 when service is healthy" {
   load ../test_helper
   # R4-M17: Actual RED-phase test using MOCK_BIN_DIR

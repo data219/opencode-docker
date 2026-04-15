@@ -9,19 +9,6 @@ load "${BATS_TEST_HELPER_DIR}/bats-assert/load.bash"
 
 # --- Custom Docker Helpers ---
 
-# assert_valid_json <file> — validates JSON via jq
-assert_valid_json() {
-  local file="$1"
-  jq . "$file" > /dev/null 2>&1
-}
-
-# assert_json_key <file> <key> — checks that a jq key exists and is non-null
-assert_json_key() {
-  local file="$1"
-  local key="$2"
-  jq -e "$key" "$file" > /dev/null
-}
-
 # wait_for_healthy <project> <timeout> — polling loop for docker compose healthcheck
 # R3-M16: Replaces all sleep-based waits
 # R4-M18: Default 120s for first-start, 30s for restart. Polling interval: sleep 2.

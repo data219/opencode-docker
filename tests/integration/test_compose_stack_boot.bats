@@ -64,13 +64,14 @@ wait_for_http_health() {
   local timeout="${2:-120}"
   local interval=2
   local elapsed=0
+  local request_timeout="${TEST_HEALTH_REQUEST_TIMEOUT:-2}"
 
   while [ "$elapsed" -lt "$timeout" ]; do
-    if curl -fsS "$url" >/dev/null 2>&1; then
+    if curl --max-time "$request_timeout" -fsS "$url" >/dev/null 2>&1; then
       return 0
     fi
     sleep "$interval"
-    elapsed=$((elapsed + interval))
+    elapsed=$((elapsed + interval + request_timeout))
   done
 
   return 1

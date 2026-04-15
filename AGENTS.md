@@ -18,3 +18,9 @@
 - Docker-backed integration tests should avoid a single fixed host port; derive a per-run port or allow env override to prevent local port collisions.
 - For image-level browser automation changes, verify both the installed binary and the final seeded runtime config inside the booted container.
 - For entrypoint or privilege-drop tests that mock executables and then switch users via `gosu`, make the mock binary directory traversable (for example `chmod 755 "$MOCK_BIN_DIR"`), otherwise the target user may miss the mock and start the real binary.
+
+## Behavior-Only Test Guardrails
+
+- Do not patch repository scripts inside tests with `sed`, copied temp variants, or similar text rewrites just to redirect collaborators; prefer explicit env-driven test seams such as overrideable script paths.
+- Keep project tests focused on observable behavior, exit codes, ownership, health, command output, and file existence. Do not keep helper assertions whose primary purpose is checking file contents.
+- When mocking command execution in Bats, assert only the relevant invoked arguments or side effects; do not couple tests to the current host/container username unless that identity is the behavior under test.

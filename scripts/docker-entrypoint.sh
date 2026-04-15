@@ -2,7 +2,8 @@
 # docker-entrypoint.sh — Per-start dispatch (placeholder for Step 6)
 set -euo pipefail
 
-/scripts/docker-init.sh
+INIT_SCRIPT="${OPENCODE_DOCKER_INIT_SCRIPT:-/scripts/docker-init.sh}"
+"$INIT_SCRIPT"
 
 # Args after mode are silently ignored.
 # Use environment variables for all OpenCode configuration.
@@ -40,7 +41,8 @@ fi
 # --- Config drift detection ---
 CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
 CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
-IMAGE_VERSION_FILE="/opt/opencode-defaults/.opencode-docker-config-version"
+IMAGE_DEFAULTS_DIR="${DEFAULTS_DIR:-/opt/opencode-defaults}"
+IMAGE_VERSION_FILE="$IMAGE_DEFAULTS_DIR/.opencode-docker-config-version"
 if [ -f "$CONFIG_VERSION_FILE" ] && [ -f "$IMAGE_VERSION_FILE" ]; then
   USER_VERSION=$(head -1 "$CONFIG_VERSION_FILE" 2>/dev/null || echo "unknown")
   IMAGE_VERSION=$(head -1 "$IMAGE_VERSION_FILE" 2>/dev/null || echo "unknown")
