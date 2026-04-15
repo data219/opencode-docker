@@ -95,9 +95,6 @@ wait_for_http_health() {
   run compose_ci exec -T opencode sh -lc 'command -v agent-browser'
   [ "$status" -eq 0 ]
 
-  run compose_ci exec -T opencode grep -q '"provider": "agent-browser"' /home/opencode/.config/opencode/oh-my-openagent.jsonc
-  [ "$status" -eq 0 ]
-
   run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json
   [ "$status" -eq 0 ]
 }

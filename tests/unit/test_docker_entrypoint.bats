@@ -12,7 +12,7 @@ setup() {
   
   # Mock opencode binary
   echo '#!/bin/bash' > "$MOCK_BIN_DIR/opencode"
-  echo 'echo "mock-opencode: $@"' >> "$MOCK_BIN_DIR/opencode"
+  echo 'echo "mock-opencode: $(id -un): $@"' >> "$MOCK_BIN_DIR/opencode"
   chmod +x "$MOCK_BIN_DIR/opencode"
   
   PATH="$MOCK_BIN_DIR:$PATH"
@@ -28,24 +28,28 @@ teardown() {
 run_entrypoint() {
   # Create a temporary entrypoint that uses our mock init path
   local tmp_entrypoint
+  local env_prefix="$1"
+  local cli_arg="${2:-}"
   tmp_entrypoint="$(mktemp)"
   sed "s|/scripts/docker-init.sh|$MOCK_SCRIPTS_DIR/docker-init.sh|" scripts/docker-entrypoint.sh > "$tmp_entrypoint"
   chmod +x "$tmp_entrypoint"
   
-  run bash -c "$1 bash $tmp_entrypoint 2>&1"
+  run bash -c "$env_prefix bash '$tmp_entrypoint' $cli_arg 2>&1"
   local rc=$?
   rm -f "$tmp_entrypoint"
   return $rc
 }
 
 @test "entrypoint accepts mode 'web'" {
-  run_entrypoint 'OPENCODE_MODE=web OPENCODE_PORT=4000' || true
-  refute_output --partial "Invalid OPENCODE_MODE"
+  run_entrypoint 'OPENCODE_MODE=web OPENCODE_PORT=4000'
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: opencode: web --hostname 0.0.0.0 --port 4000"
 }
 
 @test "entrypoint accepts mode 'serve'" {
-  run_entrypoint 'OPENCODE_MODE=serve OPENCODE_PORT=4000' || true
-  refute_output --partial "Invalid OPENCODE_MODE"
+  run_entrypoint 'OPENCODE_MODE=serve OPENCODE_PORT=4000'
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: opencode: serve --hostname 0.0.0.0 --port 4000"
 }
 
 @test "entrypoint rejects mode 'tui'" {
@@ -66,8 +70,9 @@ run_entrypoint() {
 }
 
 @test "entrypoint accepts valid port 4000" {
-  run_entrypoint 'OPENCODE_MODE=web OPENCODE_PORT=4000' || true
-  refute_output --partial "Invalid OPENCODE_PORT"
+  run_entrypoint 'OPENCODE_MODE=web OPENCODE_PORT=4000'
+  [ "$status" -eq 0 ]
+  assert_output --partial "--port 4000"
 }
 
 @test "entrypoint rejects port 'abc'" {
@@ -106,35 +111,40 @@ run_entrypoint() {
   [ "$result" -eq 0 ]
 }
 
-@test "entrypoint has NO OPENCODE_BIND_ADDRESS security warning" {
-  ! grep -q 'OPENCODE_BIND_ADDRESS.*WARNING\|WARNING.*OPENCODE_BIND_ADDRESS' scripts/docker-entrypoint.sh
+@test "entrypoint warns when server password is empty" {
+  run_entrypoint 'OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_SERVER_PASSWORD='
+  [ "$status" -eq 0 ]
+  assert_output --partial "OPENCODE_SERVER_PASSWORD is not set"
 }
 
-@test "entrypoint has comment about args being silently ignored" {
-  grep -q 'Args after mode are silently ignored' scripts/docker-entrypoint.sh
+@test "entrypoint does not warn when server password is set" {
+  run_entrypoint 'OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_SERVER_PASSWORD=secret'
+  [ "$status" -eq 0 ]
+  refute_output --partial "OPENCODE_SERVER_PASSWORD is not set"
 }
 
-@test "entrypoint has no --password flag in CMD array" {
-  ! grep -q '\-\-password' scripts/docker-entrypoint.sh
+@test "entrypoint ignores CLI mode when OPENCODE_MODE is set" {
+  run_entrypoint 'OPENCODE_MODE=serve OPENCODE_PORT=4000' invalid
+  [ "$status" -eq 0 ]
+  assert_output --partial "CLI argument 'invalid' ignored"
+  assert_output --partial "mock-opencode: opencode: serve --hostname 0.0.0.0 --port 4000"
 }
 
-@test "entrypoint uses gosu for privilege drop" {
-  grep -q "gosu opencode" scripts/docker-entrypoint.sh
+@test "entrypoint uses CLI mode when OPENCODE_MODE is unset" {
+  run_entrypoint 'OPENCODE_PORT=4000' serve
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: opencode: serve --hostname 0.0.0.0 --port 4000"
 }
 
-@test "entrypoint has no auth.json creation" {
-  ! grep -q "auth.json" scripts/docker-entrypoint.sh
-}
+@test "entrypoint warns on config version mismatch" {
+  tmpdir="$(mktemp -d)"
+  mkdir -p "$tmpdir"
+  echo "1" > "$tmpdir/.opencode-docker-config-version"
+  image_defaults="$(mktemp -d)"
+  echo "2" > "$image_defaults/.opencode-docker-config-version"
 
-@test "entrypoint has no skills symlink code" {
-  ! grep -q "skills" scripts/docker-entrypoint.sh
-  ! grep -q "symlink" scripts/docker-entrypoint.sh
-}
-
-@test "entrypoint has standalone empty-password warning" {
-  grep -q 'OPENCODE_SERVER_PASSWORD' scripts/docker-entrypoint.sh
-}
-
-@test "entrypoint uses head -1 for version file reading (not cat)" {
-  grep -q 'head -1' scripts/docker-entrypoint.sh
+  run_entrypoint "CONFIG_DIR='$tmpdir' DEFAULTS_DIR='$image_defaults' OPENCODE_MODE=web OPENCODE_PORT=4000"
+  rm -rf "$tmpdir" "$image_defaults"
+  [ "$status" -eq 0 ]
+  assert_output --partial "Config version mismatch"
 }

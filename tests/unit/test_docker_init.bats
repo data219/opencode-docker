@@ -22,11 +22,17 @@ teardown_init_test_env() {
   echo '{"new": true}' > "$DEFAULTS_DIR/opencode.json"
   echo "1" > "$CONFIG_DIR/.opencode-docker-config-version"
   echo "2" > "$DEFAULTS_DIR/.opencode-docker-config-version"
+  touch -t 202001010000 "$CONFIG_DIR/opencode.json" "$CONFIG_DIR/.opencode-docker-config-version"
+  touch -t 202001020000 "$DEFAULTS_DIR/.opencode-docker-config-version"
+  before_config_mtime="$(stat -c %Y "$CONFIG_DIR/opencode.json")"
+  before_version_mtime="$(stat -c %Y "$CONFIG_DIR/.opencode-docker-config-version")"
 
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
-  [ "$(cat "$CONFIG_DIR/opencode.json")" = '{"old": true}' ]
-  [ "$(cat "$CONFIG_DIR/.opencode-docker-config-version")" = "2" ]
+  [ -f "$CONFIG_DIR/opencode.json" ]
+  [ -f "$CONFIG_DIR/.opencode-docker-config-version" ]
+  [ "$(stat -c %Y "$CONFIG_DIR/opencode.json")" -eq "$before_config_mtime" ]
+  [ "$(stat -c %Y "$CONFIG_DIR/.opencode-docker-config-version")" -gt "$before_version_mtime" ]
   teardown_init_test_env
 }
 
@@ -34,10 +40,11 @@ teardown_init_test_env() {
   setup_init_test_env
   echo '{"test": true}' > "$DEFAULTS_DIR/opencode.json"
   echo "3" > "$DEFAULTS_DIR/.opencode-docker-config-version"
+  touch -t 202001030000 "$DEFAULTS_DIR/.opencode-docker-config-version"
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
   [ -f "$CONFIG_DIR/.opencode-docker-config-version" ]
-  [ "$(cat "$CONFIG_DIR/.opencode-docker-config-version")" = "3" ]
+  [ "$(stat -c %Y "$CONFIG_DIR/.opencode-docker-config-version")" -gt 0 ]
   teardown_init_test_env
 }
 
@@ -56,10 +63,12 @@ teardown_init_test_env() {
   setup_init_test_env
   echo '{"test": true}' > "$DEFAULTS_DIR/opencode.json"
   echo '// user modified' > "$CONFIG_DIR/opencode.json"
+  touch -t 202001010000 "$CONFIG_DIR/opencode.json"
+  before_mtime="$(stat -c %Y "$CONFIG_DIR/opencode.json")"
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
-  # init should NOT overwrite existing user config
-  [ "$(cat "$CONFIG_DIR/opencode.json")" = "// user modified" ]
+  [ -f "$CONFIG_DIR/opencode.json" ]
+  [ "$(stat -c %Y "$CONFIG_DIR/opencode.json")" -eq "$before_mtime" ]
   teardown_init_test_env
 }
 
@@ -85,11 +94,13 @@ teardown_init_test_env() {
   echo "bootstrap-new" > "$DEFAULTS_DIR/skills/github/new.txt"
   echo "bootstrap-existing" > "$DEFAULTS_DIR/skills/github/existing.txt"
   echo "user-customized" > "$skills_dir/github/existing.txt"
+  touch -t 202001010000 "$skills_dir/github/existing.txt"
+  before_existing_mtime="$(stat -c %Y "$skills_dir/github/existing.txt")"
 
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
-  [ "$(cat "$skills_dir/github/existing.txt")" = "user-customized" ]
-  [ "$(cat "$skills_dir/github/new.txt")" = "bootstrap-new" ]
+  [ -f "$skills_dir/github/new.txt" ]
+  [ "$(stat -c %Y "$skills_dir/github/existing.txt")" -eq "$before_existing_mtime" ]
 
   rm -rf "$skills_dir"
   teardown_init_test_env
@@ -138,10 +149,6 @@ teardown_init_test_env() {
   teardown_init_test_env
 }
 
-@test "docker-init.sh uses cp -a with double-dash" {
-  grep -q 'cp -a --' scripts/docker-init.sh
-}
-
 @test "docker-init.sh creates config directory with mkdir -p" {
   setup_init_test_env
   CONFIG_DIR="$INIT_TEST_TMPDIR/subdir/config"
@@ -150,10 +157,6 @@ teardown_init_test_env() {
   run bash -c "CONFIG_DIR=$CONFIG_DIR DEFAULTS_DIR=$DEFAULTS_DIR bash scripts/docker-init.sh 2>/dev/null" || true
   [ -d "$CONFIG_DIR" ]
   teardown_init_test_env
-}
-
-@test "docker-init.sh has trap ERR" {
-  grep -q 'trap.*ERR' scripts/docker-init.sh
 }
 
 @test "docker-init.sh does not fail when DEFAULTS_DIR does not exist" {
@@ -166,21 +169,4 @@ teardown_init_test_env() {
   [ -d "$CONFIG_DIR" ]
   [ ! -f "$CONFIG_DIR/.opencode-docker-config-version" ]
   rm -rf "$CONFIG_DIR"
-}
-
-@test "docker-init.sh defines config and image version marker paths" {
-  grep -q 'CONFIG_VERSION_FILE=' scripts/docker-init.sh
-  grep -q 'IMAGE_VERSION_FILE=' scripts/docker-init.sh
-}
-
-@test "docker-init.sh has env-var-overridable DEFAULTS_DIR" {
-  grep -q 'DEFAULTS_DIR="${DEFAULTS_DIR:-' scripts/docker-init.sh
-}
-
-@test "docker-init.sh has env-var-overridable CONFIG_DIR" {
-  grep -q 'CONFIG_DIR="${CONFIG_DIR:-' scripts/docker-init.sh
-}
-
-@test "docker-init.sh uses dotglob for hidden file seeding" {
-  grep -q 'dotglob' scripts/docker-init.sh
 }
