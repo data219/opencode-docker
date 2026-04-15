@@ -43,6 +43,12 @@ teardown() {
     -f "$TEST_COMPOSE_FILE" \
     down -v --remove-orphans >/dev/null 2>&1 || true
   rm -f "$TEST_COMPOSE_FILE"
+  if [ -d "$TEST_DATA_ROOT" ]; then
+    docker run --rm \
+      -v "${TEST_DATA_ROOT}:/mnt" \
+      alpine sh -lc 'rm -rf /mnt/* /mnt/.[!.]* /mnt/..?* 2>/dev/null || true' \
+      >/dev/null 2>&1 || true
+  fi
   rm -rf "$TEST_DATA_ROOT"
 }
 
