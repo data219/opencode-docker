@@ -20,6 +20,12 @@ setup() {
     "${TEST_DATA_ROOT}/state" \
     "${TEST_DATA_ROOT}/workspace" \
     "${TEST_DATA_ROOT}/skills"
+  chmod 0777 \
+    "${TEST_DATA_ROOT}/config" \
+    "${TEST_DATA_ROOT}/share" \
+    "${TEST_DATA_ROOT}/state" \
+    "${TEST_DATA_ROOT}/workspace" \
+    "${TEST_DATA_ROOT}/skills"
 
   cp docker-compose.yml "$TEST_COMPOSE_FILE"
   sed -i "s/container_name: opencode/container_name: ${TEST_CONTAINER_NAME}/" "$TEST_COMPOSE_FILE"
