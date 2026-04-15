@@ -17,3 +17,4 @@
 - When a managed config file changes, bump both `bootstrap/config/.opencode-docker-config-version` and `data/config/.opencode-docker-config-version` so existing volumes get the updated managed seed.
 - Docker-backed integration tests should avoid a single fixed host port; derive a per-run port or allow env override to prevent local port collisions.
 - For image-level browser automation changes, verify both the installed binary and the final seeded runtime config inside the booted container.
+- For entrypoint or privilege-drop tests that mock executables and then switch users via `gosu`, make the mock binary directory traversable (for example `chmod 755 "$MOCK_BIN_DIR"`), otherwise the target user may miss the mock and start the real binary.

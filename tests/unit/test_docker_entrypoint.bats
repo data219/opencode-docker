@@ -1,6 +1,7 @@
 setup() {
   load ../test_helper
   MOCK_BIN_DIR="$(mktemp -d)"
+  chmod 755 "$MOCK_BIN_DIR"
   
   # Mock docker-init.sh (entrypoint calls absolute /scripts/docker-init.sh)
   MOCK_SCRIPTS_DIR="$(mktemp -d)/scripts"
