@@ -35,6 +35,15 @@
   grep -q 'opencode-ai@\${OPENCODE_VERSION}' Dockerfile
 }
 
+@test "Dockerfile has AGENT_BROWSER_VERSION build arg" {
+  grep -q 'ARG AGENT_BROWSER_VERSION=' Dockerfile
+}
+
+@test "Dockerfile installs agent-browser with pinned version and browser setup" {
+  grep -q 'agent-browser@\${AGENT_BROWSER_VERSION}' Dockerfile
+  grep -q 'agent-browser install' Dockerfile
+}
+
 @test "Dockerfile installs OmO" {
   grep -q 'oh-my-opencode' Dockerfile
 }

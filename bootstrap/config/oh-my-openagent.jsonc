@@ -137,7 +137,7 @@
     }
   },
   "browser_automation_engine": {
-    "provider": "playwright"
+    "provider": "agent-browser"
   },
   "git_master": {
     "commit_footer": true,

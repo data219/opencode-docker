@@ -3,7 +3,7 @@ load ../test_helper
 setup() {
   TEST_COMPOSE_PROJECT="opencode-stack-boot-${BATS_TEST_NUMBER}-$$"
   TEST_CONTAINER_NAME="opencode-stack-boot-${BATS_TEST_NUMBER}-$$"
-  TEST_PORT="${TEST_OPENCODE_PORT:-4010}"
+  TEST_PORT="${TEST_OPENCODE_PORT:-$((4100 + ($$ % 2000) + BATS_TEST_NUMBER))}"
   TEST_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-300}"
   TEST_COMPOSE_FILE="$(mktemp "${PWD}/.test-compose.XXXXXX.yml")"
   TEST_DATA_ROOT="$(mktemp -d "${PWD}/.test-data.XXXXXX")"
@@ -77,7 +77,7 @@ wait_for_http_health() {
 }
 
 @test "compose stack boots and exposes opencode health" {
-  run compose_ci up -d
+  run compose_ci up -d --build
   [ "$status" -eq 0 ]
 
   if ! wait_for_http_health "http://127.0.0.1:${TEST_PORT}/health" "$TEST_HEALTH_TIMEOUT"; then
@@ -90,6 +90,12 @@ wait_for_http_health() {
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/oh-my-openagent.jsonc
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T opencode sh -lc 'command -v agent-browser'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T opencode grep -q '"provider": "agent-browser"' /home/opencode/.config/opencode/oh-my-openagent.jsonc
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json

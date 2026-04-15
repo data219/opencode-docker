@@ -28,6 +28,8 @@ ARG BUN_VERSION=1.3.12
 ARG GOSU_VERSION=1.17
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.4.3
+# renovate: datasource=npm depName=agent-browser
+ARG AGENT_BROWSER_VERSION=0.25.4
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.40.5
 # renovate: datasource=github-releases depName=cli/cli
@@ -102,6 +104,12 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
 
 # --- Install OpenCode ---
 RUN npm install -g opencode-ai@${OPENCODE_VERSION}
+
+# --- Install agent-browser CLI and browser runtime ---
+RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
+    && mkdir -p /home/opencode/.cache \
+    && HOME=/home/opencode XDG_CACHE_HOME=/home/opencode/.cache agent-browser install \
+    && chown -R opencode:opencode /home/opencode/.cache
 
 # --- Install yq v4.40.5 ---
 RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
