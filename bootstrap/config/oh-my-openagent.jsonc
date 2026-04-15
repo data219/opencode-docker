@@ -1,24 +1,24 @@
 // opencode-docker-config:1
-// Model mapping: OmO defaults → Z.AI Coding Plan GLM equivalents
-// Tiers: glm-5.1 (Opus-level, max quality), glm-5-turbo (Opus-level, fast), glm-4.7 (Sonnet-level), glm-4.5-air (Haiku-level)
+// Dual-provider: Z.AI Coding Plan Pro (glm) + Google AI Studio Free (gemini)
+// Tiers: glm-5.1 (Opus-level, max quality), glm-5-turbo (Opus-level, fast), glm-4.7 (Sonnet-level), gemini-2.5-flash (offload)
+// Strategy: Premium agents on Z.AI, cheap/high-volume agents on Google to preserve Z.AI slots
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
+    // === Z.AI Premium (Opus-level) ===
     "sisyphus": {
       "model": "zai-coding-plan/glm-5.1",
       "fallback_models": [
         "zai-coding-plan/glm-5-turbo",
         "zai-coding-plan/glm-4.7"
-      ],
-      "prompt_append": "Delegate heavily to hephaestus for implementation. Parallelize exploration. Always consult prometheus and atlas for planning. Never rush to implementation."
+      ]
     },
     "hephaestus": {
-      "model": "zai-coding-plan/glm-5.1",
+      "model": "zai-coding-plan/glm-5-turbo",
       "fallback_models": [
-        "zai-coding-plan/glm-5-turbo",
         "zai-coding-plan/glm-4.7"
       ],
-      "prompt_append": "You are the primary implementation agent. Own the codebase. Explore, decide, execute. Use LSP and AST-grep aggressively. Follow established plans precisely. Ask for clarification when plans are ambiguous. Explore thoroughly, then implement. Prefer small, testable changes."
+      "prompt_append": "Follow established plans precisely. Ask for clarification when plans are ambiguous. Prefer small, testable changes. Use LSP and AST-grep aggressively."
     },
     "prometheus": {
       "model": "zai-coding-plan/glm-5.1",
@@ -26,7 +26,7 @@
         "zai-coding-plan/glm-5-turbo",
         "zai-coding-plan/glm-4.7"
       ],
-      "prompt_append": "Always interview first. Validate scope before planning. Interview extensively. Question assumptions. Build exhaustive plans with milestones, risks, and contingencies. Use deep & quick agents heavily in parallel for research."
+      "prompt_append": "Always interview first. Validate scope before planning. Build exhaustive plans with milestones, risks, and contingencies. Max 2 parallel background tasks."
     },
     "metis": {
       "model": "zai-coding-plan/glm-5.1",
@@ -45,16 +45,29 @@
       "model": "zai-coding-plan/glm-5.1",
       "prompt_append": "Challenge all assumptions in plans. Look for edge cases, failure modes, and overlooked requirements."
     },
+    // === Z.AI Mid-tier ===
     "atlas": {
-      "model": "zai-coding-plan/glm-4.7",
-      "prompt_append": "Preserve context across long planning sessions. Track evolving decisions."
+      "model": "zai-coding-plan/glm-4.7"
     },
+    "sisyphus-junior": {
+      "model": "zai-coding-plan/glm-5-turbo",
+      "fallback_models": [
+        "zai-coding-plan/glm-4.7"
+      ]
+    },
+    // === Google AI Studio (offload high-volume agents) ===
     "explore": {
-      "model": "zai-coding-plan/glm-4.5-air",
+      "model": "google-aistudio/gemini-2.5-flash",
+      "fallback_models": [
+        "zai-coding-plan/glm-4.5-air"
+      ],
       "prompt_append": "Prefer searching official documentation and library sources over general web search."
     },
     "librarian": {
-      "model": "zai-coding-plan/glm-4.5-air",
+      "model": "google-aistudio/gemini-2.5-flash",
+      "fallback_models": [
+        "zai-coding-plan/glm-4.5-air"
+      ],
       "prompt_append": "Focus on finding authoritative sources. Cross-reference results when possible."
     },
     "multimodal-looker": {
@@ -62,18 +75,10 @@
       "fallback_models": [
         "zai-coding-plan/glm-4.7"
       ]
-    },
-    "sisyphus-junior": {
-      "model": "zai-coding-plan/glm-5-turbo"
     }
   },
   "categories": {
-    "quick": {
-      "model": "zai-coding-plan/glm-4.5-air"
-    },
-    "deep": {
-      "model": "zai-coding-plan/glm-5-turbo"
-    },
+    // === Z.AI Premium ===
     "ultrabrain": {
       "model": "zai-coding-plan/glm-5.1"
     },
@@ -83,26 +88,34 @@
         "zai-coding-plan/glm-4.7"
       ]
     },
+    "unspecified-high": {
+      "model": "zai-coding-plan/glm-5.1"
+    },
+    // === Z.AI Fast ===
+    "deep": {
+      "model": "zai-coding-plan/glm-5-turbo"
+    },
+    // === Z.AI Mid-tier ===
+    "writing": {
+      "model": "zai-coding-plan/glm-4.7"
+    },
+    // === Google AI Studio (offload high-volume categories) ===
+    "quick": {
+      "model": "google-aistudio/gemini-2.5-flash"
+    },
+    "unspecified-low": {
+      "model": "google-aistudio/gemini-2.5-flash"
+    },
     "artistry": {
       "model": "google-aistudio/gemini-2.5-flash",
       "fallback_models": [
         "zai-coding-plan/glm-4.7"
       ]
-    },
-    "writing": {
-      "model": "zai-coding-plan/glm-4.7"
-    },
-    "unspecified-low": {
-      "model": "zai-coding-plan/glm-4.7"
-    },
-    "unspecified-high": {
-      "model": "zai-coding-plan/glm-5.1"
     }
   },
   "runtime_fallback": {
     "enabled": true,
     "retry_on_errors": [
-      400,
       429,
       503,
       529
@@ -112,16 +125,19 @@
   },
   "background_task": {
     "providerConcurrency": {
-      "zai-coding-plan": 5,
-      "google-aistudio": 5
+      "zai-coding-plan": 3,
+      "google-aistudio": 3
     },
     "modelConcurrency": {
-      "zai-coding-plan/glm-5.1": 3,
-      "zai-coding-plan/glm-5-turbo": 5
+      "zai-coding-plan/glm-5.1": 2,
+      "zai-coding-plan/glm-5-turbo": 2,
+      "zai-coding-plan/glm-4.7": 2,
+      "zai-coding-plan/glm-4.5-air": 1,
+      "google-aistudio/gemini-2.5-flash": 3
     }
   },
   "browser_automation_engine": {
-    "provider": "agent-browser"
+    "provider": "playwright"
   },
   "git_master": {
     "commit_footer": true,
@@ -135,7 +151,7 @@
   // Enable all coding aids
   "hashline_edit": true,
   "experimental": {
-    "aggressive_truncation": true,
+    "aggressive_truncation": false,
     "task_system": true,
     "auto_resume": true
   }
