@@ -65,6 +65,45 @@ teardown_init_test_env() {
   teardown_init_test_env
 }
 
+@test "docker-init.sh merges bootstrap skills without overwriting user files" {
+  setup_init_test_env
+
+  local skills_dir="/home/opencode/.config/opencode/skills"
+  rm -rf "$skills_dir"
+  mkdir -p "$DEFAULTS_DIR/skills/github" "$skills_dir/github"
+
+  echo "bootstrap-new" > "$DEFAULTS_DIR/skills/github/new.txt"
+  echo "bootstrap-existing" > "$DEFAULTS_DIR/skills/github/existing.txt"
+  echo "user-customized" > "$skills_dir/github/existing.txt"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(cat "$skills_dir/github/existing.txt")" = "user-customized" ]
+  [ "$(cat "$skills_dir/github/new.txt")" = "bootstrap-new" ]
+
+  rm -rf "$skills_dir"
+  teardown_init_test_env
+}
+
+@test "docker-init.sh fixes ownership for bind-mounted state directory" {
+  if [ "$(id -u)" != "0" ]; then
+    skip "requires root to verify chown behavior"
+  fi
+
+  setup_init_test_env
+
+  local state_dir="/home/opencode/.local/state/opencode"
+  mkdir -p "$state_dir"
+  chown root:root "$state_dir"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(stat -c %U:%G "$state_dir")" = "opencode:opencode" ]
+
+  rm -rf "$state_dir"
+  teardown_init_test_env
+}
+
 @test "docker-init.sh uses cp -a with double-dash" {
   grep -q 'cp -a --' scripts/docker-init.sh
 }
