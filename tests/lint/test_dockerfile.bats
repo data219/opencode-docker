@@ -2,8 +2,8 @@
   [ -f Dockerfile ]
 }
 
-@test "Dockerfile uses debian:bookworm-slim base" {
-  grep -q 'debian:bookworm-slim' Dockerfile
+@test "Dockerfile uses pinned debian:12.13-slim base" {
+  grep -q 'debian:12.13-slim' Dockerfile
 }
 
 @test "Dockerfile creates opencode user" {

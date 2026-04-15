@@ -16,11 +16,12 @@
 }
 
 @test "docker-compose.yml binds config volume" {
-  grep -q 'opencode-config' docker-compose.yml
+  grep -q './data/config:/home/opencode/.config/opencode' docker-compose.yml
 }
 
-@test "docker-compose.yml binds skills volume as read-only" {
-  grep -q 'skills.*:ro' docker-compose.yml
+@test "docker-compose.yml binds skills volume as read-write" {
+  grep -q './data/skills:/home/opencode/.config/opencode/skills' docker-compose.yml
+  ! grep -q 'skills.*:ro' docker-compose.yml
 }
 
 @test "docker-compose.yml uses OPENCODE_BIND_ADDRESS for host port" {

@@ -10,3 +10,6 @@ data/
 # Build artifacts
 *.tar
 *.tar.gz
+
+# Local git worktrees
+.worktrees/

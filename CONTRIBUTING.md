@@ -45,10 +45,17 @@ BuildKit cache mounts are used for pip, npm, and go module caches to speed up re
 make test-all           # Run all test suites
 make test-unit          # Fast, no Docker required
 make test-lint          # Structural assertions (file existence, permissions)
-make test-integration   # Requires Docker build (single-threaded: --jobs 1)
+make test-integration   # Boots the real Compose stack (single-threaded: --jobs 1)
 ```
 
-Integration tests require `DOCKER_BUILDKIT=1`.
+Integration tests require Docker and boot the real `docker compose` stack with a health check plus runtime artifact validation.
+
+## GitHub Actions QA
+
+The repository uses two chained workflows:
+
+- `Build`: runs `docker build -t opencode-docker:test .` directly to validate the Dockerfile without Compose.
+- `Testing`: triggers after `Build` succeeds and runs `make test-unit`, `make test-lint`, and `make test-integration`.
 
 ## Dockerfile Structure
 

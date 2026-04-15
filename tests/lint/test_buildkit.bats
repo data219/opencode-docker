@@ -12,7 +12,7 @@
 }
 
 @test "Dockerfile has comment about OmO RUN line requirements" {
-  grep -B3 "bunx oh-my-opencode" Dockerfile | grep -qi "shell form\|Do not convert\|HOME\|temp\|--no-tui"
+  grep -B4 "oh-my-opencode@" Dockerfile | grep -qi "shell form\|Do not convert\|HOME\|temp\|--no-tui"
 }
 
 @test "Dockerfile has only one FROM directive" {

@@ -9,7 +9,11 @@ set -euo pipefail
 if [ $# -gt 0 ] && [ -n "${OPENCODE_MODE:-}" ]; then
   echo "NOTE: CLI argument '$1' ignored (OPENCODE_MODE env var takes priority)" >&2
 fi
-MODE="${OPENCODE_MODE:-${1:-web}}"
+if [ "${OPENCODE_MODE+x}" = "x" ]; then
+  MODE="$OPENCODE_MODE"
+else
+  MODE="${1:-web}"
+fi
 if [ $# -gt 0 ]; then
   shift
 fi

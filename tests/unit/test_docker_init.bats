@@ -1,7 +1,6 @@
 # Helper: create opencode user for tests running as root
 setup_init_test_env() {
   INIT_TEST_TMPDIR="$(mktemp -d)"
-  export INIT_MARKER="$INIT_TEST_TMPDIR/marker"
   export DEFAULTS_DIR="$INIT_TEST_TMPDIR/defaults"
   export CONFIG_DIR="$INIT_TEST_TMPDIR/config"
   mkdir -p "$DEFAULTS_DIR" "$CONFIG_DIR"
@@ -13,24 +12,32 @@ setup_init_test_env() {
 }
 
 teardown_init_test_env() {
-  rm -f "$INIT_MARKER"
   rm -rf "$INIT_TEST_TMPDIR"
 }
 
-@test "docker-init.sh skips if marker file exists" {
+@test "docker-init.sh preserves existing config on version upgrade and updates version marker" {
   setup_init_test_env
-  touch "$INIT_MARKER"
+
+  echo '{"old": true}' > "$CONFIG_DIR/opencode.json"
+  echo '{"new": true}' > "$DEFAULTS_DIR/opencode.json"
+  echo "1" > "$CONFIG_DIR/.opencode-docker-config-version"
+  echo "2" > "$DEFAULTS_DIR/.opencode-docker-config-version"
+
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
+  [ "$(cat "$CONFIG_DIR/opencode.json")" = '{"old": true}' ]
+  [ "$(cat "$CONFIG_DIR/.opencode-docker-config-version")" = "2" ]
   teardown_init_test_env
 }
 
-@test "docker-init.sh creates marker file after successful init" {
+@test "docker-init.sh copies version marker after successful init" {
   setup_init_test_env
   echo '{"test": true}' > "$DEFAULTS_DIR/opencode.json"
+  echo "3" > "$DEFAULTS_DIR/.opencode-docker-config-version"
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
-  [ -f "$INIT_MARKER" ]
+  [ -f "$CONFIG_DIR/.opencode-docker-config-version" ]
+  [ "$(cat "$CONFIG_DIR/.opencode-docker-config-version")" = "3" ]
   teardown_init_test_env
 }
 
@@ -70,7 +77,10 @@ teardown_init_test_env() {
 
   local skills_dir="/home/opencode/.config/opencode/skills"
   rm -rf "$skills_dir"
-  mkdir -p "$DEFAULTS_DIR/skills/github" "$skills_dir/github"
+  mkdir -p "$DEFAULTS_DIR/skills/github"
+  if ! mkdir -p "$skills_dir/github" 2>/dev/null; then
+    skip "requires writable /home/opencode skill directory"
+  fi
 
   echo "bootstrap-new" > "$DEFAULTS_DIR/skills/github/new.txt"
   echo "bootstrap-existing" > "$DEFAULTS_DIR/skills/github/existing.txt"
@@ -113,7 +123,7 @@ teardown_init_test_env() {
   CONFIG_DIR="$INIT_TEST_TMPDIR/subdir/config"
   mkdir -p "$(dirname "$CONFIG_DIR")"
   rm -rf "$CONFIG_DIR"
-  run bash -c "INIT_MARKER=$INIT_MARKER CONFIG_DIR=$CONFIG_DIR DEFAULTS_DIR=$DEFAULTS_DIR bash scripts/docker-init.sh 2>/dev/null" || true
+  run bash -c "CONFIG_DIR=$CONFIG_DIR DEFAULTS_DIR=$DEFAULTS_DIR bash scripts/docker-init.sh 2>/dev/null" || true
   [ -d "$CONFIG_DIR" ]
   teardown_init_test_env
 }
@@ -124,20 +134,19 @@ teardown_init_test_env() {
 
 @test "docker-init.sh does not fail when DEFAULTS_DIR does not exist" {
   # Script gracefully skips seeding when defaults dir is absent
-  export INIT_MARKER="$(mktemp -d)/marker-skip"
   export DEFAULTS_DIR="/nonexistent-path"
   export CONFIG_DIR="$(mktemp -d)/config"
-  rm -f "$INIT_MARKER"
   mkdir -p "$CONFIG_DIR"
   run bash scripts/docker-init.sh 2>/dev/null
   [ "$status" -eq 0 ]
-  [ -f "$INIT_MARKER" ]
-  rm -f "$INIT_MARKER"
+  [ -d "$CONFIG_DIR" ]
+  [ ! -f "$CONFIG_DIR/.opencode-docker-config-version" ]
   rm -rf "$CONFIG_DIR"
 }
 
-@test "docker-init.sh has env-var-overridable INIT_MARKER" {
-  grep -q 'INIT_MARKER="${INIT_MARKER:-' scripts/docker-init.sh
+@test "docker-init.sh defines config and image version marker paths" {
+  grep -q 'CONFIG_VERSION_FILE=' scripts/docker-init.sh
+  grep -q 'IMAGE_VERSION_FILE=' scripts/docker-init.sh
 }
 
 @test "docker-init.sh has env-var-overridable DEFAULTS_DIR" {

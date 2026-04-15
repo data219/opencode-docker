@@ -97,7 +97,7 @@ jsonc() {
 @test "oh-my-openagent.jsonc assigns glm-5-turbo to hephaestus" {
   run jsonc bootstrap/config/oh-my-openagent.jsonc '.agents.hephaestus.model'
   [ "$status" -eq 0 ]
-  [ "$output" = "zai-coding-plan/glm-5-turbo" ]
+  [ "$output" = "zai-coding-plan/glm-5.1" ]
 }
 
 @test "oh-my-openagent.jsonc assigns glm-5.1 to prometheus" {

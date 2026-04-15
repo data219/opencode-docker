@@ -1,0 +1,25 @@
+name: Testing
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types: [completed]
+
+jobs:
+  testing:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run unit tests
+        run: make test-unit
+
+      - name: Run lint tests
+        run: make test-lint
+
+      - name: Run integration tests
+        env:
+          ZHIPU_API_KEY: test
+          GEMINI_API_KEY: ""
+        run: make test-integration

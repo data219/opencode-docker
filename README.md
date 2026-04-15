@@ -166,6 +166,15 @@ docker compose up -d
 
 Build instructions, testing, config seeding internals, and architectural decisions are documented in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## CI / QA
+
+GitHub Actions QA is split into two workflows:
+
+- `Build` runs a direct `docker build -t opencode-docker:test .` validation of the Dockerfile without `docker compose`.
+- `Testing` runs after a successful `Build` workflow and executes `make test-unit`, `make test-lint`, and `make test-integration`.
+
+`make test-integration` boots the Docker Compose stack for real, waits for container health, and verifies the runtime OpenCode/OmO setup inside the container.
+
 ## License
 
 MIT

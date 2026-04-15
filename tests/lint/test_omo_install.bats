@@ -10,10 +10,10 @@
   grep -q -- "--zai-coding-plan=yes" Dockerfile
 }
 
-@test "Dockerfile disables claude, openai, gemini, copilot in OmO installer" {
+@test "Dockerfile disables claude, openai, copilot and enables gemini in OmO installer" {
   grep -q -- "--claude=no" Dockerfile
   grep -q -- "--openai=no" Dockerfile
-  grep -q -- "--gemini=no" Dockerfile
+  grep -q -- "--gemini=yes" Dockerfile
   grep -q -- "--copilot=no" Dockerfile
 }
 
