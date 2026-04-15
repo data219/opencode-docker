@@ -21,6 +21,10 @@
   grep -A1 "^RUN mkdir -p /opt/opencode-defaults" Dockerfile | head -4 | grep -q "oh-my-opencode"
 }
 
+@test "Dockerfile runs OmO via the installed bun binary" {
+  grep -q 'HOME=/tmp/omo-install /home/opencode/.bun/bin/bun x oh-my-opencode@${OMO_VERSION} install' Dockerfile
+}
+
 @test "Dockerfile provides oh-my-openagent config" {
   grep -q "oh-my-openagent" Dockerfile
 }

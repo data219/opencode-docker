@@ -14,6 +14,18 @@
   grep -q "rustup" Dockerfile
 }
 
+@test "Dockerfile pins an available Rust toolchain version" {
+  local rust_version
+  rust_version="$(
+    sed -n 's/^ARG RUST_TOOLCHAIN_VERSION=//p' Dockerfile | head -n 1
+  )"
+
+  [ -n "$rust_version" ]
+
+  run curl -fsSI "https://static.rust-lang.org/dist/rust-${rust_version}-x86_64-unknown-linux-gnu.tar.gz.sha256"
+  [ "$status" -eq 0 ]
+}
+
 @test "Dockerfile installs PHP via sury.org" {
   grep -q "sury.org\|sury" Dockerfile
 }

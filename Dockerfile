@@ -18,7 +18,7 @@ ARG PYENV_VERSION=v2.6.27
 # renovate: datasource=github-releases depName=rust-lang/rustup
 ARG RUSTUP_VERSION=1.29.0
 # renovate: datasource=github-releases depName=rust-lang/rust
-ARG RUST_TOOLCHAIN_VERSION=1.95.0
+ARG RUST_TOOLCHAIN_VERSION=1.94.1
 # renovate: datasource=git-refs depName=moovweb/gvm packageName=https://github.com/moovweb/gvm
 ARG GVM_REF=master
 ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
@@ -202,7 +202,7 @@ RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
 # NOTE: OmO writes to XDG_CONFIG_HOME/opencode/. We redirect it via HOME to a temp dir,
 #       then pick the agent config. Our opencode.json seed (with {env:} provider) takes priority.
 RUN mkdir -p /opt/opencode-defaults \
-  && HOME=/tmp/omo-install /home/opencode/.bun/bin/bunx oh-my-opencode@${OMO_VERSION} install \
+  && HOME=/tmp/omo-install /home/opencode/.bun/bin/bun x oh-my-opencode@${OMO_VERSION} install \
     --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=yes --copilot=no \
   && cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-openagent-omo.json \
   && rm -rf /tmp/omo-install

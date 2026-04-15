@@ -59,6 +59,10 @@
   grep -q '/health' docker-compose.yml
 }
 
+@test "healthcheck uses IPv4 loopback instead of localhost" {
+  grep -q '127.0.0.1:\${OPENCODE_PORT:-4000}/health' docker-compose.yml
+}
+
 @test "TUI mode not present anywhere" {
   ! grep -q 'tui' docker-compose.yml
 }
