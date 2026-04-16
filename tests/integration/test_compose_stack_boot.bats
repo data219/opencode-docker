@@ -60,7 +60,7 @@ wait_for_http_health() {
   return 1
 }
 
-@test "compose stack boots and exposes opencode health" {
+@test "compose stack boots and loads OmO runtime config in opencode" {
   prepare_test_stack
   run compose_ci up -d --build
   [ "$status" -eq 0 ]
@@ -77,6 +77,20 @@ wait_for_http_health() {
   run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/oh-my-openagent.jsonc
   [ "$status" -eq 0 ]
   [ -f "${TEST_HOME_ROOT}/.config/opencode/oh-my-openagent.jsonc" ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'opencode debug paths | grep -F "config     /home/opencode/.config/opencode"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '
+    config_dump="$(mktemp)"
+    opencode debug config > "$config_dump"
+    grep -F "\"plugin\": [" "$config_dump"
+    grep -F "\"oh-my-openagent\"" "$config_dump"
+    grep -F "\"plugin_origins\"" "$config_dump"
+    grep -F "\"spec\": \"oh-my-openagent\"" "$config_dump"
+    grep -F "/home/opencode/.config/opencode" "$config_dump"
+  '
+  [ "$status" -eq 0 ]
 
   run compose_ci exec -T opencode sh -lc 'command -v agent-browser'
   [ "$status" -eq 0 ]

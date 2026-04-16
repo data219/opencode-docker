@@ -18,6 +18,8 @@
 - Docker-backed integration tests should avoid a single fixed host port; derive a per-run port or allow env override to prevent local port collisions.
 - For image-level browser automation changes, verify both the installed binary and the final seeded runtime config inside the booted container.
 - For entrypoint or privilege-drop tests that mock executables and then switch users via `gosu`, make the mock binary directory traversable (for example `chmod 755 "$MOCK_BIN_DIR"`), otherwise the target user may miss the mock and start the real binary.
+- For runtime checks that depend on user-scoped config or `$HOME`, run `docker compose exec -T -u <user> <service> ...` with the intended runtime user instead of root.
+- For OpenCode runtime/plugin assertions, verify the active config path first with `opencode debug paths`; do not treat seeded file existence alone as proof that runtime config was loaded.
 
 ## Behavior-Only Test Guardrails
 
