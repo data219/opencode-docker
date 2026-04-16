@@ -8,10 +8,14 @@ CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
 CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
 IMAGE_VERSION_FILE="$DEFAULTS_DIR/.opencode-docker-config-version"
 
-# Fix ownership of bind-mounted directories BEFORE seeding.
+# Fix ownership of the persisted home tree BEFORE seeding.
 # Docker creates bind mount targets as root when they don't exist on host.
 if [ "$(id -u)" = "0" ]; then
-  for dir in .config .config/opencode .config/opencode/skills .local .local/share .local/state .local/state/opencode .local/share/opencode workspace; do
+  if [ -d "/home/opencode" ] && [ "$(stat -c %U /home/opencode 2>/dev/null)" = "root" ]; then
+    chown -R opencode:opencode /home/opencode
+  fi
+
+  for dir in .config .config/opencode .config/opencode/skills .config/gh .config/glab .local .local/share .local/state .local/state/opencode .local/share/opencode workspace; do
     dir_path="/home/opencode/$dir"
     if [ -d "$dir_path" ] && [ "$(stat -c %U "$dir_path" 2>/dev/null)" = "root" ]; then
       chown -R opencode:opencode "$dir_path"

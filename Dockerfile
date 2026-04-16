@@ -32,8 +32,12 @@ ARG OPENCODE_VERSION=1.4.3
 ARG AGENT_BROWSER_VERSION=0.25.4
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.40.5
-# renovate: datasource=github-releases depName=cli/cli
-ARG GH_VERSION=2.42.1
+# renovate: datasource=github-releases depName=cli/cli versioning=semver
+ARG GH_VERSION=2.89.0
+# renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
+ARG GLAB_VERSION=1.92.1
+# renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
+ARG ATLCLI_VERSION=0.16.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm
 ARG NVM_VERSION=v0.40.1
 # renovate: datasource=golang-version depName=go
@@ -116,12 +120,34 @@ RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}
        -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq
 
-# --- Install gh v2.42.1 ---
-RUN curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
-       -o /tmp/gh.tar.gz \
-    && tar -xzf /tmp/gh.tar.gz -C /tmp \
-    && mv /tmp/gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin/gh \
-    && rm -rf /tmp/gh.tar.gz /tmp/gh_${GH_VERSION}_linux_amd64
+# --- Install GitHub/GitLab/Atlassian CLIs ---
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) gh_arch="amd64"; glab_arch="amd64"; atlcli_arch="x64" ;; \
+      arm64) gh_arch="arm64"; glab_arch="arm64"; atlcli_arch="arm64" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    gh_archive="gh_${GH_VERSION}_linux_${gh_arch}.tar.gz"; \
+    glab_archive="glab_${GLAB_VERSION}_linux_${glab_arch}.tar.gz"; \
+    atlcli_archive="atlcli-linux-${atlcli_arch}.tar.gz"; \
+    install_archive() { \
+      binary="$1"; \
+      url="$2"; \
+      checksum_url="$3"; \
+      archive_name="$4"; \
+      tmpdir="$(mktemp -d)"; \
+      mkdir -p "${tmpdir}/unpack"; \
+      curl -fsSL "${url}" -o "${tmpdir}/pkg.tgz"; \
+      curl -fsSL "${checksum_url}" -o "${tmpdir}/checksums.txt"; \
+      (cd "${tmpdir}" && awk -v target="${archive_name}" '$2 == target { print $1 "  " "pkg.tgz" }' checksums.txt | sha256sum -c -); \
+      tar -xzf "${tmpdir}/pkg.tgz" -C "${tmpdir}/unpack"; \
+      install -m 0755 "$(find "${tmpdir}/unpack" -type f -name "${binary}" | head -n 1)" "/usr/local/bin/${binary}"; \
+      rm -rf "${tmpdir}"; \
+    }; \
+    install_archive gh "https://github.com/cli/cli/releases/download/v${GH_VERSION}/${gh_archive}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" "${gh_archive}"; \
+    install_archive glab "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/${GLAB_VERSION}/${glab_archive}" "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/${GLAB_VERSION}/checksums.txt" "${glab_archive}"; \
+    install_archive atlcli "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/${atlcli_archive}" "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/checksums.txt" "${atlcli_archive}"
 
 # --- Install Composer (needs root for /usr/local/bin) ---
 RUN curl -fsSL "https://getcomposer.org/download/${COMPOSER_VERSION}/composer.phar" \
@@ -237,6 +263,8 @@ COPY bootstrap/skills/ /opt/opencode-defaults/skills/
 # --- Create volume mount points and seed with defaults ---
 # These directories MUST exist in the image for Docker bind mounts to work correctly.
 RUN mkdir -p /home/opencode/.config/opencode \
+    /home/opencode/.config/gh \
+    /home/opencode/.config/glab \
     /home/opencode/.local/share/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace \

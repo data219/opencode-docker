@@ -5,12 +5,12 @@ setup() {
   TEST_CONTAINER_NAME="opencode-stack-boot-${BATS_TEST_NUMBER}-$$"
   TEST_OPENCODE_PORT="${TEST_OPENCODE_PORT:-$((4100 + ($$ % 2000) + BATS_TEST_NUMBER))}"
   TEST_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-300}"
-  TEST_DATA_ROOT=""
+  TEST_HOME_ROOT=""
 }
 
 prepare_test_stack() {
   TEST_OPENCODE_PORT="${1:-$TEST_OPENCODE_PORT}"
-  TEST_DATA_ROOT="$(mktemp -d "${PWD}/.test-data.XXXXXX")"
+  TEST_HOME_ROOT="$(mktemp -d "${PWD}/.test-home.XXXXXX")"
 
   export ZHIPU_API_KEY="test"
   export GEMINI_API_KEY=""
@@ -18,37 +18,22 @@ prepare_test_stack() {
   export OPENCODE_PORT="${TEST_OPENCODE_PORT}"
   export OPENCODE_BIND_ADDRESS="127.0.0.1"
   export OPENCODE_CONTAINER_NAME="${TEST_CONTAINER_NAME}"
-  export OPENCODE_CONFIG_DIR="${TEST_DATA_ROOT}/config"
-  export OPENCODE_SHARE_DIR="${TEST_DATA_ROOT}/share"
-  export OPENCODE_STATE_DIR="${TEST_DATA_ROOT}/state"
-  export OPENCODE_WORKSPACE_DIR="${TEST_DATA_ROOT}/workspace"
-  export OPENCODE_SKILLS_DIR="${TEST_DATA_ROOT}/skills"
+  export OPENCODE_HOME_DIR="${TEST_HOME_ROOT}"
 
-  mkdir -p \
-    "${TEST_DATA_ROOT}/config" \
-    "${TEST_DATA_ROOT}/share" \
-    "${TEST_DATA_ROOT}/state" \
-    "${TEST_DATA_ROOT}/workspace" \
-    "${TEST_DATA_ROOT}/skills"
-  chmod 0777 \
-    "${TEST_DATA_ROOT}/config" \
-    "${TEST_DATA_ROOT}/share" \
-    "${TEST_DATA_ROOT}/state" \
-    "${TEST_DATA_ROOT}/workspace" \
-    "${TEST_DATA_ROOT}/skills"
+  chmod 0777 "${TEST_HOME_ROOT}"
 }
 
 teardown() {
   docker compose \
     -p "$TEST_COMPOSE_PROJECT" \
     down -v --remove-orphans >/dev/null 2>&1 || true
-  if [ -d "$TEST_DATA_ROOT" ]; then
+  if [ -d "$TEST_HOME_ROOT" ]; then
     docker run --rm \
-      -v "${TEST_DATA_ROOT}:/mnt" \
+      -v "${TEST_HOME_ROOT}:/mnt" \
       alpine sh -lc 'rm -rf /mnt/* /mnt/.[!.]* /mnt/..?* 2>/dev/null || true' \
       >/dev/null 2>&1 || true
   fi
-  rm -rf "$TEST_DATA_ROOT"
+  rm -rf "$TEST_HOME_ROOT"
 }
 
 compose_ci() {
@@ -91,9 +76,18 @@ wait_for_http_health() {
 
   run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/oh-my-openagent.jsonc
   [ "$status" -eq 0 ]
-  [ -f "${TEST_DATA_ROOT}/config/oh-my-openagent.jsonc" ]
+  [ -f "${TEST_HOME_ROOT}/.config/opencode/oh-my-openagent.jsonc" ]
 
   run compose_ci exec -T opencode sh -lc 'command -v agent-browser'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T opencode sh -lc 'command -v gh'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T opencode sh -lc 'command -v glab'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T opencode sh -lc 'command -v atlcli'
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json

@@ -16,6 +16,8 @@
 
 - Platform tools:
   - [GitHub CLI (`gh`)](https://cli.github.com/manual/)
+  - [GitLab CLI (`glab`)](https://docs.gitlab.com/cli/)
+  - [atlcli](https://atlcli.sh/)
 
 - Programming languages/runtimes:
   - [Python](https://www.python.org/) (pyenv)
@@ -63,6 +65,38 @@ For CLI/TUI access, exec into the running container:
 docker exec -it opencode -- opencode
 ```
 
+## Setup and authentication
+
+All OpenCode state, skills, workspace content, and tool auth/config created in the container persist in `${OPENCODE_HOME_DIR:-./data/home}` because the full `/home/opencode` tree is bind-mounted.
+
+### GitHub CLI (`gh`)
+
+- Env-based auth: `GH_TOKEN` or `GITHUB_TOKEN`
+- Interactive auth:
+
+```bash
+docker compose exec opencode gh auth login
+```
+
+### GitLab CLI (`glab`)
+
+- Env-based auth: `GLAB_TOKEN` or `GITLAB_TOKEN`
+- Interactive auth:
+
+```bash
+docker compose exec opencode glab auth login
+```
+
+### Atlassian CLI (`atlcli`)
+
+- Env-based auth: `ATLCLI_API_TOKEN`
+- Optional profile defaults: `ATLCLI_EMAIL`, `ATLCLI_SITE`, `ATLCLI_BASE_URL`
+- Interactive auth:
+
+```bash
+docker compose exec opencode atlcli auth login --site https://your-company.atlassian.net
+```
+
 ## Configuration
 
 **All env vars are optional except `ZHIPU_API_KEY`.**
@@ -78,18 +112,20 @@ docker exec -it opencode -- opencode
 | `OPENCODE_SERVER_PASSWORD` | *(empty)* | Basic auth password. If empty, no auth is enforced — restrict via `OPENCODE_BIND_ADDRESS`       |
 | `OPENCODE_BIND_ADDRESS` | `127.0.0.1` | **Host-level only.** Which interface Docker listens on. Never passed into the container.       |
 | `FORCE_SKILL_SYNC`   | `false`   | `true` resets all skills to bootstrap defaults on startup; `false` preserves user modifications    |
+| `GH_TOKEN`/`GITHUB_TOKEN` | *(empty)* | Token auth for `gh`. Alternative to interactive `gh auth login`. |
+| `GLAB_TOKEN`/`GITLAB_TOKEN` | *(empty)* | Token auth for `glab`. Alternative to interactive `glab auth login`. |
+| `ATLCLI_API_TOKEN` | *(empty)* | Token auth for `atlcli`. |
+| `ATLCLI_EMAIL` | *(empty)* | Default Atlassian account email for `atlcli` auth flows. |
+| `ATLCLI_SITE` | *(empty)* | Default Atlassian cloud site for `atlcli` auth flows. |
+| `ATLCLI_BASE_URL` | *(empty)* | Base URL override for self-hosted/data-center Atlassian endpoints in `atlcli`. |
 
-### Optional bind mount overrides
+### Optional bind mount override
 
-These variables only affect Docker Compose host mounts. If unset, they fall back to the current `./data/*` layout.
+This variable only affects the Docker Compose host mount. If unset, it defaults to `./data/home`.
 
 | Variable | Default | What it configures |
 | -------- | ------- | ------------------ |
-| `OPENCODE_CONFIG_DIR` | `./data/config` | Host path mounted to `/home/opencode/.config/opencode` |
-| `OPENCODE_SHARE_DIR` | `./data/share` | Host path mounted to `/home/opencode/.local/share/opencode` |
-| `OPENCODE_STATE_DIR` | `./data/state` | Host path mounted to `/home/opencode/.local/state/opencode` |
-| `OPENCODE_WORKSPACE_DIR` | `./data/workspace` | Host path mounted to `/home/opencode/workspace` |
-| `OPENCODE_SKILLS_DIR` | `./data/skills` | Host path mounted to `/home/opencode/.config/opencode/skills` |
+| `OPENCODE_HOME_DIR` | `./data/home` | Host path mounted to `/home/opencode` |
 
 ### Host-level vs container-level binding
 
@@ -126,11 +162,7 @@ GEMINI_API_KEY=your-key-here
 
 | Host Path            | Container Path                    | Description                                              |
 | -------------------- | --------------------------------- | -------------------------------------------------------- |
-| `${OPENCODE_CONFIG_DIR:-./data/config}` | `/home/opencode/.config/opencode` | OpenCode + OmO config (seeded on first run, version-tracked) |
-| `${OPENCODE_SHARE_DIR:-./data/share}` | `/home/opencode/.local/share/opencode` | OpenCode persistent data |
-| `${OPENCODE_STATE_DIR:-./data/state}` | `/home/opencode/.local/state/opencode` | OpenCode state |
-| `${OPENCODE_WORKSPACE_DIR:-./data/workspace}` | `/home/opencode/workspace` | Project workspace (writable) |
-| `${OPENCODE_SKILLS_DIR:-./data/skills}` | `/home/opencode/.config/opencode/skills` | Skills (synced from bootstrap on start) |
+| `${OPENCODE_HOME_DIR:-./data/home}` | `/home/opencode` | Full persisted home: OpenCode config/state, skills, workspace, and CLI auth/config |
 
 All directories are created automatically on first start.
 
