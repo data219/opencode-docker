@@ -82,13 +82,26 @@ wait_for_http_health() {
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T -u opencode opencode sh -lc '
+    command -v jq >/dev/null 2>&1 || {
+      echo "ERROR: jq is required for OmO runtime config assertions but is not installed in the container." >&2
+      exit 1
+    }
+  '
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '
     config_dump="$(mktemp)"
     opencode debug config > "$config_dump"
-    grep -F "\"plugin\": [" "$config_dump"
-    grep -F "\"oh-my-openagent\"" "$config_dump"
-    grep -F "\"plugin_origins\"" "$config_dump"
-    grep -F "\"spec\": \"oh-my-openagent\"" "$config_dump"
-    grep -F "/home/opencode/.config/opencode" "$config_dump"
+    jq -e "
+      .plugin | index(\"oh-my-openagent\")
+    " "$config_dump" >/dev/null
+    jq -e "
+      any(
+        .plugin_origins[];
+        .spec == \"oh-my-openagent\"
+        and .scope == \"global\"
+      )
+    " "$config_dump" >/dev/null
   '
   [ "$status" -eq 0 ]
 
