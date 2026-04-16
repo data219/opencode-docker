@@ -101,7 +101,8 @@ wait_for_http_health() {
 }
 
 @test "compose stack boots and exposes opencode health on a non-default container port" {
-  prepare_test_stack 4317
+  # Avoid well-known host ports such as OTLP 4317, which can already be in use on CI runners.
+  prepare_test_stack "$((TEST_OPENCODE_PORT + 100))"
   run compose_ci up -d --build
   [ "$status" -eq 0 ]
 
