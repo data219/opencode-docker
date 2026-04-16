@@ -50,7 +50,7 @@ cd opencode-docker
 
 # 2. Copy environment file and set your API key
 cp .env.example .env
-# Edit .env — set ZHIPU_API_KEY (required)
+# Edit .env — set ZHIPU_API_KEY and GEMINI_API_KEY (required)
 
 # 3. Build and start
 DOCKER_BUILDKIT=1 docker compose up -d
@@ -99,13 +99,14 @@ docker compose exec opencode atlcli auth login --site https://your-company.atlas
 
 ## Configuration
 
-**All env vars are optional except `ZHIPU_API_KEY`.**
+**All env vars are optional except `ZHIPU_API_KEY` and `GEMINI_API_KEY`.**
 
 ### Core runtime variables
 
 | Variable             | Default   | What it configures                                                                                  |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------- |
 | `ZHIPU_API_KEY`      | *(required)* | Z.AI Coding Plan API key for GLM-5 models                                                       |
+| `GEMINI_API_KEY`     | *(required)* | Google AI Studio API key for Gemini vision model used by the configured multimodal agent        |
 | `OPENCODE_MODE`      | `web`     | Server mode: `web` (browser UI) or `serve` (API endpoint)                                          |
 | `OPENCODE_PORT`      | `4000`    | Server port inside the container (1024–65535)                                                       |
 | `OPENCODE_SERVER_USERNAME` | `opencode` | Basic auth username (set both username and password, or neither)                              |
@@ -136,11 +137,11 @@ This variable only affects the Docker Compose host mount. If unset, it defaults 
 
 > **Note:** Args after the mode are silently ignored. Use environment variables for all OpenCode configuration.
 
-### Optional providers
+### Required providers
 
-#### Google AI Studio (Optional)
+#### Google AI Studio
 
-The `multimodal-looker` agent can use **Google Gemini 2.5 Flash** for vision and multimodal tasks. This is entirely optional — without a Gemini API key, the agent falls back to the default Z.AI model.
+The configured `multimodal-looker` agent uses **Google Gemini 2.5 Flash** for vision and multimodal tasks, so a Gemini API key is required.
 
 **How to get the API key:**
 
@@ -154,9 +155,9 @@ Then set `GEMINI_API_KEY` in your `.env` file:
 GEMINI_API_KEY=your-key-here
 ```
 
-| Variable          | Default     | What it configures                                              |
-| ----------------- | ----------- | --------------------------------------------------------------- |
-| `GEMINI_API_KEY`  | *(empty)*   | Google AI Studio API key for Gemini vision model (optional)     |
+| Variable          | Default       | What it configures                                          |
+| ----------------- | ------------- | ----------------------------------------------------------- |
+| `GEMINI_API_KEY`  | *(required)*  | Google AI Studio API key for Gemini vision model            |
 
 ## Bind mount structure
 
