@@ -13,3 +13,6 @@ data/
 
 # Local git worktrees
 .worktrees/
+
+# Temporary integration-test data
+.test-*
