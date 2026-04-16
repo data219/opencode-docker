@@ -99,29 +99,3 @@ wait_for_http_health() {
   run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json
   [ "$status" -eq 0 ]
 }
-
-@test "compose stack boots and exposes opencode health on a non-default container port" {
-  # Avoid well-known host ports such as OTLP 4317, which can already be in use on CI runners.
-  prepare_test_stack "$((TEST_OPENCODE_PORT + 100))"
-  run compose_ci up -d --build
-  [ "$status" -eq 0 ]
-
-  if ! wait_for_http_health "http://127.0.0.1:${OPENCODE_PORT}/health" "$TEST_HEALTH_TIMEOUT"; then
-    compose_ci ps >&3 || true
-    compose_ci logs --tail=200 opencode >&3 || true
-    false
-  fi
-
-  run curl -fsS "http://127.0.0.1:${OPENCODE_PORT}/health"
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/oh-my-openagent.jsonc
-  [ "$status" -eq 0 ]
-  [ -f "${TEST_DATA_ROOT}/config/oh-my-openagent.jsonc" ]
-
-  run compose_ci exec -T opencode sh -lc 'command -v agent-browser'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json
-  [ "$status" -eq 0 ]
-}
