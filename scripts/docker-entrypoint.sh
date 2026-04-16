@@ -19,6 +19,8 @@ if [ $# -gt 0 ]; then
   shift
 fi
 PORT="${OPENCODE_PORT:-4000}"
+PRINT_LOGS_RAW="${OPENCODE_PRINT_LOGS:-false}"
+LOG_LEVEL_RAW="${OPENCODE_LOG_LEVEL:-}"
 
 case "$MODE" in
   web|serve) ;;
@@ -32,6 +34,31 @@ esac
 if ! echo "$PORT" | grep -qE '^[0-9]{1,5}$' || [ "$((10#$PORT))" -lt 1024 ] || [ "$((10#$PORT))" -gt 65535 ]; then
   echo "ERROR: Invalid OPENCODE_PORT='$PORT'. Must be a number between 1024 and 65535" >&2
   exit 1
+fi
+
+case "$PRINT_LOGS_RAW" in
+  true|TRUE|1|yes|YES)
+    PRINT_LOGS=true
+    ;;
+  false|FALSE|0|no|NO|"")
+    PRINT_LOGS=false
+    ;;
+  *)
+    echo "ERROR: Invalid OPENCODE_PRINT_LOGS='$PRINT_LOGS_RAW'. Must be one of: true, false" >&2
+    exit 1
+    ;;
+esac
+
+LOG_LEVEL=""
+if [ -n "$LOG_LEVEL_RAW" ]; then
+  LOG_LEVEL="$(printf '%s' "$LOG_LEVEL_RAW" | tr '[:lower:]' '[:upper:]')"
+  case "$LOG_LEVEL" in
+    DEBUG|INFO|WARN|ERROR) ;;
+    *)
+      echo "ERROR: Invalid OPENCODE_LOG_LEVEL='$LOG_LEVEL_RAW'. Must be one of: DEBUG, INFO, WARN, ERROR" >&2
+      exit 1
+      ;;
+  esac
 fi
 
 if [ -z "${OPENCODE_SERVER_PASSWORD:-}" ]; then
@@ -62,6 +89,14 @@ case "$MODE" in
     CMD=(opencode serve --hostname 0.0.0.0 --port "$PORT")
     ;;
 esac
+
+if [ "$PRINT_LOGS" = "true" ]; then
+  CMD+=(--print-logs)
+fi
+
+if [ -n "$LOG_LEVEL" ]; then
+  CMD+=(--log-level "$LOG_LEVEL")
+fi
 
 if [ "$(id -u)" = "0" ]; then
   exec gosu opencode "${CMD[@]}"

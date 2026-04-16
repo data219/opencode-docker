@@ -19,6 +19,8 @@ services:
       - OPENCODE_PORT=${OPENCODE_PORT:-4000}
       - OPENCODE_SERVER_USERNAME=${OPENCODE_SERVER_USERNAME:-opencode}
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD:-}
+      - OPENCODE_PRINT_LOGS=${OPENCODE_PRINT_LOGS:-false}
+      - OPENCODE_LOG_LEVEL=${OPENCODE_LOG_LEVEL:-}
       - FORCE_SKILL_SYNC=${FORCE_SKILL_SYNC:-false}
       - ZHIPU_API_KEY=${ZHIPU_API_KEY:?ZHIPU_API_KEY is required}
       # Optional: Google AI Studio API key for Gemini vision model (multimodal-looker agent).

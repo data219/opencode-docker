@@ -45,6 +45,8 @@ run_entrypoint() {
     -u OPENCODE_MODE
     -u OPENCODE_PORT
     -u OPENCODE_SERVER_PASSWORD
+    -u OPENCODE_PRINT_LOGS
+    -u OPENCODE_LOG_LEVEL
     -u CONFIG_DIR
     -u DEFAULTS_DIR
     "PATH=$PATH"
@@ -170,4 +172,34 @@ run_entrypoint() {
   rm -rf "$tmpdir" "$image_defaults"
   [ "$status" -eq 0 ]
   assert_output --partial "Config version mismatch"
+}
+
+@test "entrypoint enables opencode log printing when requested" {
+  run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_PRINT_LOGS=true
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: web --hostname 0.0.0.0 --port 4000 --print-logs"
+}
+
+@test "entrypoint leaves log printing disabled by default" {
+  run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000
+  [ "$status" -eq 0 ]
+  refute_output --partial "--print-logs"
+}
+
+@test "entrypoint sets opencode log level when requested" {
+  run_entrypoint OPENCODE_MODE=serve OPENCODE_PORT=4000 OPENCODE_LOG_LEVEL=DEBUG
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: serve --hostname 0.0.0.0 --port 4000 --log-level DEBUG"
+}
+
+@test "entrypoint rejects invalid log print toggle" {
+  run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_PRINT_LOGS=maybe
+  [ "$status" -ne 0 ]
+  assert_output --partial "Invalid OPENCODE_PRINT_LOGS"
+}
+
+@test "entrypoint rejects invalid log level" {
+  run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_LOG_LEVEL=TRACE
+  [ "$status" -ne 0 ]
+  assert_output --partial "Invalid OPENCODE_LOG_LEVEL"
 }

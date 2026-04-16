@@ -154,6 +154,8 @@ Use these variables only when the defaults do not fit your setup.
 | `GEMINI_API_KEY`     | *(required)* | Google AI Studio API key for Gemini vision model used by the configured multimodal agent        |
 | `OPENCODE_MODE`      | `web`     | Server mode: `web` (browser UI) or `serve` (API endpoint)                                          |
 | `OPENCODE_PORT`      | `4000`    | Server port inside the container (1024–65535)                                                       |
+| `OPENCODE_PRINT_LOGS` | `false`  | Maps to `opencode --print-logs` and streams OpenCode logs to container stderr                       |
+| `OPENCODE_LOG_LEVEL` | *(empty)* | Maps to `opencode --log-level` with `DEBUG`, `INFO`, `WARN`, or `ERROR`                            |
 | `OPENCODE_SERVER_USERNAME` | `opencode` | Basic auth username (set both username and password, or neither)                              |
 | `OPENCODE_SERVER_PASSWORD` | *(empty)* | Basic auth password. If empty, no auth is enforced — restrict via `OPENCODE_BIND_ADDRESS`       |
 | `OPENCODE_BIND_ADDRESS` | `127.0.0.1` | **Host-level only.** Which interface Docker listens on. Never passed into the container.       |
@@ -183,6 +185,15 @@ The mounted path persists the full `/home/opencode` tree, including OpenCode con
 - `0.0.0.0` — all interfaces, **must** set `OPENCODE_SERVER_PASSWORD`
 
 > **Note:** Args after the mode are silently ignored. Use environment variables for all OpenCode configuration.
+
+Logging example:
+
+```bash
+OPENCODE_PRINT_LOGS=true
+OPENCODE_LOG_LEVEL=DEBUG
+docker compose up -d
+docker compose logs -f opencode
+```
 ## Config management
 
 Managed config files (`.managed` suffix in the image defaults) are overwritten when the config version increases. Non-managed files are only seeded if they don't exist — user edits are always preserved.
