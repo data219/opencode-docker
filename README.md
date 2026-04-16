@@ -43,6 +43,27 @@
 
 ## Quick start
 
+Required API keys:
+
+- `ZHIPU_API_KEY` for the default GLM-5 model mapping
+- `GEMINI_API_KEY` for the configured `multimodal-looker` agent using Gemini vision
+
+Get the required keys:
+
+### Z.AI
+
+1. Open the [Z.AI Open Platform API key page](https://z.ai/manage-apikey/apikey-list)
+2. Sign in or create an account
+3. Create a new API key
+4. Copy the generated key into `.env` as `ZHIPU_API_KEY`
+
+### Google AI Studio
+
+1. Open [Google AI Studio](https://aistudio.google.com/apikey)
+2. Sign in with your Google account
+3. Click **Create API Key**
+4. Copy the generated key into `.env` as `GEMINI_API_KEY`
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/data219/opencode-docker.git
@@ -50,7 +71,7 @@ cd opencode-docker
 
 # 2. Copy environment file and set your API key
 cp .env.example .env
-# Edit .env — set ZHIPU_API_KEY and GEMINI_API_KEY (required)
+# Edit .env — set ZHIPU_API_KEY and GEMINI_API_KEY
 
 # 3. Build and start
 DOCKER_BUILDKIT=1 docker compose up -d
@@ -65,9 +86,15 @@ For CLI/TUI access, exec into the running container:
 docker exec -it opencode -- opencode
 ```
 
-## Setup and authentication
-
 All OpenCode state, skills, workspace content, and tool auth/config created in the container persist in `${OPENCODE_HOME_DIR:-./data/home}` because the full `/home/opencode` tree is bind-mounted.
+
+## Optional stack features
+
+Use these only when you want to activate additional tooling beyond the default OpenCode web setup.
+
+### CLI authentication
+
+Authenticate the bundled CLIs if you want to use them inside the container.
 
 ### GitHub CLI (`gh`)
 
@@ -97,11 +124,29 @@ docker compose exec opencode glab auth login
 docker compose exec opencode atlcli auth login --site https://your-company.atlassian.net
 ```
 
-## Configuration
+### Included skills
 
-**All env vars are optional except `ZHIPU_API_KEY` and `GEMINI_API_KEY`.**
+`bootstrap/skills/` is vendored in-repo and synced into the runtime home on container start.
+
+Included categories:
+
+- **Platform skills**: `github`, `glab`, `atlcli`, `linear`
+- **Code review**: `code-review-master`
+- **Security**: `security-threat-model`, `secrets-management`, `skeptic`
+- **CI/CD**: `deployment-pipeline-design`, `github-actions-templates`, `gitlab-ci-patterns`, `enterprise-readiness`
+- **Architecture**: `error-handling-patterns`, `context7`
+- **PHP**: `php`
+- **Incident response**: `incident-response`
+
+Set `FORCE_SKILL_SYNC=true` to reset all skills to bootstrap defaults.
+
+## Optional default customization
+
+Use these variables only when the defaults do not fit your setup.
 
 ### Core runtime variables
+
+**All env vars are optional except `ZHIPU_API_KEY` and `GEMINI_API_KEY`.**
 
 | Variable             | Default   | What it configures                                                                                  |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------- |
@@ -120,13 +165,15 @@ docker compose exec opencode atlcli auth login --site https://your-company.atlas
 | `ATLCLI_SITE` | *(empty)* | Default Atlassian cloud site for `atlcli` auth flows. |
 | `ATLCLI_BASE_URL` | *(empty)* | Base URL override for self-hosted/data-center Atlassian endpoints in `atlcli`. |
 
-### Optional bind mount override
+### Bind mount override
 
-This variable only affects the Docker Compose host mount. If unset, it defaults to `./data/home`.
+This variable controls the single Docker Compose host mount. If unset, it defaults to `./data/home`.
 
 | Variable | Default | What it configures |
 | -------- | ------- | ------------------ |
 | `OPENCODE_HOME_DIR` | `./data/home` | Host path mounted to `/home/opencode` |
+
+The mounted path persists the full `/home/opencode` tree, including OpenCode config/state, skills, workspace content, and CLI auth/config. All directories are created automatically on first start.
 
 ### Host-level vs container-level binding
 
@@ -136,58 +183,11 @@ This variable only affects the Docker Compose host mount. If unset, it defaults 
 - `0.0.0.0` — all interfaces, **must** set `OPENCODE_SERVER_PASSWORD`
 
 > **Note:** Args after the mode are silently ignored. Use environment variables for all OpenCode configuration.
-
-### Required providers
-
-#### Google AI Studio
-
-The configured `multimodal-looker` agent uses **Google Gemini 2.5 Flash** for vision and multimodal tasks, so a Gemini API key is required.
-
-**How to get the API key:**
-
-1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
-2. Sign in with your Google account
-3. Click **"Create API Key"**
-
-Then set `GEMINI_API_KEY` in your `.env` file:
-
-```bash
-GEMINI_API_KEY=your-key-here
-```
-
-| Variable          | Default       | What it configures                                          |
-| ----------------- | ------------- | ----------------------------------------------------------- |
-| `GEMINI_API_KEY`  | *(required)*  | Google AI Studio API key for Gemini vision model            |
-
-## Bind mount structure
-
-| Host Path            | Container Path                    | Description                                              |
-| -------------------- | --------------------------------- | -------------------------------------------------------- |
-| `${OPENCODE_HOME_DIR:-./data/home}` | `/home/opencode` | Full persisted home: OpenCode config/state, skills, workspace, and CLI auth/config |
-
-All directories are created automatically on first start.
-
 ## Config management
 
 Managed config files (`.managed` suffix in the image defaults) are overwritten when the config version increases. Non-managed files are only seeded if they don't exist — user edits are always preserved.
 
 When you pull a new image with updated defaults, the entrypoint detects version mismatches and warns you. No user files are silently overwritten.
-
-## Skills
-
-`bootstrap/skills/` is vendored in-repo and synced into the runtime home on container start.
-
-Included categories:
-
-- **Platform skills**: `github`, `glab`, `atlcli`, `linear`
-- **Code review**: `code-review-master`
-- **Security**: `security-threat-model`, `secrets-management`, `skeptic`
-- **CI/CD**: `deployment-pipeline-design`, `github-actions-templates`, `gitlab-ci-patterns`, `enterprise-readiness`
-- **Architecture**: `error-handling-patterns`, `context7`
-- **PHP**: `php`
-- **Incident response**: `incident-response`
-
-Set `FORCE_SKILL_SYNC=true` to reset all skills to bootstrap defaults.
 
 ## Upgrading
 
