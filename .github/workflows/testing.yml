@@ -11,15 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: arduino/setup-task@v2
 
       - name: Run unit tests
-        run: make test-unit
+        run: task test-unit
 
       - name: Run lint tests
-        run: make test-lint
+        run: task test-lint
 
       - name: Run integration tests
         env:
           ZHIPU_API_KEY: test
           GEMINI_API_KEY: ""
-        run: make test-integration
+        run: task test-integration

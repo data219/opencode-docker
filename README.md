@@ -5,6 +5,7 @@
 ## Prerequisites
 
 - [Docker Engine](https://docs.docker.com/engine/) with [Docker Compose plugin](https://docs.docker.com/compose/)
+- [Task](https://taskfile.dev/) for the documented local workflows
 - Network access for image pulls and Z.AI API calls
 - A valid Z.AI Coding Plan API key
 
@@ -74,7 +75,8 @@ cp .env.example .env
 # Edit .env — set ZHIPU_API_KEY and GEMINI_API_KEY
 
 # 3. Build and start
-DOCKER_BUILDKIT=1 docker compose up -d
+task build
+task up
 
 # 4. Open in browser
 open http://localhost:4000
@@ -83,10 +85,24 @@ open http://localhost:4000
 For CLI/TUI access, exec into the running container:
 
 ```bash
-docker exec -it opencode -- opencode
+task opencode -- --help
 ```
 
 All OpenCode state, skills, workspace content, and tool auth/config created in the container persist in `${OPENCODE_HOME_DIR:-./data/home}` because the full `/home/opencode` tree is bind-mounted.
+
+## Daily tasks
+
+Use the small `Taskfile.yml` for the normal local entrypoints:
+
+| Task | Purpose |
+| ---- | ------- |
+| `task config` | Render effective Compose config |
+| `task build` | Build the image with BuildKit |
+| `task up` | Start the stack in the background |
+| `task logs` | Follow the `opencode` service logs |
+| `task shell` | Open a bash shell in the running container |
+| `task opencode -- ...` | Run `opencode` inside the running container |
+| `task test` | Run all Bats suites |
 
 ## Optional stack features
 
@@ -192,15 +208,15 @@ Logging example:
 ```bash
 OPENCODE_PRINT_LOGS=true
 OPENCODE_LOG_LEVEL=DEBUG
-docker compose up -d
-docker compose logs -f opencode
+task up
+task logs
 ```
 
 CORS example:
 
 ```bash
 OPENCODE_CORS=https://opencode.example.com
-docker compose up -d
+task up
 ```
 ## Config management
 
@@ -212,8 +228,8 @@ When you pull a new image with updated defaults, the entrypoint detects version 
 
 ```bash
 git pull
-DOCKER_BUILDKIT=1 docker compose build
-docker compose up -d
+task build
+task up
 ```
 
 Managed configs are automatically re-seeded when the image ships a new config version. Your non-managed customizations are preserved.
@@ -235,9 +251,9 @@ Build instructions, testing, config seeding internals, and architectural decisio
 GitHub Actions QA is split into two workflows:
 
 - `Build` runs a direct `docker build -t opencode-docker:test .` validation of the Dockerfile without `docker compose`.
-- `Testing` runs after a successful `Build` workflow and executes `make test-unit`, `make test-lint`, and `make test-integration`.
+- `Testing` runs after a successful `Build` workflow and executes `task test-unit`, `task test-lint`, and `task test-integration`.
 
-`make test-integration` boots the Docker Compose stack for real, waits for container health, and verifies the runtime OpenCode/OmO setup inside the container.
+`task test-integration` boots the Docker Compose stack for real, waits for container health, and verifies the runtime OpenCode/OmO setup inside the container.
 
 ## License
 

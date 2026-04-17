@@ -5,13 +5,13 @@ Development setup, build internals, testing, and architectural decisions.
 ## Prerequisites
 
 - Docker Engine with BuildKit support (`DOCKER_BUILDKIT=1`)
-- Make (for test runner)
+- [Task](https://taskfile.dev/) (for local build/test workflows)
 - `gh` CLI (for upstream sync workflow)
 
 ## Building
 
 ```bash
-DOCKER_BUILDKIT=1 docker compose build
+task build
 ```
 
 ### Optional Languages
@@ -26,7 +26,7 @@ INSTALL_SWIFT=true
 INSTALL_ELIXIR=true
 
 # Then build
-DOCKER_BUILDKIT=1 docker compose build
+task build
 ```
 
 | Build Arg       | Default  | What it installs           |
@@ -42,10 +42,10 @@ BuildKit cache mounts are used for pip, npm, and go module caches to speed up re
 ## Testing
 
 ```bash
-make test-all           # Run all test suites
-make test-unit          # Fast, no Docker required
-make test-lint          # Structural assertions (file existence, permissions)
-make test-integration   # Boots the real Compose stack (single-threaded: --jobs 1)
+task test-all           # Run all test suites
+task test-unit          # Fast, no Docker required
+task test-lint          # Structural assertions (file existence, permissions)
+task test-integration   # Boots the real Compose stack (single-threaded: --jobs 1)
 ```
 
 Integration tests require Docker and boot the real `docker compose` stack with a health check plus runtime artifact validation.
@@ -55,7 +55,7 @@ Integration tests require Docker and boot the real `docker compose` stack with a
 The repository uses two chained workflows:
 
 - `Build`: runs `docker build -t opencode-docker:test .` directly to validate the Dockerfile without Compose.
-- `Testing`: triggers after `Build` succeeds and runs `make test-unit`, `make test-lint`, and `make test-integration`.
+- `Testing`: triggers after `Build` succeeds and runs `task test-unit`, `task test-lint`, and `task test-integration`.
 
 ## Dockerfile Structure
 
@@ -108,7 +108,7 @@ git remote add upstream https://github.com/nimbleflux/opencode-docker.git
 git fetch upstream
 git merge upstream/main --no-edit
 # Resolve conflicts and test
-make test-all
+task test-all
 ```
 
 ## Phase 2 (Future)
