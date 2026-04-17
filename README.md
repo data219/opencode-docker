@@ -156,7 +156,8 @@ Use these variables only when the defaults do not fit your setup.
 | `OPENCODE_PORT`      | `4000`    | Server port inside the container (1024–65535)                                                       |
 | `OPENCODE_PRINT_LOGS` | `false`  | Maps to `opencode --print-logs` and streams OpenCode logs to container stderr                       |
 | `OPENCODE_LOG_LEVEL` | *(empty)* | Maps to `opencode --log-level` with `DEBUG`, `INFO`, `WARN`, or `ERROR`                            |
-| `OPENCODE_SERVER_USERNAME` | `opencode` | Basic auth username (set both username and password, or neither)                              |
+| `OPENCODE_CORS` | *(empty)* | Maps to `opencode --cors` for one additional allowed origin; omitted entirely when empty             |
+| `OPENCODE_SERVER_USERNAME` | OpenCode default (`opencode`) | Optional basic auth username; empty values are not forwarded            |
 | `OPENCODE_SERVER_PASSWORD` | *(empty)* | Basic auth password. If empty, no auth is enforced — restrict via `OPENCODE_BIND_ADDRESS`       |
 | `OPENCODE_BIND_ADDRESS` | `127.0.0.1` | **Host-level only.** Which interface Docker listens on. Never passed into the container.       |
 | `FORCE_SKILL_SYNC`   | `false`   | `true` resets all skills to bootstrap defaults on startup; `false` preserves user modifications    |
@@ -193,6 +194,13 @@ OPENCODE_PRINT_LOGS=true
 OPENCODE_LOG_LEVEL=DEBUG
 docker compose up -d
 docker compose logs -f opencode
+```
+
+CORS example:
+
+```bash
+OPENCODE_CORS=https://opencode.example.com
+docker compose up -d
 ```
 ## Config management
 

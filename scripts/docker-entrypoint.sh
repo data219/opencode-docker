@@ -19,6 +19,9 @@ if [ $# -gt 0 ]; then
   shift
 fi
 PORT="${OPENCODE_PORT:-4000}"
+SERVER_USERNAME_RAW="${OPENCODE_SERVER_USERNAME:-}"
+SERVER_PASSWORD_RAW="${OPENCODE_SERVER_PASSWORD:-}"
+SERVER_CORS_RAW="${OPENCODE_CORS:-}"
 PRINT_LOGS_RAW="${OPENCODE_PRINT_LOGS:-false}"
 LOG_LEVEL_RAW="${OPENCODE_LOG_LEVEL:-}"
 
@@ -61,8 +64,16 @@ if [ -n "$LOG_LEVEL_RAW" ]; then
   esac
 fi
 
-if [ -z "${OPENCODE_SERVER_PASSWORD:-}" ]; then
+if [ -z "$SERVER_PASSWORD_RAW" ]; then
   echo "NOTE: OPENCODE_SERVER_PASSWORD is not set. Ensure host-level port binding restricts access." >&2
+fi
+
+# Empty runtime env vars should not override OpenCode defaults.
+if [ -z "$SERVER_USERNAME_RAW" ]; then
+  unset OPENCODE_SERVER_USERNAME
+fi
+if [ -z "$SERVER_PASSWORD_RAW" ]; then
+  unset OPENCODE_SERVER_PASSWORD
 fi
 
 # --- Config drift detection ---
@@ -96,6 +107,10 @@ fi
 
 if [ -n "$LOG_LEVEL" ]; then
   CMD+=(--log-level "$LOG_LEVEL")
+fi
+
+if [ -n "$SERVER_CORS_RAW" ]; then
+  CMD+=(--cors "$SERVER_CORS_RAW")
 fi
 
 if [ "$(id -u)" = "0" ]; then

@@ -44,7 +44,9 @@ run_entrypoint() {
     env
     -u OPENCODE_MODE
     -u OPENCODE_PORT
+    -u OPENCODE_SERVER_USERNAME
     -u OPENCODE_SERVER_PASSWORD
+    -u OPENCODE_CORS
     -u OPENCODE_PRINT_LOGS
     -u OPENCODE_LOG_LEVEL
     -u CONFIG_DIR
@@ -148,6 +150,13 @@ run_entrypoint() {
   refute_output --partial "OPENCODE_SERVER_PASSWORD is not set"
 }
 
+@test "entrypoint passes through optional server username env" {
+  run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_SERVER_USERNAME=alice OPENCODE_SERVER_PASSWORD=secret
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: web --hostname 0.0.0.0 --port 4000"
+  refute_output --partial "OPENCODE_SERVER_PASSWORD is not set"
+}
+
 @test "entrypoint ignores CLI mode when OPENCODE_MODE is set" {
   run_entrypoint OPENCODE_MODE=serve OPENCODE_PORT=4000 -- invalid
   [ "$status" -eq 0 ]
@@ -190,6 +199,18 @@ run_entrypoint() {
   run_entrypoint OPENCODE_MODE=serve OPENCODE_PORT=4000 OPENCODE_LOG_LEVEL=DEBUG
   [ "$status" -eq 0 ]
   assert_output --partial "mock-opencode: serve --hostname 0.0.0.0 --port 4000 --log-level DEBUG"
+}
+
+@test "entrypoint sets cors when requested" {
+  run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_CORS=https://example.com
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: web --hostname 0.0.0.0 --port 4000 --cors https://example.com"
+}
+
+@test "entrypoint omits cors when env is empty" {
+  run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_CORS=
+  [ "$status" -eq 0 ]
+  refute_output --partial "--cors"
 }
 
 @test "entrypoint rejects invalid log print toggle" {

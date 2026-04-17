@@ -120,3 +120,31 @@ wait_for_http_health() {
   run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json
   [ "$status" -eq 0 ]
 }
+
+@test "compose stack forwards cors flag and strips empty auth username env" {
+  prepare_test_stack
+  export OPENCODE_CORS="https://example.com"
+  export OPENCODE_SERVER_USERNAME=""
+
+  run compose_ci up -d --build
+  [ "$status" -eq 0 ]
+
+  if ! wait_for_http_health "http://127.0.0.1:${OPENCODE_PORT}/health" "$TEST_HEALTH_TIMEOUT"; then
+    compose_ci ps >&3 || true
+    compose_ci logs --tail=200 opencode >&3 || true
+    false
+  fi
+
+  run compose_ci exec -T opencode sh -lc '
+    tr "\0" " " < /proc/1/cmdline | grep -F -- "--cors https://example.com"
+  '
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T opencode sh -lc '
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^OPENCODE_SERVER_USERNAME="; then
+      echo "OPENCODE_SERVER_USERNAME leaked into runtime environment" >&2
+      exit 1
+    fi
+  '
+  [ "$status" -eq 0 ]
+}
