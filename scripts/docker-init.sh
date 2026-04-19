@@ -23,6 +23,15 @@ if [ "$(id -u)" = "0" ]; then
   done
 fi
 
+HOME_OWNER="$(stat -c '%u:%g' /home/opencode 2>/dev/null || echo 'opencode:opencode')"
+
+for dir in /home/opencode/.config /home/opencode/.cache /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state; do
+  mkdir -p "$dir"
+  if [ "$(id -u)" = "0" ] && [ -n "$HOME_OWNER" ]; then
+    chown -R "$HOME_OWNER" "$dir"
+  fi
+done
+
 mkdir -p "$CONFIG_DIR"
 
 # Determine if we need to seed configs.

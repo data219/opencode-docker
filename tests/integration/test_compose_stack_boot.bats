@@ -108,6 +108,13 @@ wait_for_http_health() {
   run compose_ci exec -T opencode sh -lc 'command -v agent-browser'
   [ "$status" -eq 0 ]
 
+  run compose_ci exec -T -u opencode opencode sh -lc '
+    agent-browser open https://example.com >/tmp/agent-browser-open.log 2>&1 &&
+    agent-browser pdf /tmp/example.pdf >/tmp/agent-browser-pdf.log 2>&1 &&
+    test -s /tmp/example.pdf
+  '
+  [ "$status" -eq 0 ]
+
   run compose_ci exec -T opencode sh -lc 'command -v gh'
   [ "$status" -eq 0 ]
 

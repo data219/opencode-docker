@@ -61,6 +61,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        curl git vim nano jq findutils openssh-client \
        build-essential make pkg-config autoconf bison re2c \
        unzip xz-utils ca-certificates gnupg \
+       fonts-liberation wget xdg-utils \
+       libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 \
+       libcairo2 libcups2 libdbus-1-3 libexpat1 libgbm1 libglib2.0-0 \
+       libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libudev1 libvulkan1 \
+       libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 \
+       libxkbcommon0 libxrandr2 \
        libssl-dev libcurl4-openssl-dev libxml2-dev \
        libpq-dev libsqlite3-dev libffi-dev libzip-dev \
        libicu-dev libonig-dev sqlite3 zip \
@@ -99,6 +105,7 @@ ENV CARGO_HOME=/home/opencode/.cargo
 ENV GVM_ROOT=/home/opencode/.gvm
 ENV GOPATH=/home/opencode/go
 ENV BUN_INSTALL=/home/opencode/.bun
+ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/local/bin/agent-browser-chrome
 
 # --- Install Node.js 20 LTS for OpenCode ---
 RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
@@ -111,9 +118,9 @@ RUN npm install -g opencode-ai@${OPENCODE_VERSION}
 
 # --- Install agent-browser CLI and browser runtime ---
 RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
-    && mkdir -p /home/opencode/.cache \
-    && HOME=/home/opencode XDG_CACHE_HOME=/home/opencode/.cache agent-browser install \
-    && chown -R opencode:opencode /home/opencode/.cache
+    && mkdir -p /opt/opencode-browser-home/.cache \
+    && HOME=/opt/opencode-browser-home XDG_CACHE_HOME=/opt/opencode-browser-home/.cache agent-browser install \
+    && ln -sf "$(find /opt/opencode-browser-home/.agent-browser/browsers -path '*/chrome' -type f | head -n 1)" /usr/local/bin/agent-browser-chrome
 
 # --- Install yq v4.40.5 ---
 RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
