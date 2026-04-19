@@ -17,8 +17,12 @@
 - When a managed config file changes, bump both `bootstrap/config/.opencode-docker-config-version` and `data/config/.opencode-docker-config-version` so existing volumes get the updated managed seed.
 - Docker-backed integration tests should avoid a single fixed host port; derive a per-run port or allow env override to prevent local port collisions.
 - For image-level browser automation changes, verify both the installed binary and the final seeded runtime config inside the booted container.
+- For browser-runtime fixes, verify both the required shared libraries and the effective browser executable path inside the running container; missing `.so` files and bind-mounted home directories can fail independently.
+- When `/home/opencode` is bind-mounted, do not depend on browser binaries that were installed only under the image user's home; prefer an image-local executable path or another location not shadowed by the mount.
+- For `agent-browser` coverage, do not stop at `command -v agent-browser`; add a runtime smoke test that actually opens a page and writes a PDF from inside the compose stack.
 - For entrypoint or privilege-drop tests that mock executables and then switch users via `gosu`, make the mock binary directory traversable (for example `chmod 755 "$MOCK_BIN_DIR"`), otherwise the target user may miss the mock and start the real binary.
 - For runtime checks that depend on user-scoped config or `$HOME`, run `docker compose exec -T -u <user> <service> ...` with the intended runtime user instead of root.
+- When a bind-mounted home is created by Docker as `root`, ensure startup init logic recreates and re-owns writable runtime directories such as `.config` and `.cache` before validating browser or app startup behavior.
 - For OpenCode runtime/plugin assertions, verify the active config path first with `opencode debug paths`; do not treat seeded file existence alone as proof that runtime config was loaded.
 
 ## Behavior-Only Test Guardrails
