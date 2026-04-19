@@ -23,6 +23,13 @@ if [ "$(id -u)" = "0" ]; then
   done
 fi
 
+for dir in /home/opencode/.config /home/opencode/.cache /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state; do
+  mkdir -p "$dir"
+  if [ "$(id -u)" = "0" ]; then
+    chown -R opencode:opencode "$dir"
+  fi
+done
+
 mkdir -p "$CONFIG_DIR"
 
 # Determine if we need to seed configs.
