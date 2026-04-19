@@ -1,13 +1,11 @@
 name: Testing
 
 on:
-  workflow_run:
-    workflows: ["Build"]
-    types: [completed]
+  push:
+  pull_request:
 
 jobs:
   testing:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
