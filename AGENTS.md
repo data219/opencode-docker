@@ -30,3 +30,9 @@
 - Do not patch repository scripts inside tests with `sed`, copied temp variants, or similar text rewrites just to redirect collaborators; prefer explicit env-driven test seams such as overrideable script paths.
 - Keep project tests focused on observable behavior, exit codes, ownership, health, command output, and file existence. Do not keep helper assertions whose primary purpose is checking file contents.
 - When mocking command execution in Bats, assert only the relevant invoked arguments or side effects; do not couple tests to the current host/container username unless that identity is the behavior under test.
+
+## Dockerfile Ownership Performance
+
+- Avoid global recursive ownership rewrites like `chown -R ... /home/opencode` in late Dockerfile layers when large toolchains live under that tree.
+- Prefer targeted `chown` only on root-created runtime seed paths (for example config/state/workspace directories) to prevent large metadata-only layers and slow no-cache builds.
+- If a build appears stuck on ownership steps, inspect `docker history` layer size first before changing unrelated install steps.
