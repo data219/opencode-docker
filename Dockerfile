@@ -105,7 +105,7 @@ ENV CARGO_HOME=/home/opencode/.cargo
 ENV GVM_ROOT=/home/opencode/.gvm
 ENV GOPATH=/home/opencode/go
 ENV BUN_INSTALL=/home/opencode/.bun
-ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/local/bin/agent-browser-chrome
+ENV AGENT_BROWSER_EXECUTABLE_PATH=/opt/agent-browser/chrome/chrome
 
 # --- Install Node.js 20 LTS for OpenCode ---
 RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
@@ -118,9 +118,11 @@ RUN npm install -g opencode-ai@${OPENCODE_VERSION}
 
 # --- Install agent-browser CLI and browser runtime ---
 RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
-    && mkdir -p /opt/opencode-browser-home/.cache \
+    && mkdir -p /opt/opencode-browser-home/.cache /opt/agent-browser \
     && HOME=/opt/opencode-browser-home XDG_CACHE_HOME=/opt/opencode-browser-home/.cache agent-browser install \
-    && ln -sf "$(find /opt/opencode-browser-home/.agent-browser/browsers -path '*/chrome' -type f | head -n 1)" /usr/local/bin/agent-browser-chrome
+    && browser_dir="$(find /opt/opencode-browser-home/.agent-browser/browsers -mindepth 1 -maxdepth 1 -type d | head -n 1)" \
+    && mv "$browser_dir" /opt/agent-browser/chrome \
+    && rm -rf /opt/opencode-browser-home
 
 # --- Install yq v4.40.5 ---
 RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
