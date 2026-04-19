@@ -60,7 +60,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get install -y --no-install-recommends \
        curl git vim nano jq findutils openssh-client \
        build-essential make pkg-config autoconf bison re2c \
-       unzip xz-utils ca-certificates gnupg \
+       unzip xz-utils ca-certificates gnupg ghostscript \
        fonts-liberation wget xdg-utils \
        libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 \
        libcairo2 libcups2 libdbus-1-3 libexpat1 libgbm1 libglib2.0-0 \
@@ -309,4 +309,4 @@ ENTRYPOINT ["/scripts/docker-entrypoint.sh"]
 CMD ["web"]
 
 # --- Final user ---
-# USER opencode — entrypoint handles user switch
+# Final runtime user is selected in the entrypoint via gosu.
