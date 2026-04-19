@@ -277,13 +277,13 @@ RUN mkdir -p /home/opencode/.config/opencode \
     /home/opencode/.local/share/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace \
-    /home/opencode/.config/opencode/skills \
-  && cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/opencode/opencode.json \
+    /home/opencode/.config/opencode/skills
+RUN cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/opencode/opencode.json \
   && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc.managed /home/opencode/.config/opencode/oh-my-openagent.jsonc \
   && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
   && cp -a /opt/opencode-defaults/oh-my-openagent-omo.json /home/opencode/.config/opencode/oh-my-openagent-omo.json 2>/dev/null || true \
-  && cp -a /opt/opencode-defaults/skills/. /home/opencode/.config/opencode/skills/ \
-  && chown -R opencode:opencode /home/opencode
+  && cp -a /opt/opencode-defaults/skills/. /home/opencode/.config/opencode/skills/
+RUN chown -R opencode:opencode /home/opencode
 
 # --- Copy scripts ---
 COPY scripts/docker-init.sh /scripts/docker-init.sh
