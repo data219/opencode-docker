@@ -14,6 +14,9 @@
 - For Docker-based integration tests in GitHub Actions, prefer CI-safe startup and health-check timeouts over aggressive local-only values.
 - When a container health wait times out in CI, print `docker compose ps` and relevant service logs before failing so the next debugging step has actionable evidence.
 - If a first CI fix changes the failure mode, re-run and reclassify the new failure before assuming the original root cause is still active.
+- For one-off GitHub Actions integration-test timeouts, rerun the same run once before code changes to classify flake vs deterministic regression.
+- When the rerun succeeds and local reproduction is stable, prefer a minimal CI timeout hardening (workflow env) over behavioral entrypoint/service changes.
+- For timeout diagnostics, collect `docker compose ps`, service logs, and health status context before proposing fixes.
 - When a managed config file changes, bump both `bootstrap/config/.opencode-docker-config-version` and `data/config/.opencode-docker-config-version` so existing volumes get the updated managed seed.
 - Docker-backed integration tests should avoid a single fixed host port; derive a per-run port or allow env override to prevent local port collisions.
 - For image-level browser automation changes, verify both the installed binary and the final seeded runtime config inside the booted container.
