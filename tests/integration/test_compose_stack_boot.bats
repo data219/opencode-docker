@@ -60,8 +60,7 @@ wait_for_http_health() {
   return 1
 }
 
-@test "compose stack boots and loads OmO runtime config in opencode" {
-  prepare_test_stack
+start_test_stack() {
   run compose_ci up -d --build
   [ "$status" -eq 0 ]
 
@@ -70,9 +69,19 @@ wait_for_http_health() {
     compose_ci logs --tail=200 opencode >&3 || true
     false
   fi
+}
+
+@test "compose stack boots and serves health endpoint" {
+  prepare_test_stack
+  start_test_stack
 
   run curl -fsS "http://127.0.0.1:${OPENCODE_PORT}/health"
   [ "$status" -eq 0 ]
+}
+
+@test "compose stack loads OmO runtime config in opencode" {
+  prepare_test_stack
+  start_test_stack
 
   run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/oh-my-openagent.jsonc
   [ "$status" -eq 0 ]
@@ -104,15 +113,13 @@ wait_for_http_health() {
     " "$config_dump" >/dev/null
   '
   [ "$status" -eq 0 ]
+}
+
+@test "compose stack provides bundled CLIs and defaults" {
+  prepare_test_stack
+  start_test_stack
 
   run compose_ci exec -T opencode sh -lc 'command -v agent-browser'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc '
-    agent-browser open https://example.com >/tmp/agent-browser-open.log 2>&1 &&
-    agent-browser pdf /tmp/example.pdf >/tmp/agent-browser-pdf.log 2>&1 &&
-    test -s /tmp/example.pdf
-  '
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T opencode sh -lc 'command -v gh'
@@ -128,19 +135,24 @@ wait_for_http_health() {
   [ "$status" -eq 0 ]
 }
 
+@test "compose stack renders PDFs via agent-browser" {
+  prepare_test_stack
+  start_test_stack
+
+  run compose_ci exec -T -u opencode opencode sh -lc '
+    agent-browser open "http://127.0.0.1:${OPENCODE_PORT}/health" >/tmp/agent-browser-open.log 2>&1 &&
+    agent-browser pdf /tmp/example.pdf >/tmp/agent-browser-pdf.log 2>&1 &&
+    test -s /tmp/example.pdf
+  '
+  [ "$status" -eq 0 ]
+}
+
 @test "compose stack forwards cors flag and strips empty auth username env" {
   prepare_test_stack
   export OPENCODE_CORS="https://example.com"
   export OPENCODE_SERVER_USERNAME=""
 
-  run compose_ci up -d --build
-  [ "$status" -eq 0 ]
-
-  if ! wait_for_http_health "http://127.0.0.1:${OPENCODE_PORT}/health" "$TEST_HEALTH_TIMEOUT"; then
-    compose_ci ps >&3 || true
-    compose_ci logs --tail=200 opencode >&3 || true
-    false
-  fi
+  start_test_stack
 
   run compose_ci exec -T opencode sh -lc '
     tr "\0" " " < /proc/1/cmdline | grep -F -- "--cors https://example.com"
