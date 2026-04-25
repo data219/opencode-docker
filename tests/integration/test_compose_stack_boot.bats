@@ -131,6 +131,18 @@ start_test_stack() {
   run compose_ci exec -T opencode sh -lc 'command -v atlcli'
   [ "$status" -eq 0 ]
 
+  run compose_ci exec -T -u opencode opencode sh -lc '
+    command -v python >/dev/null &&
+    command -v python3 >/dev/null &&
+    python --version >/dev/null &&
+    python3 --version >/dev/null &&
+    python -m pip --version >/dev/null &&
+    python -m venv /tmp/opencode-python-smoke &&
+    /tmp/opencode-python-smoke/bin/python -c "print(\"python-ready\")"
+  '
+  [ "$status" -eq 0 ]
+  [ "$output" = "python-ready" ]
+
   run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json
   [ "$status" -eq 0 ]
 }
