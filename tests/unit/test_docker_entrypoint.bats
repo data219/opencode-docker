@@ -219,6 +219,53 @@ run_entrypoint() {
   assert_output --partial "Invalid OPENCODE_PRINT_LOGS"
 }
 
+@test "entrypoint grants opencode access to mounted Docker socket before dropping privileges" {
+  socket_path="$(mktemp)"
+  log_file="$(mktemp)"
+
+  cat > "$MOCK_BIN_DIR/id" <<'MOCK'
+#!/bin/bash
+if [ "${1:-}" = "-u" ]; then
+  echo "0"
+  exit 0
+fi
+exec /usr/bin/id "$@"
+MOCK
+  cat > "$MOCK_BIN_DIR/getent" <<'MOCK'
+#!/bin/bash
+exit 2
+MOCK
+  cat > "$MOCK_BIN_DIR/groupadd" <<'MOCK'
+#!/bin/bash
+echo "groupadd $*" >> "$MOCK_DOCKER_SOCKET_LOG"
+MOCK
+  cat > "$MOCK_BIN_DIR/usermod" <<'MOCK'
+#!/bin/bash
+echo "usermod $*" >> "$MOCK_DOCKER_SOCKET_LOG"
+MOCK
+  cat > "$MOCK_BIN_DIR/gosu" <<'MOCK'
+#!/bin/bash
+echo "gosu $1" >> "$MOCK_DOCKER_SOCKET_LOG"
+shift
+exec "$@"
+MOCK
+  chmod +x "$MOCK_BIN_DIR/id" "$MOCK_BIN_DIR/getent" "$MOCK_BIN_DIR/groupadd" "$MOCK_BIN_DIR/usermod" "$MOCK_BIN_DIR/gosu"
+
+  run_entrypoint \
+    MOCK_DOCKER_SOCKET_LOG="$log_file" \
+    OPENCODE_DOCKER_SOCKET="$socket_path" \
+    OPENCODE_MODE=web \
+    OPENCODE_PORT=4000
+
+  rm -f "$socket_path"
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-opencode: web --hostname 0.0.0.0 --port 4000"
+  grep -q "groupadd -g" "$log_file"
+  grep -q "usermod -aG" "$log_file"
+  grep -q "gosu opencode" "$log_file"
+  rm -f "$log_file"
+}
+
 @test "entrypoint rejects invalid log level" {
   run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_LOG_LEVEL=TRACE
   [ "$status" -ne 0 ]

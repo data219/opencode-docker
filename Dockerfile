@@ -36,6 +36,10 @@ ARG YQ_VERSION=4.40.5
 ARG GH_VERSION=2.89.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
 ARG GLAB_VERSION=1.92.1
+# renovate: datasource=github-releases depName=moby/moby versioning=semver
+ARG DOCKER_CLI_VERSION=29.4.1
+# renovate: datasource=github-releases depName=docker/compose versioning=semver
+ARG DOCKER_COMPOSE_VERSION=2.40.3
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
 ARG ATLCLI_VERSION=0.16.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm
@@ -97,6 +101,26 @@ RUN ARCH=$(dpkg --print-architecture) \
     && curl -fsSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${ARCH}" -o /usr/local/bin/gosu \
     && chmod +x /usr/local/bin/gosu \
     && gosu --version
+
+# --- Install Docker CLI + Compose plugin (client only; daemon access is opt-in at runtime) ---
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) docker_arch="x86_64" ;; \
+      arm64) docker_arch="aarch64" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://download.docker.com/linux/static/stable/${docker_arch}/docker-${DOCKER_CLI_VERSION}.tgz" \
+      -o /tmp/docker.tgz; \
+    tar -xzf /tmp/docker.tgz -C /tmp docker/docker; \
+    install -m 0755 /tmp/docker/docker /usr/local/bin/docker; \
+    mkdir -p /usr/local/lib/docker/cli-plugins; \
+    curl -fsSL "https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-${docker_arch}" \
+      -o /usr/local/lib/docker/cli-plugins/docker-compose; \
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose; \
+    docker --version; \
+    docker compose version; \
+    rm -rf /tmp/docker /tmp/docker.tgz
 
 # --- ENV vars for version managers ---
 ENV NVM_DIR=/home/opencode/.nvm

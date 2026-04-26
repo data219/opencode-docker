@@ -30,17 +30,19 @@
   - Optional (build args): Java Temurin 21, Ruby 3.3, Swift 6.0, Elixir/OTP 27
 
 - Developer tooling:
-  - `golangci-lint`, `yq`, `jq`, `git`, `curl`
+  - `docker` CLI with Compose plugin, `golangci-lint`, `yq`, `jq`, `git`, `curl`
 
 ## Security boundaries
 
 - The container runs non-root via `gosu`.
 - Runtime state is isolated in `./data/`.
-- No Docker socket or host config mounts (`~/.ssh`, `~/.gitconfig`) are exposed.
+- By default, no Docker socket or host config mounts (`~/.ssh`, `~/.gitconfig`) are exposed.
 - Default port binding is `127.0.0.1` (localhost only).
 
 > [!WARNING]
 > Setting `OPENCODE_BIND_ADDRESS=0.0.0.0` exposes the port on all interfaces. Always set `OPENCODE_SERVER_PASSWORD` when doing this.
+
+Docker daemon access is available only through the explicit Docker override documented below. Mounting the Docker socket lets OpenCode control the host Docker daemon and should only be used for trusted local development.
 
 ## Quick start
 
@@ -103,6 +105,18 @@ Use the small `Taskfile.yml` for the normal local entrypoints:
 | `task shell` | Open a bash shell in the running container |
 | `task opencode -- ...` | Run `opencode` inside the running container |
 | `task test` | Run all Bats suites |
+
+### Docker stack control
+
+Use the Docker override only when you want OpenCode to start and test other Docker Compose stacks through the host Docker daemon:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.docker.yml up -d
+docker compose exec opencode docker version
+docker compose exec opencode docker compose version
+```
+
+This keeps the default stack isolated while making Docker access a deliberate opt-in. Treat this mode as trusted-local only: Docker socket access can create privileged containers and mount host paths.
 
 ## Optional stack features
 
