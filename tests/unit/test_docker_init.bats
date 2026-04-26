@@ -53,6 +53,7 @@ teardown_init_test_env() {
   export HOME="$(mktemp -d)"
   export USER_HOME="$HOME"
   export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  echo "Co-Authored-By: Test <test@example.com>" > "$DEFAULTS_DIR/.gitmessage"
   export GIT_AUTHOR_NAME="Custom Author"
   export GIT_AUTHOR_EMAIL="custom-author@example.com"
   export GIT_COMMITTER_NAME="Custom Committer"
@@ -145,25 +146,28 @@ teardown_init_test_env() {
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
 
-  run git config --global --get author.name
+  run git config --global --get user.name
   [ "$status" -eq 0 ]
   [ "$output" = "Oh-MyOpenAgent" ]
+
+  run git config --global --get user.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "noreply@ohmyopencode.ai" ]
+
+  run git config --global --get author.name
+  [ "$status" -ne 0 ]
 
   run git config --global --get author.email
-  [ "$status" -eq 0 ]
-  [ "$output" = "noreply@ohmyopencode.ai" ]
+  [ "$status" -ne 0 ]
 
   run git config --global --get committer.name
-  [ "$status" -eq 0 ]
-  [ "$output" = "Oh-MyOpenAgent" ]
+  [ "$status" -ne 0 ]
 
   run git config --global --get committer.email
-  [ "$status" -eq 0 ]
-  [ "$output" = "noreply@ohmyopencode.ai" ]
+  [ "$status" -ne 0 ]
 
   run git config --global --get commit.template
-  [ "$status" -eq 0 ]
-  [ "$output" = "$HOME/.gitmessage" ]
+  [ "$status" -ne 0 ]
 
   rm -rf "$HOME"
   unset HOME USER_HOME GIT_CONFIG_GLOBAL
@@ -291,6 +295,25 @@ teardown_init_test_env() {
   [ "$status" -ne 0 ]
 
   run git config --global --get committer.email
+  [ "$status" -ne 0 ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh does not set commit.template when gitmessage file is missing" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  rm -f "$HOME/.gitmessage"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get commit.template
   [ "$status" -ne 0 ]
 
   rm -rf "$HOME"

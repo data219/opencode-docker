@@ -214,10 +214,22 @@ start_test_stack() {
   run compose_ci exec -T -u opencode opencode sh -lc 'grep -F "Authored-Using: glm-5.1 via Oh-My-OpenCode" /home/opencode/.gitmessage'
   [ "$status" -eq 0 ]
 
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get author.name)" = "Oh-MyOpenAgent"'
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get user.name)" = "Oh-MyOpenAgent"'
   [ "$status" -eq 0 ]
 
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get committer.email)" = "noreply@ohmyopencode.ai"'
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get user.email)" = "noreply@ohmyopencode.ai"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get author.name >/dev/null 2>&1'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get author.email >/dev/null 2>&1'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get committer.name >/dev/null 2>&1'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get committer.email >/dev/null 2>&1'
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get commit.template)" = "/home/opencode/.gitmessage"'

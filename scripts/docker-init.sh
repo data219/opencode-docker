@@ -112,26 +112,21 @@ AUTHOR_EMAIL_FORCE="$([ -n "$GIT_AUTHOR_EMAIL_OVERRIDE" ] && echo true || echo f
 COMMITTER_NAME_FORCE="$([ -n "$GIT_COMMITTER_NAME_OVERRIDE" ] && echo true || echo false)"
 COMMITTER_EMAIL_FORCE="$([ -n "$GIT_COMMITTER_EMAIL_OVERRIDE" ] && echo true || echo false)"
 
-EXISTING_USER_NAME="$(git config --file "$GIT_CONFIG_TARGET" --get user.name 2>/dev/null || true)"
-EXISTING_USER_EMAIL="$(git config --file "$GIT_CONFIG_TARGET" --get user.email 2>/dev/null || true)"
-
 git_set_or_seed "user.name" "$GIT_AUTHOR_NAME_EFFECTIVE" "$USER_NAME_FORCE"
 git_set_or_seed "user.email" "$GIT_AUTHOR_EMAIL_EFFECTIVE" "$USER_EMAIL_FORCE"
 
-# Do not introduce author/committer override keys when user identity is already
-# configured and no explicit author/committer overrides were requested.
-if [ -n "$EXISTING_USER_NAME" ] && [ -n "$EXISTING_USER_EMAIL" ] \
-  && [ "$AUTHOR_NAME_FORCE" = "false" ] && [ "$AUTHOR_EMAIL_FORCE" = "false" ] \
-  && [ "$COMMITTER_NAME_FORCE" = "false" ] && [ "$COMMITTER_EMAIL_FORCE" = "false" ]; then
-  :
-else
+# Only write author/committer override keys when explicitly requested.
+if [ "$AUTHOR_NAME_FORCE" = "true" ] || [ "$AUTHOR_EMAIL_FORCE" = "true" ] \
+  || [ "$COMMITTER_NAME_FORCE" = "true" ] || [ "$COMMITTER_EMAIL_FORCE" = "true" ]; then
   git_set_or_seed "author.name" "$GIT_AUTHOR_NAME_EFFECTIVE" "$AUTHOR_NAME_FORCE"
   git_set_or_seed "author.email" "$GIT_AUTHOR_EMAIL_EFFECTIVE" "$AUTHOR_EMAIL_FORCE"
   git_set_or_seed "committer.name" "$GIT_COMMITTER_NAME_EFFECTIVE" "$COMMITTER_NAME_FORCE"
   git_set_or_seed "committer.email" "$GIT_COMMITTER_EMAIL_EFFECTIVE" "$COMMITTER_EMAIL_FORCE"
 fi
 
-git_set_or_seed "commit.template" "$USER_HOME/.gitmessage"
+if [ -f "$USER_HOME/.gitmessage" ]; then
+  git_set_or_seed "commit.template" "$USER_HOME/.gitmessage"
+fi
 
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
 # Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.
