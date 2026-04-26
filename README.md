@@ -179,10 +179,10 @@ Use these variables only when the defaults do not fit your setup.
 | `FORCE_SKILL_SYNC`   | `false`   | `true` resets all skills to bootstrap defaults on startup; `false` preserves user modifications    |
 | `GH_TOKEN`/`GITHUB_TOKEN` | *(empty)* | Token auth for `gh`. Alternative to interactive `gh auth login`. |
 | `GLAB_TOKEN`/`GITLAB_TOKEN` | *(empty)* | Token auth for `glab`. Alternative to interactive `glab auth login`. |
-| `GIT_AUTHOR_NAME` | `Oh-MyOpenAgent` | Default Git author name inside the container; can be overridden per stack via env. |
-| `GIT_AUTHOR_EMAIL` | `noreply@ohmyopencode.ai` | Default Git author email inside the container; can be overridden per stack via env. |
-| `GIT_COMMITTER_NAME` | `Oh-MyOpenAgent` | Default Git committer name inside the container; can be overridden per stack via env. |
-| `GIT_COMMITTER_EMAIL` | `noreply@ohmyopencode.ai` | Default Git committer email inside the container; can be overridden per stack via env. |
+| `GIT_AUTHOR_NAME` | `Oh-MyOpenAgent` | Startup default for git `author.name` (written to git config; not exported as runtime `GIT_*`). |
+| `GIT_AUTHOR_EMAIL` | `noreply@ohmyopencode.ai` | Startup default for git `author.email` (written to git config; not exported as runtime `GIT_*`). |
+| `GIT_COMMITTER_NAME` | `Oh-MyOpenAgent` | Startup default for git `committer.name` (written to git config; not exported as runtime `GIT_*`). |
+| `GIT_COMMITTER_EMAIL` | `noreply@ohmyopencode.ai` | Startup default for git `committer.email` (written to git config; not exported as runtime `GIT_*`). |
 | `ATLCLI_API_TOKEN` | *(empty)* | Token auth for `atlcli`. |
 | `ATLCLI_EMAIL` | *(empty)* | Default Atlassian account email for `atlcli` auth flows. |
 | `ATLCLI_SITE` | *(empty)* | Default Atlassian cloud site for `atlcli` auth flows. |

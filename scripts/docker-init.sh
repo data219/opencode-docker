@@ -83,10 +83,11 @@ if [ -f "$DEFAULTS_DIR/.gitmessage" ] && [ ! -f "$USER_HOME/.gitmessage" ]; then
 fi
 
 # Configure git identity from env vars with safe defaults.
-GIT_AUTHOR_NAME_EFFECTIVE="${GIT_AUTHOR_NAME:-Oh-MyOpenAgent}"
-GIT_AUTHOR_EMAIL_EFFECTIVE="${GIT_AUTHOR_EMAIL:-noreply@ohmyopencode.ai}"
-GIT_COMMITTER_NAME_EFFECTIVE="${GIT_COMMITTER_NAME:-Oh-MyOpenAgent}"
-GIT_COMMITTER_EMAIL_EFFECTIVE="${GIT_COMMITTER_EMAIL:-noreply@ohmyopencode.ai}"
+# Prefer OPENCODE_GIT_* inputs so reserved GIT_* override vars stay optional.
+GIT_AUTHOR_NAME_EFFECTIVE="${OPENCODE_GIT_AUTHOR_NAME:-${GIT_AUTHOR_NAME:-Oh-MyOpenAgent}}"
+GIT_AUTHOR_EMAIL_EFFECTIVE="${OPENCODE_GIT_AUTHOR_EMAIL:-${GIT_AUTHOR_EMAIL:-noreply@ohmyopencode.ai}}"
+GIT_COMMITTER_NAME_EFFECTIVE="${OPENCODE_GIT_COMMITTER_NAME:-${GIT_COMMITTER_NAME:-Oh-MyOpenAgent}}"
+GIT_COMMITTER_EMAIL_EFFECTIVE="${OPENCODE_GIT_COMMITTER_EMAIL:-${GIT_COMMITTER_EMAIL:-noreply@ohmyopencode.ai}}"
 GIT_CONFIG_TARGET="${GIT_CONFIG_GLOBAL:-${GIT_CONFIG_TARGET:-$USER_HOME/.gitconfig}}"
 
 git config --file "$GIT_CONFIG_TARGET" user.name "$GIT_AUTHOR_NAME_EFFECTIVE"

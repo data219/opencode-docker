@@ -184,20 +184,28 @@ start_test_stack() {
   [ "$status" -eq 0 ]
 }
 
-@test "compose stack exposes default git identity env vars and seeds ~/.gitmessage" {
+@test "compose stack applies default git identity config without exporting reserved git env vars" {
   prepare_test_stack
   start_test_stack
 
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_NAME" = "Oh-MyOpenAgent"'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_EMAIL" = "noreply@ohmyopencode.ai"'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_NAME" = "Oh-MyOpenAgent"'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_EMAIL" = "noreply@ohmyopencode.ai"'
+  run compose_ci exec -T opencode sh -lc '
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_NAME="; then
+      echo "GIT_AUTHOR_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_EMAIL="; then
+      echo "GIT_AUTHOR_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_NAME="; then
+      echo "GIT_COMMITTER_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_EMAIL="; then
+      echo "GIT_COMMITTER_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+  '
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T -u opencode opencode sh -lc 'grep -F "Co-Authored-By: Oh-My-OpenAgent (OpenCode) <agent@ohmyopencode.ai>" /home/opencode/.gitmessage'
@@ -216,7 +224,7 @@ start_test_stack() {
   [ "$status" -eq 0 ]
 }
 
-@test "compose stack applies explicit git identity override env vars" {
+@test "compose stack applies explicit git identity overrides without exporting reserved git env vars" {
   prepare_test_stack
   export GIT_AUTHOR_NAME="Override Author"
   export GIT_AUTHOR_EMAIL="override-author@example.test"
@@ -224,16 +232,24 @@ start_test_stack() {
   export GIT_COMMITTER_EMAIL="override-committer@example.test"
   start_test_stack
 
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_NAME" = "Override Author"'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_EMAIL" = "override-author@example.test"'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_NAME" = "Override Committer"'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_EMAIL" = "override-committer@example.test"'
+  run compose_ci exec -T opencode sh -lc '
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_NAME="; then
+      echo "GIT_AUTHOR_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_EMAIL="; then
+      echo "GIT_AUTHOR_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_NAME="; then
+      echo "GIT_COMMITTER_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_EMAIL="; then
+      echo "GIT_COMMITTER_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+  '
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get author.name)" = "Override Author"'

@@ -94,6 +94,46 @@ teardown_init_test_env() {
   teardown_init_test_env
 }
 
+@test "docker-init.sh prefers OPENCODE_GIT_* vars over reserved GIT_* vars" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  export GIT_AUTHOR_NAME="Reserved Author"
+  export GIT_AUTHOR_EMAIL="reserved-author@example.com"
+  export GIT_COMMITTER_NAME="Reserved Committer"
+  export GIT_COMMITTER_EMAIL="reserved-committer@example.com"
+  export OPENCODE_GIT_AUTHOR_NAME="Mapped Author"
+  export OPENCODE_GIT_AUTHOR_EMAIL="mapped-author@example.com"
+  export OPENCODE_GIT_COMMITTER_NAME="Mapped Committer"
+  export OPENCODE_GIT_COMMITTER_EMAIL="mapped-committer@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Mapped Author" ]
+
+  run git config --global --get author.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "mapped-author@example.com" ]
+
+  run git config --global --get committer.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Mapped Committer" ]
+
+  run git config --global --get committer.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "mapped-committer@example.com" ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+  unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  teardown_init_test_env
+}
+
 @test "docker-init.sh falls back to default git identity values" {
   setup_init_test_env
 
