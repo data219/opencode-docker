@@ -3,7 +3,11 @@ setup_init_test_env() {
   INIT_TEST_TMPDIR="$(mktemp -d)"
   export DEFAULTS_DIR="$INIT_TEST_TMPDIR/defaults"
   export CONFIG_DIR="$INIT_TEST_TMPDIR/config"
+  export USER_HOME="$INIT_TEST_TMPDIR/home"
+  export HOME="$USER_HOME"
+  export GIT_CONFIG_GLOBAL="$USER_HOME/.gitconfig"
   mkdir -p "$DEFAULTS_DIR" "$CONFIG_DIR"
+  mkdir -p "$USER_HOME"
   # If running as root, ensure opencode user exists for chown block
   if [ "$(id -u)" = "0" ]; then
     id opencode 2>/dev/null || useradd -u 1000 -M -s /bin/bash opencode 2>/dev/null || true
@@ -12,7 +16,340 @@ setup_init_test_env() {
 }
 
 teardown_init_test_env() {
+  unset DEFAULTS_DIR CONFIG_DIR USER_HOME HOME GIT_CONFIG_GLOBAL
   rm -rf "$INIT_TEST_TMPDIR"
+}
+
+@test "docker-init.sh seeds ~/.gitmessage only once" {
+  setup_init_test_env
+
+  export USER_HOME="$INIT_TEST_TMPDIR/home"
+  mkdir -p "$USER_HOME"
+  echo "Co-Authored-By: Oh-My-OpenAgent (OpenCode) <agent@ohmyopencode.ai>" > "$DEFAULTS_DIR/.gitmessage"
+
+  rm -f "$USER_HOME/.gitmessage"
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$USER_HOME/.gitmessage" ]
+  grep -F "Co-Authored-By: Oh-My-OpenAgent (OpenCode) <agent@ohmyopencode.ai>" "$USER_HOME/.gitmessage"
+
+  echo "user-customized-template" > "$USER_HOME/.gitmessage"
+  touch -t 202001010000 "$USER_HOME/.gitmessage"
+  before_mtime="$(stat -c %Y "$USER_HOME/.gitmessage")"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(stat -c %Y "$USER_HOME/.gitmessage")" -eq "$before_mtime" ]
+  grep -F "user-customized-template" "$USER_HOME/.gitmessage"
+
+  rm -f "$USER_HOME/.gitmessage"
+  unset USER_HOME
+  teardown_init_test_env
+}
+
+@test "docker-init.sh configures global git author and committer from env vars" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  echo "Co-Authored-By: Test <test@example.com>" > "$DEFAULTS_DIR/.gitmessage"
+  export GIT_AUTHOR_NAME="Custom Author"
+  export GIT_AUTHOR_EMAIL="custom-author@example.com"
+  export GIT_COMMITTER_NAME="Custom Committer"
+  export GIT_COMMITTER_EMAIL="custom-committer@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Custom Author" ]
+
+  run git config --global --get author.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "custom-author@example.com" ]
+
+  run git config --global --get committer.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Custom Committer" ]
+
+  run git config --global --get committer.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "custom-committer@example.com" ]
+
+  run git config --global --get user.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Custom Author" ]
+
+  run git config --global --get user.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "custom-author@example.com" ]
+
+  run git config --global --get commit.template
+  [ "$status" -eq 0 ]
+  [ "$output" = "$HOME/.gitmessage" ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh prefers OPENCODE_GIT_* vars over reserved GIT_* vars" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  export GIT_AUTHOR_NAME="Reserved Author"
+  export GIT_AUTHOR_EMAIL="reserved-author@example.com"
+  export GIT_COMMITTER_NAME="Reserved Committer"
+  export GIT_COMMITTER_EMAIL="reserved-committer@example.com"
+  export OPENCODE_GIT_AUTHOR_NAME="Mapped Author"
+  export OPENCODE_GIT_AUTHOR_EMAIL="mapped-author@example.com"
+  export OPENCODE_GIT_COMMITTER_NAME="Mapped Committer"
+  export OPENCODE_GIT_COMMITTER_EMAIL="mapped-committer@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Mapped Author" ]
+
+  run git config --global --get author.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "mapped-author@example.com" ]
+
+  run git config --global --get committer.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Mapped Committer" ]
+
+  run git config --global --get committer.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "mapped-committer@example.com" ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+  unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh only writes requested author override keys" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  export OPENCODE_GIT_AUTHOR_NAME="Author Only"
+  unset OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Author Only" ]
+
+  run git config --global --get author.email
+  [ "$status" -ne 0 ]
+
+  run git config --global --get committer.name
+  [ "$status" -ne 0 ]
+
+  run git config --global --get committer.email
+  [ "$status" -ne 0 ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL OPENCODE_GIT_AUTHOR_NAME
+  teardown_init_test_env
+}
+
+@test "docker-init.sh falls back to default git identity values" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get user.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Oh-MyOpenAgent" ]
+
+  run git config --global --get user.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "noreply@ohmyopencode.ai" ]
+
+  run git config --global --get author.name
+  [ "$status" -ne 0 ]
+
+  run git config --global --get author.email
+  [ "$status" -ne 0 ]
+
+  run git config --global --get committer.name
+  [ "$status" -ne 0 ]
+
+  run git config --global --get committer.email
+  [ "$status" -ne 0 ]
+
+  run git config --global --get commit.template
+  [ "$status" -ne 0 ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh preserves existing git identity when no overrides are provided" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+
+  git config --global user.name "Existing User"
+  git config --global user.email "existing@example.com"
+  git config --global author.name "Existing Author"
+  git config --global author.email "existing-author@example.com"
+  git config --global committer.name "Existing Committer"
+  git config --global committer.email "existing-committer@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get user.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Existing User" ]
+
+  run git config --global --get user.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "existing@example.com" ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Existing Author" ]
+
+  run git config --global --get author.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "existing-author@example.com" ]
+
+  run git config --global --get committer.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Existing Committer" ]
+
+  run git config --global --get committer.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "existing-committer@example.com" ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh applies explicit overrides even when git identity already exists" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  git config --global author.name "Existing Author"
+  git config --global author.email "existing-author@example.com"
+  git config --global committer.name "Existing Committer"
+  git config --global committer.email "existing-committer@example.com"
+
+  export OPENCODE_GIT_AUTHOR_NAME="Override Author"
+  export OPENCODE_GIT_AUTHOR_EMAIL="override-author@example.com"
+  export OPENCODE_GIT_COMMITTER_NAME="Override Committer"
+  export OPENCODE_GIT_COMMITTER_EMAIL="override-committer@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Override Author" ]
+
+  run git config --global --get author.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "override-author@example.com" ]
+
+  run git config --global --get committer.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Override Committer" ]
+
+  run git config --global --get committer.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "override-committer@example.com" ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh does not seed author/committer overrides when user identity already exists" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+
+  git config --global user.name "Existing User"
+  git config --global user.email "existing@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get user.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Existing User" ]
+
+  run git config --global --get user.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "existing@example.com" ]
+
+  run git config --global --get author.name
+  [ "$status" -ne 0 ]
+
+  run git config --global --get author.email
+  [ "$status" -ne 0 ]
+
+  run git config --global --get committer.name
+  [ "$status" -ne 0 ]
+
+  run git config --global --get committer.email
+  [ "$status" -ne 0 ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh does not set commit.template when gitmessage file is missing" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  rm -f "$HOME/.gitmessage"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get commit.template
+  [ "$status" -ne 0 ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL
+  teardown_init_test_env
 }
 
 @test "docker-init.sh preserves existing config on version upgrade and updates version marker" {
@@ -163,10 +500,14 @@ teardown_init_test_env() {
   # Script gracefully skips seeding when defaults dir is absent
   export DEFAULTS_DIR="/nonexistent-path"
   export CONFIG_DIR="$(mktemp -d)/config"
+  export USER_HOME="$(mktemp -d)"
+  export HOME="$USER_HOME"
+  export GIT_CONFIG_GLOBAL="$USER_HOME/.gitconfig"
   mkdir -p "$CONFIG_DIR"
   run bash scripts/docker-init.sh 2>/dev/null
   [ "$status" -eq 0 ]
   [ -d "$CONFIG_DIR" ]
   [ ! -f "$CONFIG_DIR/.opencode-docker-config-version" ]
-  rm -rf "$CONFIG_DIR"
+  rm -rf "$CONFIG_DIR" "$USER_HOME"
+  unset DEFAULTS_DIR CONFIG_DIR USER_HOME HOME GIT_CONFIG_GLOBAL
 }

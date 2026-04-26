@@ -14,6 +14,10 @@ prepare_test_stack() {
 
   export ZHIPU_API_KEY="test"
   export GEMINI_API_KEY=""
+  export GIT_AUTHOR_NAME=""
+  export GIT_AUTHOR_EMAIL=""
+  export GIT_COMMITTER_NAME=""
+  export GIT_COMMITTER_EMAIL=""
   export OPENCODE_MODE="web"
   export OPENCODE_PORT="${TEST_OPENCODE_PORT}"
   export OPENCODE_BIND_ADDRESS="127.0.0.1"
@@ -177,5 +181,95 @@ start_test_stack() {
       exit 1
     fi
   '
+  [ "$status" -eq 0 ]
+}
+
+@test "compose stack applies default git identity config without exporting reserved git env vars" {
+  prepare_test_stack
+  start_test_stack
+
+  run compose_ci exec -T opencode sh -lc '
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_NAME="; then
+      echo "GIT_AUTHOR_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_EMAIL="; then
+      echo "GIT_AUTHOR_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_NAME="; then
+      echo "GIT_COMMITTER_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_EMAIL="; then
+      echo "GIT_COMMITTER_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+  '
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test -s /home/opencode/.gitmessage'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get user.name)" = "Oh-MyOpenAgent"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get user.email)" = "noreply@ohmyopencode.ai"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get author.name >/dev/null 2>&1'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get author.email >/dev/null 2>&1'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get committer.name >/dev/null 2>&1'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '! git config --global --get committer.email >/dev/null 2>&1'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get commit.template)" = "/home/opencode/.gitmessage"'
+  [ "$status" -eq 0 ]
+}
+
+@test "compose stack applies explicit git identity overrides without exporting reserved git env vars" {
+  prepare_test_stack
+  export GIT_AUTHOR_NAME="Override Author"
+  export GIT_AUTHOR_EMAIL="override-author@example.test"
+  export GIT_COMMITTER_NAME="Override Committer"
+  export GIT_COMMITTER_EMAIL="override-committer@example.test"
+  start_test_stack
+
+  run compose_ci exec -T opencode sh -lc '
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_NAME="; then
+      echo "GIT_AUTHOR_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_AUTHOR_EMAIL="; then
+      echo "GIT_AUTHOR_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_NAME="; then
+      echo "GIT_COMMITTER_NAME leaked into runtime environment" >&2
+      exit 1
+    fi
+    if tr "\0" "\n" < /proc/1/environ | grep -q "^GIT_COMMITTER_EMAIL="; then
+      echo "GIT_COMMITTER_EMAIL leaked into runtime environment" >&2
+      exit 1
+    fi
+  '
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get author.name)" = "Override Author"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get author.email)" = "override-author@example.test"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get committer.name)" = "Override Committer"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get committer.email)" = "override-committer@example.test"'
   [ "$status" -eq 0 ]
 }

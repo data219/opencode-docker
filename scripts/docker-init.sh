@@ -5,6 +5,7 @@ trap 'echo "ERROR: docker-init.sh failed at line $LINENO" >&2' ERR
 
 DEFAULTS_DIR="${DEFAULTS_DIR:-/opt/opencode-defaults}"
 CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
+USER_HOME="${USER_HOME:-/home/opencode}"
 CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
 IMAGE_VERSION_FILE="$DEFAULTS_DIR/.opencode-docker-config-version"
 
@@ -76,10 +77,71 @@ if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
   fi
 fi
 
+# Seed ~/.gitmessage only if it is missing.
+if [ -f "$DEFAULTS_DIR/.gitmessage" ] && [ ! -f "$USER_HOME/.gitmessage" ]; then
+  cp -a -- "$DEFAULTS_DIR/.gitmessage" "$USER_HOME/.gitmessage"
+fi
+
+# Configure git identity from env vars with safe defaults.
+# Prefer OPENCODE_GIT_* inputs so reserved GIT_* override vars stay optional.
+GIT_AUTHOR_NAME_OVERRIDE="${OPENCODE_GIT_AUTHOR_NAME:-${GIT_AUTHOR_NAME:-}}"
+GIT_AUTHOR_EMAIL_OVERRIDE="${OPENCODE_GIT_AUTHOR_EMAIL:-${GIT_AUTHOR_EMAIL:-}}"
+GIT_COMMITTER_NAME_OVERRIDE="${OPENCODE_GIT_COMMITTER_NAME:-${GIT_COMMITTER_NAME:-}}"
+GIT_COMMITTER_EMAIL_OVERRIDE="${OPENCODE_GIT_COMMITTER_EMAIL:-${GIT_COMMITTER_EMAIL:-}}"
+GIT_AUTHOR_NAME_EFFECTIVE="${GIT_AUTHOR_NAME_OVERRIDE:-Oh-MyOpenAgent}"
+GIT_AUTHOR_EMAIL_EFFECTIVE="${GIT_AUTHOR_EMAIL_OVERRIDE:-noreply@ohmyopencode.ai}"
+GIT_COMMITTER_NAME_EFFECTIVE="${GIT_COMMITTER_NAME_OVERRIDE:-Oh-MyOpenAgent}"
+GIT_COMMITTER_EMAIL_EFFECTIVE="${GIT_COMMITTER_EMAIL_OVERRIDE:-noreply@ohmyopencode.ai}"
+GIT_CONFIG_TARGET="${GIT_CONFIG_GLOBAL:-${GIT_CONFIG_TARGET:-$USER_HOME/.gitconfig}}"
+
+git_set_or_seed() {
+  local key="$1"
+  local value="$2"
+  local force="${3:-false}"
+  local current
+  current="$(git config --file "$GIT_CONFIG_TARGET" --get "$key" 2>/dev/null || true)"
+  if [ "$force" = "true" ] || [ -z "$current" ]; then
+    git config --file "$GIT_CONFIG_TARGET" "$key" "$value"
+  fi
+}
+
+USER_NAME_FORCE="$([ -n "$GIT_AUTHOR_NAME_OVERRIDE" ] && echo true || echo false)"
+USER_EMAIL_FORCE="$([ -n "$GIT_AUTHOR_EMAIL_OVERRIDE" ] && echo true || echo false)"
+AUTHOR_NAME_FORCE="$([ -n "$GIT_AUTHOR_NAME_OVERRIDE" ] && echo true || echo false)"
+AUTHOR_EMAIL_FORCE="$([ -n "$GIT_AUTHOR_EMAIL_OVERRIDE" ] && echo true || echo false)"
+COMMITTER_NAME_FORCE="$([ -n "$GIT_COMMITTER_NAME_OVERRIDE" ] && echo true || echo false)"
+COMMITTER_EMAIL_FORCE="$([ -n "$GIT_COMMITTER_EMAIL_OVERRIDE" ] && echo true || echo false)"
+
+git_set_or_seed "user.name" "$GIT_AUTHOR_NAME_EFFECTIVE" "$USER_NAME_FORCE"
+git_set_or_seed "user.email" "$GIT_AUTHOR_EMAIL_EFFECTIVE" "$USER_EMAIL_FORCE"
+
+# Only write explicit author/committer overrides that were requested.
+if [ "$AUTHOR_NAME_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" author.name "$GIT_AUTHOR_NAME_EFFECTIVE"
+fi
+if [ "$AUTHOR_EMAIL_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" author.email "$GIT_AUTHOR_EMAIL_EFFECTIVE"
+fi
+if [ "$COMMITTER_NAME_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" committer.name "$GIT_COMMITTER_NAME_EFFECTIVE"
+fi
+if [ "$COMMITTER_EMAIL_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" committer.email "$GIT_COMMITTER_EMAIL_EFFECTIVE"
+fi
+
+if [ -f "$USER_HOME/.gitmessage" ]; then
+  git_set_or_seed "commit.template" "$USER_HOME/.gitmessage"
+fi
+
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
 # Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.
 if [ ! -f "$CONFIG_DIR/oh-my-openagent.jsonc" ] && [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.json" ]; then
   cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
+fi
+
+# Ensure git files are writable by runtime user.
+if [ "$(id -u)" = "0" ]; then
+  chown -f opencode:opencode "$USER_HOME/.gitmessage" "$GIT_CONFIG_TARGET" 2>/dev/null || true
 fi
 
 # --- Sync bootstrap skills ---

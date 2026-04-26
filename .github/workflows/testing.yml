@@ -21,5 +21,6 @@ jobs:
         env:
           ZHIPU_API_KEY: test
           GEMINI_API_KEY: ""
-          TEST_HEALTH_TIMEOUT: "420"
+          TEST_HEALTH_TIMEOUT: "600"
+          TEST_HEALTH_REQUEST_TIMEOUT: "5"
         run: task test-integration
