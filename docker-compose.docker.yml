@@ -1,0 +1,7 @@
+services:
+  opencode:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - OPENCODE_DOCKER_SOCKET=/var/run/docker.sock

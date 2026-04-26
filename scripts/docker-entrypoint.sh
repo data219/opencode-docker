@@ -76,6 +76,20 @@ if [ -z "$SERVER_PASSWORD_RAW" ]; then
   unset OPENCODE_SERVER_PASSWORD
 fi
 
+# Optional Docker host delegation. Mounting the Docker socket grants broad
+# control over the host daemon, so this only runs when explicitly configured.
+if [ "$(id -u)" = "0" ] && [ -n "${OPENCODE_DOCKER_SOCKET:-}" ] && [ -e "$OPENCODE_DOCKER_SOCKET" ]; then
+  SOCKET_GID="$(stat -c '%g' "$OPENCODE_DOCKER_SOCKET")"
+  if [ -n "$SOCKET_GID" ]; then
+    SOCKET_GROUP="$(getent group "$SOCKET_GID" | cut -d: -f1 || true)"
+    if [ -z "$SOCKET_GROUP" ]; then
+      SOCKET_GROUP="opencode-docker-${SOCKET_GID}"
+      groupadd -g "$SOCKET_GID" "$SOCKET_GROUP"
+    fi
+    usermod -aG "$SOCKET_GROUP" opencode
+  fi
+fi
+
 # --- Config drift detection ---
 CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
 CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
