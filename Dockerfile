@@ -197,7 +197,7 @@ RUN mkdir -p /home/opencode/.gvm /home/opencode/go \
 
 # --- Install bun for OmO ---
 RUN mkdir -p /home/opencode/.bun/bin \
-    && curl -fsSL "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
+    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
        -o /tmp/bun.zip \
     && unzip -q /tmp/bun.zip -d /tmp \
     && mv /tmp/bun-linux-x64/bun /home/opencode/.bun/bin/bun \
