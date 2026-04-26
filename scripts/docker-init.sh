@@ -115,13 +115,18 @@ COMMITTER_EMAIL_FORCE="$([ -n "$GIT_COMMITTER_EMAIL_OVERRIDE" ] && echo true || 
 git_set_or_seed "user.name" "$GIT_AUTHOR_NAME_EFFECTIVE" "$USER_NAME_FORCE"
 git_set_or_seed "user.email" "$GIT_AUTHOR_EMAIL_EFFECTIVE" "$USER_EMAIL_FORCE"
 
-# Only write author/committer override keys when explicitly requested.
-if [ "$AUTHOR_NAME_FORCE" = "true" ] || [ "$AUTHOR_EMAIL_FORCE" = "true" ] \
-  || [ "$COMMITTER_NAME_FORCE" = "true" ] || [ "$COMMITTER_EMAIL_FORCE" = "true" ]; then
-  git_set_or_seed "author.name" "$GIT_AUTHOR_NAME_EFFECTIVE" "$AUTHOR_NAME_FORCE"
-  git_set_or_seed "author.email" "$GIT_AUTHOR_EMAIL_EFFECTIVE" "$AUTHOR_EMAIL_FORCE"
-  git_set_or_seed "committer.name" "$GIT_COMMITTER_NAME_EFFECTIVE" "$COMMITTER_NAME_FORCE"
-  git_set_or_seed "committer.email" "$GIT_COMMITTER_EMAIL_EFFECTIVE" "$COMMITTER_EMAIL_FORCE"
+# Only write explicit author/committer overrides that were requested.
+if [ "$AUTHOR_NAME_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" author.name "$GIT_AUTHOR_NAME_EFFECTIVE"
+fi
+if [ "$AUTHOR_EMAIL_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" author.email "$GIT_AUTHOR_EMAIL_EFFECTIVE"
+fi
+if [ "$COMMITTER_NAME_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" committer.name "$GIT_COMMITTER_NAME_EFFECTIVE"
+fi
+if [ "$COMMITTER_EMAIL_FORCE" = "true" ]; then
+  git config --file "$GIT_CONFIG_TARGET" committer.email "$GIT_COMMITTER_EMAIL_EFFECTIVE"
 fi
 
 if [ -f "$USER_HOME/.gitmessage" ]; then

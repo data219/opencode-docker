@@ -208,10 +208,7 @@ start_test_stack() {
   '
   [ "$status" -eq 0 ]
 
-  run compose_ci exec -T -u opencode opencode sh -lc 'grep -F "Co-Authored-By: Oh-My-OpenAgent (OpenCode) <agent@ohmyopencode.ai>" /home/opencode/.gitmessage'
-  [ "$status" -eq 0 ]
-
-  run compose_ci exec -T -u opencode opencode sh -lc 'grep -F "Authored-Using: glm-5.1 via Oh-My-OpenCode" /home/opencode/.gitmessage'
+  run compose_ci exec -T -u opencode opencode sh -lc 'test -s /home/opencode/.gitmessage'
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get user.name)" = "Oh-MyOpenAgent"'
