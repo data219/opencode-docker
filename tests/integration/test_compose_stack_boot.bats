@@ -5,6 +5,7 @@ setup() {
   TEST_CONTAINER_NAME="opencode-stack-boot-${BATS_TEST_NUMBER}-$$"
   TEST_OPENCODE_PORT="${TEST_OPENCODE_PORT:-$((4100 + ($$ % 2000) + BATS_TEST_NUMBER))}"
   TEST_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-300}"
+  TEST_STACK_START_ATTEMPTS="${TEST_STACK_START_ATTEMPTS:-2}"
   TEST_HOME_ROOT=""
 }
 
@@ -50,29 +51,61 @@ wait_for_http_health() {
   local url="$1"
   local timeout="${2:-120}"
   local interval=2
-  local elapsed=0
   local request_timeout="${TEST_HEALTH_REQUEST_TIMEOUT:-2}"
+  local next_progress=30
+  local start_time
+  local elapsed
 
-  while [ "$elapsed" -lt "$timeout" ]; do
+  start_time="$(date +%s)"
+
+  while true; do
+    elapsed=$(($(date +%s) - start_time))
+    if [ "$elapsed" -ge "$timeout" ]; then
+      return 1
+    fi
+
     if curl --max-time "$request_timeout" -fsS "$url" >/dev/null 2>&1; then
       return 0
     fi
+    if [ "$elapsed" -ge "$next_progress" ]; then
+      echo "  [wait_for_http_health] ${elapsed}/${timeout}s waiting for $url" >&3
+      next_progress=$((next_progress + 30))
+    fi
     sleep "$interval"
-    elapsed=$((elapsed + interval + request_timeout))
   done
+}
 
-  return 1
+print_stack_diagnostics() {
+  compose_ci ps >&3 || true
+  compose_ci logs --tail=200 opencode >&3 || true
+  docker inspect \
+    --format 'health={{json .State.Health}}' \
+    "$TEST_CONTAINER_NAME" >&3 2>&1 || true
+  compose_ci exec -T opencode sh -lc '
+    echo "container-health-probe:"
+    curl -sv --max-time 5 "http://127.0.0.1:${OPENCODE_PORT}/health"
+  ' >&3 2>&1 || true
 }
 
 start_test_stack() {
   run compose_ci up -d --build
   [ "$status" -eq 0 ]
 
-  if ! wait_for_http_health "http://127.0.0.1:${OPENCODE_PORT}/health" "$TEST_HEALTH_TIMEOUT"; then
-    compose_ci ps >&3 || true
-    compose_ci logs --tail=200 opencode >&3 || true
-    false
-  fi
+  local attempt=1
+  while [ "$attempt" -le "$TEST_STACK_START_ATTEMPTS" ]; do
+    if wait_for_http_health "http://127.0.0.1:${OPENCODE_PORT}/health" "$TEST_HEALTH_TIMEOUT"; then
+      return 0
+    fi
+
+    print_stack_diagnostics
+    if [ "$attempt" -lt "$TEST_STACK_START_ATTEMPTS" ]; then
+      echo "  [start_test_stack] health check timed out; restarting stack attempt $((attempt + 1))/${TEST_STACK_START_ATTEMPTS}" >&3
+      compose_ci restart opencode >&3 || true
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  false
 }
 
 @test "compose stack boots and serves health endpoint" {
