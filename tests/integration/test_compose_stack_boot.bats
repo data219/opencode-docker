@@ -14,6 +14,10 @@ prepare_test_stack() {
 
   export ZHIPU_API_KEY="test"
   export GEMINI_API_KEY=""
+  export GIT_AUTHOR_NAME=""
+  export GIT_AUTHOR_EMAIL=""
+  export GIT_COMMITTER_NAME=""
+  export GIT_COMMITTER_EMAIL=""
   export OPENCODE_MODE="web"
   export OPENCODE_PORT="${TEST_OPENCODE_PORT}"
   export OPENCODE_BIND_ADDRESS="127.0.0.1"
@@ -177,5 +181,70 @@ start_test_stack() {
       exit 1
     fi
   '
+  [ "$status" -eq 0 ]
+}
+
+@test "compose stack exposes default git identity env vars and seeds ~/.gitmessage" {
+  prepare_test_stack
+  start_test_stack
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_NAME" = "Oh-MyOpenAgent"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_EMAIL" = "noreply@ohmyopencode.ai"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_NAME" = "Oh-MyOpenAgent"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_EMAIL" = "noreply@ohmyopencode.ai"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'grep -F "Co-Authored-By: Oh-My-OpenAgent (OpenCode) <agent@ohmyopencode.ai>" /home/opencode/.gitmessage'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'grep -F "Authored-Using: glm-5.1 via Oh-My-OpenCode" /home/opencode/.gitmessage'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get author.name)" = "Oh-MyOpenAgent"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get committer.email)" = "noreply@ohmyopencode.ai"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get commit.template)" = "/home/opencode/.gitmessage"'
+  [ "$status" -eq 0 ]
+}
+
+@test "compose stack applies explicit git identity override env vars" {
+  prepare_test_stack
+  export GIT_AUTHOR_NAME="Override Author"
+  export GIT_AUTHOR_EMAIL="override-author@example.test"
+  export GIT_COMMITTER_NAME="Override Committer"
+  export GIT_COMMITTER_EMAIL="override-committer@example.test"
+  start_test_stack
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_NAME" = "Override Author"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_AUTHOR_EMAIL" = "override-author@example.test"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_NAME" = "Override Committer"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$GIT_COMMITTER_EMAIL" = "override-committer@example.test"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get author.name)" = "Override Author"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get author.email)" = "override-author@example.test"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get committer.name)" = "Override Committer"'
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc 'test "$(git config --global --get committer.email)" = "override-committer@example.test"'
   [ "$status" -eq 0 ]
 }

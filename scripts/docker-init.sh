@@ -5,6 +5,7 @@ trap 'echo "ERROR: docker-init.sh failed at line $LINENO" >&2' ERR
 
 DEFAULTS_DIR="${DEFAULTS_DIR:-/opt/opencode-defaults}"
 CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
+USER_HOME="${USER_HOME:-/home/opencode}"
 CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
 IMAGE_VERSION_FILE="$DEFAULTS_DIR/.opencode-docker-config-version"
 
@@ -76,10 +77,35 @@ if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
   fi
 fi
 
+# Seed ~/.gitmessage only if it is missing.
+if [ -f "$DEFAULTS_DIR/.gitmessage" ] && [ ! -f "$USER_HOME/.gitmessage" ]; then
+  cp -a -- "$DEFAULTS_DIR/.gitmessage" "$USER_HOME/.gitmessage"
+fi
+
+# Configure git identity from env vars with safe defaults.
+GIT_AUTHOR_NAME_EFFECTIVE="${GIT_AUTHOR_NAME:-Oh-MyOpenAgent}"
+GIT_AUTHOR_EMAIL_EFFECTIVE="${GIT_AUTHOR_EMAIL:-noreply@ohmyopencode.ai}"
+GIT_COMMITTER_NAME_EFFECTIVE="${GIT_COMMITTER_NAME:-Oh-MyOpenAgent}"
+GIT_COMMITTER_EMAIL_EFFECTIVE="${GIT_COMMITTER_EMAIL:-noreply@ohmyopencode.ai}"
+GIT_CONFIG_TARGET="${GIT_CONFIG_GLOBAL:-${GIT_CONFIG_TARGET:-$USER_HOME/.gitconfig}}"
+
+git config --file "$GIT_CONFIG_TARGET" user.name "$GIT_AUTHOR_NAME_EFFECTIVE"
+git config --file "$GIT_CONFIG_TARGET" user.email "$GIT_AUTHOR_EMAIL_EFFECTIVE"
+git config --file "$GIT_CONFIG_TARGET" author.name "$GIT_AUTHOR_NAME_EFFECTIVE"
+git config --file "$GIT_CONFIG_TARGET" author.email "$GIT_AUTHOR_EMAIL_EFFECTIVE"
+git config --file "$GIT_CONFIG_TARGET" committer.name "$GIT_COMMITTER_NAME_EFFECTIVE"
+git config --file "$GIT_CONFIG_TARGET" committer.email "$GIT_COMMITTER_EMAIL_EFFECTIVE"
+git config --file "$GIT_CONFIG_TARGET" commit.template "$USER_HOME/.gitmessage"
+
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
 # Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.
 if [ ! -f "$CONFIG_DIR/oh-my-openagent.jsonc" ] && [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.json" ]; then
   cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
+fi
+
+# Ensure git files are writable by runtime user.
+if [ "$(id -u)" = "0" ]; then
+  chown -f opencode:opencode "$USER_HOME/.gitmessage" "$GIT_CONFIG_TARGET" 2>/dev/null || true
 fi
 
 # --- Sync bootstrap skills ---
