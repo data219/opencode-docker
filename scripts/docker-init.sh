@@ -84,19 +84,34 @@ fi
 
 # Configure git identity from env vars with safe defaults.
 # Prefer OPENCODE_GIT_* inputs so reserved GIT_* override vars stay optional.
-GIT_AUTHOR_NAME_EFFECTIVE="${OPENCODE_GIT_AUTHOR_NAME:-${GIT_AUTHOR_NAME:-Oh-MyOpenAgent}}"
-GIT_AUTHOR_EMAIL_EFFECTIVE="${OPENCODE_GIT_AUTHOR_EMAIL:-${GIT_AUTHOR_EMAIL:-noreply@ohmyopencode.ai}}"
-GIT_COMMITTER_NAME_EFFECTIVE="${OPENCODE_GIT_COMMITTER_NAME:-${GIT_COMMITTER_NAME:-Oh-MyOpenAgent}}"
-GIT_COMMITTER_EMAIL_EFFECTIVE="${OPENCODE_GIT_COMMITTER_EMAIL:-${GIT_COMMITTER_EMAIL:-noreply@ohmyopencode.ai}}"
+GIT_AUTHOR_NAME_OVERRIDE="${OPENCODE_GIT_AUTHOR_NAME:-${GIT_AUTHOR_NAME:-}}"
+GIT_AUTHOR_EMAIL_OVERRIDE="${OPENCODE_GIT_AUTHOR_EMAIL:-${GIT_AUTHOR_EMAIL:-}}"
+GIT_COMMITTER_NAME_OVERRIDE="${OPENCODE_GIT_COMMITTER_NAME:-${GIT_COMMITTER_NAME:-}}"
+GIT_COMMITTER_EMAIL_OVERRIDE="${OPENCODE_GIT_COMMITTER_EMAIL:-${GIT_COMMITTER_EMAIL:-}}"
+GIT_AUTHOR_NAME_EFFECTIVE="${GIT_AUTHOR_NAME_OVERRIDE:-Oh-MyOpenAgent}"
+GIT_AUTHOR_EMAIL_EFFECTIVE="${GIT_AUTHOR_EMAIL_OVERRIDE:-noreply@ohmyopencode.ai}"
+GIT_COMMITTER_NAME_EFFECTIVE="${GIT_COMMITTER_NAME_OVERRIDE:-Oh-MyOpenAgent}"
+GIT_COMMITTER_EMAIL_EFFECTIVE="${GIT_COMMITTER_EMAIL_OVERRIDE:-noreply@ohmyopencode.ai}"
 GIT_CONFIG_TARGET="${GIT_CONFIG_GLOBAL:-${GIT_CONFIG_TARGET:-$USER_HOME/.gitconfig}}"
 
-git config --file "$GIT_CONFIG_TARGET" user.name "$GIT_AUTHOR_NAME_EFFECTIVE"
-git config --file "$GIT_CONFIG_TARGET" user.email "$GIT_AUTHOR_EMAIL_EFFECTIVE"
-git config --file "$GIT_CONFIG_TARGET" author.name "$GIT_AUTHOR_NAME_EFFECTIVE"
-git config --file "$GIT_CONFIG_TARGET" author.email "$GIT_AUTHOR_EMAIL_EFFECTIVE"
-git config --file "$GIT_CONFIG_TARGET" committer.name "$GIT_COMMITTER_NAME_EFFECTIVE"
-git config --file "$GIT_CONFIG_TARGET" committer.email "$GIT_COMMITTER_EMAIL_EFFECTIVE"
-git config --file "$GIT_CONFIG_TARGET" commit.template "$USER_HOME/.gitmessage"
+git_set_or_seed() {
+  local key="$1"
+  local value="$2"
+  local force="${3:-false}"
+  local current
+  current="$(git config --file "$GIT_CONFIG_TARGET" --get "$key" 2>/dev/null || true)"
+  if [ "$force" = "true" ] || [ -z "$current" ]; then
+    git config --file "$GIT_CONFIG_TARGET" "$key" "$value"
+  fi
+}
+
+git_set_or_seed "user.name" "$GIT_AUTHOR_NAME_EFFECTIVE" "$([ -n "$GIT_AUTHOR_NAME_OVERRIDE" ] && echo true || echo false)"
+git_set_or_seed "user.email" "$GIT_AUTHOR_EMAIL_EFFECTIVE" "$([ -n "$GIT_AUTHOR_EMAIL_OVERRIDE" ] && echo true || echo false)"
+git_set_or_seed "author.name" "$GIT_AUTHOR_NAME_EFFECTIVE" "$([ -n "$GIT_AUTHOR_NAME_OVERRIDE" ] && echo true || echo false)"
+git_set_or_seed "author.email" "$GIT_AUTHOR_EMAIL_EFFECTIVE" "$([ -n "$GIT_AUTHOR_EMAIL_OVERRIDE" ] && echo true || echo false)"
+git_set_or_seed "committer.name" "$GIT_COMMITTER_NAME_EFFECTIVE" "$([ -n "$GIT_COMMITTER_NAME_OVERRIDE" ] && echo true || echo false)"
+git_set_or_seed "committer.email" "$GIT_COMMITTER_EMAIL_EFFECTIVE" "$([ -n "$GIT_COMMITTER_EMAIL_OVERRIDE" ] && echo true || echo false)"
+git_set_or_seed "commit.template" "$USER_HOME/.gitmessage"
 
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
 # Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.

@@ -33,10 +33,10 @@ services:
       - GITLAB_TOKEN=${GITLAB_TOKEN:-}
       # Git identity defaults are mapped to internal env names so runtime
       # git commands are not forced via reserved GIT_* override variables.
-      - OPENCODE_GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME:-Oh-MyOpenAgent}
-      - OPENCODE_GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-noreply@ohmyopencode.ai}
-      - OPENCODE_GIT_COMMITTER_NAME=${GIT_COMMITTER_NAME:-Oh-MyOpenAgent}
-      - OPENCODE_GIT_COMMITTER_EMAIL=${GIT_COMMITTER_EMAIL:-noreply@ohmyopencode.ai}
+      - OPENCODE_GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME:-}
+      - OPENCODE_GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-}
+      - OPENCODE_GIT_COMMITTER_NAME=${GIT_COMMITTER_NAME:-}
+      - OPENCODE_GIT_COMMITTER_EMAIL=${GIT_COMMITTER_EMAIL:-}
       - ATLCLI_API_TOKEN=${ATLCLI_API_TOKEN:-}
       - ATLCLI_EMAIL=${ATLCLI_EMAIL:-}
       - ATLCLI_SITE=${ATLCLI_SITE:-}

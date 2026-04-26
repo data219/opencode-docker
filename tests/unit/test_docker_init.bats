@@ -170,6 +170,94 @@ teardown_init_test_env() {
   teardown_init_test_env
 }
 
+@test "docker-init.sh preserves existing git identity when no overrides are provided" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+
+  git config --global user.name "Existing User"
+  git config --global user.email "existing@example.com"
+  git config --global author.name "Existing Author"
+  git config --global author.email "existing-author@example.com"
+  git config --global committer.name "Existing Committer"
+  git config --global committer.email "existing-committer@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get user.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Existing User" ]
+
+  run git config --global --get user.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "existing@example.com" ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Existing Author" ]
+
+  run git config --global --get author.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "existing-author@example.com" ]
+
+  run git config --global --get committer.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Existing Committer" ]
+
+  run git config --global --get committer.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "existing-committer@example.com" ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL
+  teardown_init_test_env
+}
+
+@test "docker-init.sh applies explicit overrides even when git identity already exists" {
+  setup_init_test_env
+
+  export HOME="$(mktemp -d)"
+  export USER_HOME="$HOME"
+  export GIT_CONFIG_GLOBAL="$HOME/.gitconfig"
+  git config --global author.name "Existing Author"
+  git config --global author.email "existing-author@example.com"
+  git config --global committer.name "Existing Committer"
+  git config --global committer.email "existing-committer@example.com"
+
+  export OPENCODE_GIT_AUTHOR_NAME="Override Author"
+  export OPENCODE_GIT_AUTHOR_EMAIL="override-author@example.com"
+  export OPENCODE_GIT_COMMITTER_NAME="Override Committer"
+  export OPENCODE_GIT_COMMITTER_EMAIL="override-committer@example.com"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  run git config --global --get author.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Override Author" ]
+
+  run git config --global --get author.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "override-author@example.com" ]
+
+  run git config --global --get committer.name
+  [ "$status" -eq 0 ]
+  [ "$output" = "Override Committer" ]
+
+  run git config --global --get committer.email
+  [ "$status" -eq 0 ]
+  [ "$output" = "override-committer@example.com" ]
+
+  rm -rf "$HOME"
+  unset HOME USER_HOME GIT_CONFIG_GLOBAL OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  teardown_init_test_env
+}
+
 @test "docker-init.sh preserves existing config on version upgrade and updates version marker" {
   setup_init_test_env
 
