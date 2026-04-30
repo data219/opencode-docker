@@ -42,7 +42,6 @@ Stop. Don't proceed to Step 2.
 ```bash
 # Determine the base branch name
 git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null || echo main
-git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
 ```
 
 Or ask: "This branch split from main - is that correct?"

@@ -90,6 +90,7 @@ case $LOCATION in
     ;;
   ~/.config/superpowers/worktrees/*)
     path="$HOME/.config/superpowers/worktrees/$project/$BRANCH_NAME"
+    ;;
 esac
 
 # Create worktree with new branch
