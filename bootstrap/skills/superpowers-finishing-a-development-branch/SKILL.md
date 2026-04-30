@@ -103,7 +103,7 @@ EOF
 )"
 ```
 
-Then: Cleanup worktree (Step 5)
+Worktree is preserved for follow-up fixes during review.
 
 #### Option 3: Keep As-Is
 
