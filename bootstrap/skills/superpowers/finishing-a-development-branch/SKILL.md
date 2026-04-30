@@ -191,4 +191,4 @@ git worktree remove <worktree-path>
 - Clean up worktree for Options 1 & 4 only
 
 **Pairs with:**
-- **superpowers-using-git-worktrees** - Cleans up worktree created by that skill
+- **using-git-worktrees** - Cleans up worktree created by that skill
