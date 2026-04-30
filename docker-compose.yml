@@ -10,6 +10,7 @@ services:
     container_name: ${OPENCODE_CONTAINER_NAME:-opencode}
     ports:
       - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCODE_PORT:-4000}:${OPENCODE_PORT:-4000}'
+      - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCHAMBER_PORT:-4020}:${OPENCHAMBER_PORT:-4020}'
     volumes:
       - ${OPENCODE_HOME_DIR:-./data/home}:/home/opencode
     environment:
@@ -23,6 +24,9 @@ services:
       - OPENCODE_PRINT_LOGS=${OPENCODE_PRINT_LOGS:-false}
       - OPENCODE_LOG_LEVEL=${OPENCODE_LOG_LEVEL:-}
       - FORCE_SKILL_SYNC=${FORCE_SKILL_SYNC:-false}
+      - OPENCHAMBER_ENABLED=${OPENCHAMBER_ENABLED:-false}
+      - OPENCHAMBER_PORT=${OPENCHAMBER_PORT:-4020}
+      - OPENCHAMBER_UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD:-}
       - ZHIPU_API_KEY=${ZHIPU_API_KEY:?ZHIPU_API_KEY is required}
       # Optional: Google AI Studio API key for Gemini vision model (multimodal-looker agent).
       # Only needed if you want vision/multimodal features; without it the agent falls back to the default Z.AI model.

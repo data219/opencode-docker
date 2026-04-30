@@ -141,6 +141,12 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
 # --- Install OpenCode ---
 RUN npm install -g opencode-ai@${OPENCODE_VERSION}
 
+# renovate: datasource=npm depName=@openchamber/web
+ARG OPENCHAMBER_VERSION=1.9.10
+
+# --- Install OpenChamber (alternative Web GUI for OpenCode) ---
+RUN npm install -g @openchamber/web@${OPENCHAMBER_VERSION}
+
 # --- Install agent-browser CLI and browser runtime ---
 RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
     && mkdir -p /opt/opencode-browser-home/.cache /opt/agent-browser \
@@ -326,7 +332,7 @@ RUN chmod +x /scripts/docker-init.sh /scripts/docker-entrypoint.sh \
     && chown -R opencode:opencode /scripts/ /opt/opencode-defaults/
 
 # --- Expose port ---
-EXPOSE 4000
+EXPOSE 4000 4020
 
 # --- Healthcheck ---
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
