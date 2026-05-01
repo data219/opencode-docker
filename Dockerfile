@@ -27,7 +27,7 @@ ARG BUN_VERSION=1.3.12
 # renovate: datasource=github-releases depName=tianon/gosu
 ARG GOSU_VERSION=1.17
 # renovate: datasource=npm depName=opencode-ai
-ARG OPENCODE_VERSION=1.4.3
+ARG OPENCODE_VERSION=1.14.21
 # renovate: datasource=npm depName=agent-browser
 ARG AGENT_BROWSER_VERSION=0.25.4
 # renovate: datasource=github-releases depName=mikefarah/yq
@@ -55,7 +55,7 @@ ARG RUBY_VERSION=3.3.6
 # renovate: datasource=github-tags depName=swiftlang/swift versioning=loose
 ARG SWIFT_VERSION=swift-6.0-RELEASE
 # renovate: datasource=npm depName=oh-my-opencode
-ARG OMO_VERSION=3.14.0
+ARG OMO_VERSION=3.17.12
 
 # --- System packages (with BuildKit cache for apt) ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
