@@ -36,7 +36,7 @@ SSH_PUBLIC_KEY_PATH="${SSH_PRIVATE_KEY_PATH}.pub"
 
 mkdir -p "${SSH_DIR}"
 if [ "$(id -u)" = "0" ]; then
-  chown -R opencode:opencode "${SSH_DIR}"
+  chown opencode:opencode "${SSH_DIR}"
 fi
 chmod 700 "${SSH_DIR}" 2>/dev/null || true
 
