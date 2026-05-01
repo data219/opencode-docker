@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     # Quick tunnel: no account, random *.trycloudflare.com URL.
     # Override command is not needed for managed mode — see below.
-    command: ["tunnel", "--url", "http://${CF_TUNNEL_TARGET_HOST:-opencode}:${CF_TUNNEL_TARGET_PORT:-4000}"]
+    command: ["tunnel", "--url", "http://${CF_TUNNEL_TARGET_HOST:-opencode}:${CF_TUNNEL_TARGET_PORT:-${OPENCODE_PORT:-4000}}"]
     depends_on:
       opencode:
         condition: service_healthy
