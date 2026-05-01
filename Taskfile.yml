@@ -73,6 +73,7 @@ tasks:
       - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile managed up -d
 
   tunnel-down:
-    desc: Stop Cloudflare tunnel services
+    desc: Stop Cloudflare tunnel services without affecting the main stack
     cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile quick --profile managed down
+      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml stop cloudflared cloudflared-managed || true
+      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml rm -f cloudflared cloudflared-managed || true
