@@ -7,8 +7,8 @@
 #   Check the URL with: docker compose logs cloudflared
 #
 # Managed tunnel (stable domain, requires Cloudflare account):
-#   CF_TUNNEL_MODE=managed CF_TUNNEL_TOKEN=<token> \
-#     docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+#   Set CF_TUNNEL_TOKEN in .env, then:
+#   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
 #
 #   Create a named tunnel at https://one.dash.cloudflare.com/
 #   Route traffic to: http://opencode:4000 (Docker internal DNS)
@@ -21,14 +21,26 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     restart: unless-stopped
-    entrypoint: ["/bin/sh", "/scripts/tunnel-entrypoint.sh"]
+    # Quick tunnel: no account, random *.trycloudflare.com URL.
+    # Override command is not needed for managed mode — see below.
+    command: ["tunnel", "--url", "http://${CF_TUNNEL_TARGET_HOST:-opencode}:${CF_TUNNEL_TARGET_PORT:-4000}"]
     environment:
-      - CF_TUNNEL_MODE=${CF_TUNNEL_MODE:-quick}
       - CF_TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:-}
-      - CF_TUNNEL_TARGET_HOST=${CF_TUNNEL_TARGET_HOST:-opencode}
-      - CF_TUNNEL_TARGET_PORT=${CF_TUNNEL_TARGET_PORT:-4000}
-    volumes:
-      - ./scripts/tunnel-entrypoint.sh:/scripts/tunnel-entrypoint.sh:ro
     depends_on:
       opencode:
         condition: service_healthy
+    profiles:
+      - quick
+
+  cloudflared-managed:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-managed
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required for managed tunnel}
+    depends_on:
+      opencode:
+        condition: service_healthy
+    profiles:
+      - managed
