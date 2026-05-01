@@ -132,8 +132,6 @@ if [ "$OPENCHAMBER_START" = "true" ]; then
       --foreground &
     OPENCHAMBER_PID=$!
     echo "OpenChamber started (PID $OPENCHAMBER_PID) on http://0.0.0.0:$OPENCHAMBER_PORT"
-    echo "NOTE: OpenChamber port $OPENCHAMBER_PORT may not be published to the host." >&2
-    echo "  Use: docker compose -f docker-compose.yml -f docker-compose.openchamber.yml up -d" >&2
   else
     echo "WARNING: OPENCHAMBER_ENABLED=true but openchamber binary not found. Skipping." >&2
   fi
