@@ -29,6 +29,37 @@ if [ "$(id -u)" = "0" ]; then
   done
 fi
 
+# --- Auto-generate SSH key if missing ---
+SSH_DIR="${USER_HOME}/.ssh"
+SSH_PRIVATE_KEY_PATH="${SSH_DIR}/id_ed25519"
+SSH_PUBLIC_KEY_PATH="${SSH_PRIVATE_KEY_PATH}.pub"
+
+mkdir -p "${SSH_DIR}"
+if [ "$(id -u)" = "0" ]; then
+  chown -R opencode:opencode "${SSH_DIR}"
+fi
+chmod 700 "${SSH_DIR}" 2>/dev/null || true
+
+if [ ! -f "${SSH_PRIVATE_KEY_PATH}" ] || [ ! -f "${SSH_PUBLIC_KEY_PATH}" ]; then
+  if [ ! -w "${SSH_DIR}" ]; then
+    echo "NOTE: SSH key missing and ${SSH_DIR} is not writable, skipping SSH key generation" >&2
+  else
+    echo "Generating SSH ed25519 key..."
+    if ssh-keygen -t ed25519 -N "" -f "${SSH_PRIVATE_KEY_PATH}" >/dev/null 2>&1; then
+      chmod 600 "${SSH_PRIVATE_KEY_PATH}" 2>/dev/null || true
+      chmod 644 "${SSH_PUBLIC_KEY_PATH}" 2>/dev/null || true
+      if [ "$(id -u)" = "0" ]; then
+        chown opencode:opencode "${SSH_PRIVATE_KEY_PATH}" "${SSH_PUBLIC_KEY_PATH}" 2>/dev/null || true
+      fi
+      echo "SSH key generated. Public key:"
+      cat "${SSH_PUBLIC_KEY_PATH}"
+    else
+      echo "WARNING: Failed to generate SSH key, continuing without it" >&2
+    fi
+  fi
+fi
+
+
 mkdir -p "$CONFIG_DIR"
 
 # Determine if we need to seed configs.
