@@ -71,6 +71,22 @@ elif [ -f "${SSH_PRIVATE_KEY_PATH}" ] && [ ! -f "${SSH_PUBLIC_KEY_PATH}" ]; then
   else
     echo "WARNING: Failed to regenerate SSH public key" >&2
   fi
+elif [ ! -f "${SSH_PRIVATE_KEY_PATH}" ] && [ -f "${SSH_PUBLIC_KEY_PATH}" ]; then
+  # Orphaned public key without private key: remove and regenerate.
+  echo "SSH private key missing but public key exists, regenerating key pair..."
+  rm -f "${SSH_PUBLIC_KEY_PATH}"
+  if ssh-keygen -t ed25519 -N "" -f "${SSH_PRIVATE_KEY_PATH}" >/dev/null 2>&1; then
+    chmod 600 "${SSH_PRIVATE_KEY_PATH}" 2>/dev/null || true
+    chmod 644 "${SSH_PUBLIC_KEY_PATH}" 2>/dev/null || true
+    if [ "$(id -u)" = "0" ]; then
+      chown opencode:opencode "${SSH_PRIVATE_KEY_PATH}" "${SSH_PUBLIC_KEY_PATH}" 2>/dev/null || true
+    fi
+    echo "SSH key regenerated. Public key:"
+    cat "${SSH_PUBLIC_KEY_PATH}"
+  else
+    echo "WARNING: Failed to regenerate SSH key" >&2
+  fi
+fi
 fi
 
 
