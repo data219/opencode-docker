@@ -87,7 +87,6 @@ elif [ ! -f "${SSH_PRIVATE_KEY_PATH}" ] && [ -f "${SSH_PUBLIC_KEY_PATH}" ]; then
     echo "WARNING: Failed to regenerate SSH key" >&2
   fi
 fi
-fi
 
 
 mkdir -p "$CONFIG_DIR"
