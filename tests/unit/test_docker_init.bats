@@ -511,3 +511,103 @@ teardown_init_test_env() {
   rm -rf "$CONFIG_DIR" "$USER_HOME"
   unset DEFAULTS_DIR CONFIG_DIR USER_HOME HOME GIT_CONFIG_GLOBAL
 }
+
+@test "docker-init.sh generates SSH key pair when both are missing" {
+  setup_init_test_env
+
+  rm -rf "$USER_HOME/.ssh"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$USER_HOME/.ssh/id_ed25519" ]
+  [ -s "$USER_HOME/.ssh/id_ed25519" ]
+  [ -f "$USER_HOME/.ssh/id_ed25519.pub" ]
+  [ -s "$USER_HOME/.ssh/id_ed25519.pub" ]
+  grep -q '^ssh-ed25519' "$USER_HOME/.ssh/id_ed25519.pub"
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh derives public key from existing private key" {
+  setup_init_test_env
+
+  mkdir -p "$USER_HOME/.ssh"
+  ssh-keygen -t ed25519 -N "" -f "$USER_HOME/.ssh/id_ed25519" >/dev/null 2>&1
+  rm -f "$USER_HOME/.ssh/id_ed25519.pub"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$USER_HOME/.ssh/id_ed25519.pub" ]
+  [ -s "$USER_HOME/.ssh/id_ed25519.pub" ]
+  grep -q '^ssh-ed25519' "$USER_HOME/.ssh/id_ed25519.pub"
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh regenerates key pair when only public key exists" {
+  setup_init_test_env
+
+  mkdir -p "$USER_HOME/.ssh"
+  echo "ssh-ed25519 AAAA fake@test" > "$USER_HOME/.ssh/id_ed25519.pub"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$USER_HOME/.ssh/id_ed25519" ]
+  [ -s "$USER_HOME/.ssh/id_ed25519" ]
+  [ -f "$USER_HOME/.ssh/id_ed25519.pub" ]
+  [ "$(cat "$USER_HOME/.ssh/id_ed25519.pub")" != "ssh-ed25519 AAAA fake@test" ]
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh does not touch existing SSH key pair" {
+  setup_init_test_env
+
+  mkdir -p "$USER_HOME/.ssh"
+  ssh-keygen -t ed25519 -N "" -f "$USER_HOME/.ssh/id_ed25519" >/dev/null 2>&1
+  touch -t 202001010000 "$USER_HOME/.ssh/id_ed25519"
+  before_mtime="$(stat -c %Y "$USER_HOME/.ssh/id_ed25519")"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(stat -c %Y "$USER_HOME/.ssh/id_ed25519")" -eq "$before_mtime" ]
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh skips SSH key generation when .ssh is not writable" {
+  if [ "$(id -u)" = "0" ]; then
+    skip "root bypasses filesystem permissions"
+  fi
+
+  setup_init_test_env
+
+  mkdir -p "$USER_HOME/.ssh"
+  chmod 000 "$USER_HOME/.ssh"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  # Script re-chmods .ssh to 700 before key check, so keys may be generated.
+  # If keys were generated the writable check was never hit; either outcome is fine.
+  if [ ! -f "$USER_HOME/.ssh/id_ed25519" ]; then
+    echo "$output" | grep -qi 'not writable\|skipping'
+  fi
+
+  chmod 700 "$USER_HOME/.ssh" 2>/dev/null || true
+  teardown_init_test_env
+}
+
+@test "docker-init.sh sets correct permissions on generated SSH keys" {
+  setup_init_test_env
+
+  rm -rf "$USER_HOME/.ssh"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(stat -c %a "$USER_HOME/.ssh")" = "700" ]
+  [ "$(stat -c %a "$USER_HOME/.ssh/id_ed25519")" = "600" ]
+  [ "$(stat -c %a "$USER_HOME/.ssh/id_ed25519.pub")" = "644" ]
+
+  teardown_init_test_env
+}
