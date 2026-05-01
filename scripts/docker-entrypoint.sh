@@ -123,13 +123,19 @@ esac
 if [ "$OPENCHAMBER_START" = "true" ]; then
   if command -v openchamber >/dev/null 2>&1; then
     echo "Starting OpenChamber on port $OPENCHAMBER_PORT..."
-    OPENCODE_HOST="http://127.0.0.1:${PORT}" \
-    OPENCODE_SKIP_START=true \
-    openchamber serve \
-      --port "$OPENCHAMBER_PORT" \
-      --host 0.0.0.0 \
-      ${OPENCHAMBER_UI_PASSWORD:+--ui-password "$OPENCHAMBER_UI_PASSWORD"} \
-      --foreground &
+    OPENCHAMBER_CMD=(env
+      OPENCODE_HOST="http://127.0.0.1:${PORT}"
+      OPENCODE_SKIP_START=true
+      openchamber serve
+      --port "$OPENCHAMBER_PORT"
+      --host 0.0.0.0
+      ${OPENCHAMBER_UI_PASSWORD:+--ui-password "$OPENCHAMBER_UI_PASSWORD"}
+      --foreground)
+    if [ "$(id -u)" = "0" ]; then
+      gosu opencode "${OPENCHAMBER_CMD[@]}" &
+    else
+      "${OPENCHAMBER_CMD[@]}" &
+    fi
     OPENCHAMBER_PID=$!
     echo "OpenChamber started (PID $OPENCHAMBER_PID) on http://0.0.0.0:$OPENCHAMBER_PORT"
   else
