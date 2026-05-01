@@ -195,8 +195,12 @@ fi
 
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
 # Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.
-if [ ! -f "$CONFIG_DIR/oh-my-openagent.jsonc" ] && [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.json" ]; then
-  cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
+if [ ! -f "$CONFIG_DIR/oh-my-openagent.jsonc" ]; then
+  if [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.jsonc" ]; then
+    cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.jsonc" "$CONFIG_DIR/oh-my-openagent.jsonc"
+  elif [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.json" ]; then
+    cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
+  fi
 fi
 
 # Ensure git files are writable by runtime user.
