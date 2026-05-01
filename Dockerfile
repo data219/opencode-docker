@@ -277,7 +277,7 @@ RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
 #       then pick the agent config. Our opencode.json seed (with {env:} provider) takes priority.
 RUN mkdir -p /opt/opencode-defaults \
   && HOME=/tmp/omo-install /home/opencode/.bun/bin/bun x oh-my-opencode@${OMO_VERSION} install \
-    --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=yes --copilot=no \
+    --no-tui --zai-coding-plan=no --claude=no --openai=no --gemini=yes --copilot=no \
   && cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-openagent-omo.json \
   && rm -rf /tmp/omo-install
 
