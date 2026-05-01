@@ -1,7 +1,7 @@
 // opencode-docker-config:1
 // Dual-provider: Z.AI Coding Plan Pro (glm) + Google AI Studio Free (gemini)
 // Tiers: glm-5.1 (Opus-level, max quality), glm-5-turbo (Opus-level, fast), glm-4.7 (Sonnet-level), gemini-2.5-flash (offload)
-// Strategy: Premium agents on Z.AI, cheap/high-volume agents on Google to preserve Z.AI slots
+// Strategy: Z.AI for text/code agents, Gemini only where visual or multimodal work benefits from it
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
@@ -55,20 +55,20 @@
         "zai-coding-plan/glm-4.7"
       ]
     },
-    // === Google AI Studio (offload high-volume agents) ===
+    // === Utility agents ===
     "explore": {
-      "model": "google-aistudio/gemini-2.5-flash",
+      "model": "zai-coding-plan/glm-4.5-air",
       "fallback_models": [
-        "zai-coding-plan/glm-4.5-air"
+        "zai-coding-plan/glm-4.7"
       ],
       "prompt_append": "Prefer searching official documentation and library sources over general web search."
     },
     "librarian": {
-      "model": "google-aistudio/gemini-2.5-flash",
+      "model": "zai-coding-plan/glm-4.7",
       "fallback_models": [
         "zai-coding-plan/glm-4.5-air"
       ],
-      "prompt_append": "Focus on finding authoritative sources. Cross-reference results when possible."
+      "prompt_append": "Focus on finding authoritative sources. Cross-reference results when possible. Keep research brief and decision-oriented: return only the facts needed for the current task, cite sources, and avoid exhaustive result dumps or broad background unless explicitly requested. Prefer a short answer with 3-5 high-signal bullets over long summaries."
     },
     "multimodal-looker": {
       "model": "google-aistudio/gemini-2.5-flash",
@@ -99,12 +99,18 @@
     "writing": {
       "model": "zai-coding-plan/glm-4.7"
     },
-    // === Google AI Studio (offload high-volume categories) ===
+    // === Utility categories ===
     "quick": {
-      "model": "google-aistudio/gemini-2.5-flash"
+      "model": "zai-coding-plan/glm-4.5-air",
+      "fallback_models": [
+        "zai-coding-plan/glm-4.7"
+      ]
     },
     "unspecified-low": {
-      "model": "google-aistudio/gemini-2.5-flash"
+      "model": "zai-coding-plan/glm-4.7",
+      "fallback_models": [
+        "zai-coding-plan/glm-4.5-air"
+      ]
     },
     "artistry": {
       "model": "google-aistudio/gemini-2.5-flash",
@@ -132,8 +138,8 @@
       "zai-coding-plan/glm-5.1": 2,
       "zai-coding-plan/glm-5-turbo": 2,
       "zai-coding-plan/glm-4.7": 2,
-      "zai-coding-plan/glm-4.5-air": 1,
-      "google-aistudio/gemini-2.5-flash": 3
+      "zai-coding-plan/glm-4.5-air": 2,
+      "google-aistudio/gemini-2.5-flash": 2
     }
   },
   "browser_automation_engine": {
