@@ -61,3 +61,19 @@ tasks:
     desc: Alias for test-all
     cmds:
       - task test-all
+
+  tunnel-quick:
+    desc: Start Cloudflare quick tunnel (random URL, no account)
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile quick up -d
+
+  tunnel-managed:
+    desc: Start Cloudflare managed tunnel (stable domain, requires CF_TUNNEL_TOKEN)
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile managed up -d
+
+  tunnel-down:
+    desc: Stop Cloudflare tunnel services without affecting the main stack
+    cmds:
+      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml stop cloudflared cloudflared-managed || true
+      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml rm -f cloudflared cloudflared-managed || true
