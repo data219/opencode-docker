@@ -40,7 +40,8 @@ if [ "$(id -u)" = "0" ]; then
 fi
 chmod 700 "${SSH_DIR}" 2>/dev/null || true
 
-if [ ! -f "${SSH_PRIVATE_KEY_PATH}" ] || [ ! -f "${SSH_PUBLIC_KEY_PATH}" ]; then
+if [ ! -f "${SSH_PRIVATE_KEY_PATH}" ] && [ ! -f "${SSH_PUBLIC_KEY_PATH}" ]; then
+  # Both keys missing: generate a new pair.
   if [ ! -w "${SSH_DIR}" ]; then
     echo "NOTE: SSH key missing and ${SSH_DIR} is not writable, skipping SSH key generation" >&2
   else
@@ -56,6 +57,19 @@ if [ ! -f "${SSH_PRIVATE_KEY_PATH}" ] || [ ! -f "${SSH_PUBLIC_KEY_PATH}" ]; then
     else
       echo "WARNING: Failed to generate SSH key, continuing without it" >&2
     fi
+  fi
+elif [ -f "${SSH_PRIVATE_KEY_PATH}" ] && [ ! -f "${SSH_PUBLIC_KEY_PATH}" ]; then
+  # Private key exists but public key is missing: derive it.
+  echo "SSH public key missing, regenerating from private key..."
+  if ssh-keygen -y -f "${SSH_PRIVATE_KEY_PATH}" > "${SSH_PUBLIC_KEY_PATH}" 2>/dev/null; then
+    chmod 644 "${SSH_PUBLIC_KEY_PATH}" 2>/dev/null || true
+    if [ "$(id -u)" = "0" ]; then
+      chown opencode:opencode "${SSH_PUBLIC_KEY_PATH}" 2>/dev/null || true
+    fi
+    echo "SSH public key regenerated. Public key:"
+    cat "${SSH_PUBLIC_KEY_PATH}"
+  else
+    echo "WARNING: Failed to regenerate SSH public key" >&2
   fi
 fi
 
