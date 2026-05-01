@@ -278,8 +278,16 @@ RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
 RUN mkdir -p /opt/opencode-defaults \
   && HOME=/tmp/omo-install /home/opencode/.bun/bin/bun x oh-my-opencode@${OMO_VERSION} install \
     --no-tui --zai-coding-plan=no --claude=no --openai=no --gemini=yes --copilot=no \
-  && cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-openagent-omo.json \
-  && rm -rf /tmp/omo-install
+  && if [ -f /tmp/omo-install/.config/opencode/oh-my-opencode.json ]; then \
+       cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-opencode-omo.json; \
+     fi \
+  && if [ -f /tmp/omo-install/.config/opencode/oh-my-openagent.json ]; then \
+       cp /tmp/omo-install/.config/opencode/oh-my-openagent.json /opt/opencode-defaults/oh-my-openagent-omo.json; \
+     fi \
+  && if [ -f /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc ]; then \
+       cp /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent-omo.jsonc; \
+     fi \
+  && if [ -d /tmp/omo-install ]; then rm -rf /tmp/omo-install; fi
 
 # --- Build PATH ---
 ENV PATH="/home/opencode/.cargo/bin:/home/opencode/.pyenv/shims:/home/opencode/.pyenv/bin:/home/opencode/.nvm/versions/node/$(ls /home/opencode/.nvm/versions/node/ 2>/dev/null | head -1)/bin:/home/opencode/.bun/bin:/home/opencode/.local/go/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -314,7 +322,9 @@ RUN cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/op
   && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc.managed /home/opencode/.config/opencode/oh-my-openagent.jsonc \
   && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
   && cp -a /opt/opencode-defaults/.gitmessage /home/opencode/.gitmessage \
-  && cp -a /opt/opencode-defaults/oh-my-openagent-omo.json /home/opencode/.config/opencode/oh-my-openagent-omo.json 2>/dev/null || true \
+  && if [ -f /opt/opencode-defaults/oh-my-opencode-omo.json ]; then cp -a /opt/opencode-defaults/oh-my-opencode-omo.json /home/opencode/.config/opencode/oh-my-opencode-omo.json; fi \
+  && if [ -f /opt/opencode-defaults/oh-my-openagent-omo.json ]; then cp -a /opt/opencode-defaults/oh-my-openagent-omo.json /home/opencode/.config/opencode/oh-my-openagent-omo.json; fi \
+  && if [ -f /opt/opencode-defaults/oh-my-openagent-omo.jsonc ]; then cp -a /opt/opencode-defaults/oh-my-openagent-omo.jsonc /home/opencode/.config/opencode/oh-my-openagent-omo.jsonc; fi \
   && cp -a /opt/opencode-defaults/skills/. /home/opencode/.config/opencode/skills/
 RUN chown -R opencode:opencode \
     /home/opencode/.gitmessage \
