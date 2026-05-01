@@ -10,6 +10,7 @@ services:
     container_name: ${OPENCODE_CONTAINER_NAME:-opencode}
     ports:
       - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCODE_PORT:-4000}:${OPENCODE_PORT:-4000}'
+      - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCHAMBER_PORT:-4020}:${OPENCHAMBER_PORT:-4020}'
     volumes:
       - ${OPENCODE_HOME_DIR:-./data/home}:/home/opencode
     environment:

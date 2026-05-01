@@ -1,8 +1,8 @@
-# OpenChamber override — activate with:
+# OpenChamber shortcut — enables OpenChamber without editing .env:
 #   docker compose -f docker-compose.yml -f docker-compose.openchamber.yml up -d
+# Alternatively, set OPENCHAMBER_ENABLED=true in .env and use plain:
+#   docker compose up -d  (or task up)
 services:
   opencode:
-    ports:
-      - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCHAMBER_PORT:-4020}:${OPENCHAMBER_PORT:-4020}'
     environment:
       - OPENCHAMBER_ENABLED=true
