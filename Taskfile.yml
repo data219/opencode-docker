@@ -3,37 +3,45 @@ version: "3"
 vars:
   BATS: tests/bats-core/bin/bats
   BATS_ARGS: --recursive --timing
+  # Enable the Docker socket overlay with: WITH_DOCKER=true task up
+  DOCKER_COMPOSE:
+    sh: |
+      if [ "{{.WITH_DOCKER | default "false"}}" = "true" ]; then
+        printf '%s\n' 'docker compose -f docker-compose.yml -f docker-compose.docker.yml'
+      else
+        printf '%s\n' 'docker compose -f docker-compose.yml'
+      fi
 
 tasks:
   config:
     desc: Render the Docker Compose configuration
     cmds:
-      - docker compose config
+      - "{{.DOCKER_COMPOSE}} config"
 
   build:
     desc: Build the opencode image
     cmds:
-      - DOCKER_BUILDKIT=1 docker compose build
+      - DOCKER_BUILDKIT=1 {{.DOCKER_COMPOSE}} build
 
   up:
     desc: Start the opencode stack in the background
     cmds:
-      - docker compose up -d
+      - "{{.DOCKER_COMPOSE}} up -d"
 
   logs:
     desc: Follow opencode container logs
     cmds:
-      - docker compose logs -f opencode
+      - "{{.DOCKER_COMPOSE}} logs -f opencode"
 
   shell:
     desc: Open a bash shell in the running opencode container
     cmds:
-      - docker compose exec opencode bash
+      - "{{.DOCKER_COMPOSE}} exec opencode bash"
 
   opencode:
     desc: Run opencode in the running container (optional args after --)
     cmds:
-      - docker compose exec opencode opencode {{.CLI_ARGS}}
+      - "{{.DOCKER_COMPOSE}} exec opencode opencode {{.CLI_ARGS}}"
 
   test-unit:
     desc: Run the unit Bats suite
@@ -65,15 +73,15 @@ tasks:
   tunnel-quick:
     desc: Start Cloudflare quick tunnel (random URL, no account)
     cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile quick up -d
+      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml --profile quick up -d"
 
   tunnel-managed:
     desc: Start Cloudflare managed tunnel (stable domain, requires CF_TUNNEL_TOKEN)
     cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile managed up -d
+      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml --profile managed up -d"
 
   tunnel-down:
     desc: Stop Cloudflare tunnel services without affecting the main stack
     cmds:
-      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml stop cloudflared cloudflared-managed || true
-      - docker compose -f docker-compose.yml -f docker-compose.tunnel.yml rm -f cloudflared cloudflared-managed || true
+      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml stop cloudflared cloudflared-managed || true"
+      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml rm -f cloudflared cloudflared-managed || true"
