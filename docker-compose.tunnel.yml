@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:
-      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:?CF_TUNNEL_TOKEN is required for managed tunnel}
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:-}
     depends_on:
       opencode:
         condition: service_healthy
