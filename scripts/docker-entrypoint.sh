@@ -106,6 +106,37 @@ if [ -f "$CONFIG_VERSION_FILE" ] && [ -f "$IMAGE_VERSION_FILE" ]; then
   fi
 fi
 
+# --- Optional: Start OpenChamber (alternative Web GUI) ---
+OPENCHAMBER_ENABLED_RAW="${OPENCHAMBER_ENABLED:-false}"
+OPENCHAMBER_PORT="${OPENCHAMBER_PORT:-4020}"
+OPENCHAMBER_UI_PASSWORD="${OPENCHAMBER_UI_PASSWORD:-}"
+
+case "$OPENCHAMBER_ENABLED_RAW" in
+  true|TRUE|1|yes|YES)
+    OPENCHAMBER_START=true
+    ;;
+  *)
+    OPENCHAMBER_START=false
+    ;;
+esac
+
+if [ "$OPENCHAMBER_START" = "true" ]; then
+  if command -v openchamber >/dev/null 2>&1; then
+    echo "Starting OpenChamber on port $OPENCHAMBER_PORT..."
+    OPENCODE_HOST="http://127.0.0.1:${PORT}" \
+    OPENCODE_SKIP_START=true \
+    openchamber serve \
+      --port "$OPENCHAMBER_PORT" \
+      --host 0.0.0.0 \
+      ${OPENCHAMBER_UI_PASSWORD:+--ui-password "$OPENCHAMBER_UI_PASSWORD"} \
+      --foreground &
+    OPENCHAMBER_PID=$!
+    echo "OpenChamber started (PID $OPENCHAMBER_PID) on http://0.0.0.0:$OPENCHAMBER_PORT"
+  else
+    echo "WARNING: OPENCHAMBER_ENABLED=true but openchamber binary not found. Skipping." >&2
+  fi
+fi
+
 case "$MODE" in
   web)
     CMD=(opencode web --hostname 0.0.0.0 --port "$PORT")
