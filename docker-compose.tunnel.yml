@@ -1,0 +1,34 @@
+# Cloudflare Tunnel — expose OpenCode via the internet without opening ports.
+#
+# Quick tunnel (default, no Cloudflare account needed):
+#   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+#
+#   Generates a random *.trycloudflare.com URL on every start.
+#   Check the URL with: docker compose logs cloudflared
+#
+# Managed tunnel (stable domain, requires Cloudflare account):
+#   CF_TUNNEL_MODE=managed CF_TUNNEL_TOKEN=<token> \
+#     docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+#
+#   Create a named tunnel at https://one.dash.cloudflare.com/
+#   Route traffic to: http://opencode:4000 (Docker internal DNS)
+#
+# WARNING: Quick tunnel URLs are publicly accessible.
+#   Set OPENCODE_SERVER_PASSWORD in .env before starting the tunnel!
+#
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/scripts/tunnel-entrypoint.sh"]
+    environment:
+      - CF_TUNNEL_MODE=${CF_TUNNEL_MODE:-quick}
+      - CF_TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:-}
+      - CF_TUNNEL_TARGET_HOST=${CF_TUNNEL_TARGET_HOST:-opencode}
+      - CF_TUNNEL_TARGET_PORT=${CF_TUNNEL_TARGET_PORT:-4000}
+    volumes:
+      - ./scripts/tunnel-entrypoint.sh:/scripts/tunnel-entrypoint.sh:ro
+    depends_on:
+      opencode:
+        condition: service_healthy
