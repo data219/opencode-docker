@@ -280,6 +280,7 @@ RUN mkdir -p /opt/opencode-defaults \
     --no-tui --zai-coding-plan=no --claude=no --openai=no --gemini=yes --copilot=no \
   && if [ -f /tmp/omo-install/.config/opencode/oh-my-opencode.json ]; then \
        cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-opencode-omo.json; \
+       cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-openagent-omo.json; \
      fi \
   && if [ -f /tmp/omo-install/.config/opencode/oh-my-openagent.json ]; then \
        cp /tmp/omo-install/.config/opencode/oh-my-openagent.json /opt/opencode-defaults/oh-my-openagent-omo.json; \
