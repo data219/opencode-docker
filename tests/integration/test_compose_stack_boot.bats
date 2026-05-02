@@ -13,8 +13,8 @@ prepare_test_stack() {
   TEST_OPENCODE_PORT="${1:-$TEST_OPENCODE_PORT}"
   TEST_HOME_ROOT="$(mktemp -d "${PWD}/.test-home.XXXXXX")"
 
-  export ZHIPU_API_KEY="test"
-  export GEMINI_API_KEY=""
+  export OCD_ZHIPU_API_KEY="test"
+  export OCD_GEMINI_API_KEY=""
   export GIT_AUTHOR_NAME=""
   export GIT_AUTHOR_EMAIL=""
   export GIT_COMMITTER_NAME=""

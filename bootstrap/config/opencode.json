@@ -4,7 +4,7 @@
     "zai-coding-plan": {
       "options": {
         "baseURL": "https://api.z.ai/api/coding/paas/v4",
-        "apiKey": "{env:ZHIPU_API_KEY}"
+        "apiKey": "{env:OCD_ZHIPU_API_KEY}"
       },
       "models": {
         "glm-5.1": {
@@ -25,10 +25,9 @@
         }
       }
     },
-    "google-aistudio": {
+    "google": {
       "options": {
-        "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "apiKey": "{env:GEMINI_API_KEY}"
+        "apiKey": "{env:OCD_GEMINI_API_KEY}"
       },
       "models": {
         "gemini-2.5-flash": {
@@ -39,6 +38,7 @@
     }
   },
   "plugin": [
+    "@icaruk/zai-peak-hours",
     "oh-my-openagent"
   ]
 }

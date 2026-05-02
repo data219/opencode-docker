@@ -71,7 +71,7 @@
       "prompt_append": "Focus on finding authoritative sources. Cross-reference results when possible. Keep research brief and decision-oriented: return only the facts needed for the current task, cite sources, and avoid exhaustive result dumps or broad background unless explicitly requested. Prefer a short answer with 3-5 high-signal bullets over long summaries."
     },
     "multimodal-looker": {
-      "model": "google-aistudio/gemini-2.5-flash",
+      "model": "google/gemini-2.5-flash",
       "fallback_models": [
         "zai-coding-plan/glm-4.7"
       ]
@@ -83,7 +83,7 @@
       "model": "zai-coding-plan/glm-5.1"
     },
     "visual-engineering": {
-      "model": "google-aistudio/gemini-2.5-flash",
+      "model": "google/gemini-2.5-flash",
       "fallback_models": [
         "zai-coding-plan/glm-4.7"
       ]
@@ -113,7 +113,7 @@
       ]
     },
     "artistry": {
-      "model": "google-aistudio/gemini-2.5-flash",
+      "model": "google/gemini-2.5-flash",
       "fallback_models": [
         "zai-coding-plan/glm-4.7"
       ]
@@ -132,14 +132,14 @@
   "background_task": {
     "providerConcurrency": {
       "zai-coding-plan": 3,
-      "google-aistudio": 3
+      "google": 3
     },
     "modelConcurrency": {
       "zai-coding-plan/glm-5.1": 2,
       "zai-coding-plan/glm-5-turbo": 2,
       "zai-coding-plan/glm-4.7": 2,
       "zai-coding-plan/glm-4.5-air": 2,
-      "google-aistudio/gemini-2.5-flash": 2
+      "google/gemini-2.5-flash": 2
     }
   },
   "browser_automation_engine": {
