@@ -40,18 +40,54 @@ active_env_var_exists() {
   grep -Eq "^[[:space:]]*${escaped_name}[[:space:]]*=" "$file"
 }
 
+active_env_var_has_value() {
+  local file="$1"
+  local name="$2"
+  local escaped_name
+  escaped_name="$(escape_regex "$name")"
+
+  grep -Eq "^[[:space:]]*${escaped_name}[[:space:]]*=[[:space:]]*[^[:space:]]" "$file"
+}
+
+active_env_var_value() {
+  local file="$1"
+  local name="$2"
+  local escaped_name
+  escaped_name="$(escape_regex "$name")"
+
+  grep -E "^[[:space:]]*${escaped_name}[[:space:]]*=" "$file" | head -n 1 | sed -E "s/^[[:space:]]*${escaped_name}[[:space:]]*=//"
+}
+
+escape_sed_replacement() {
+  printf '%s' "$1" | sed -E 's/[\/&\\]/\\&/g'
+}
+
 rename_env_var() {
   local file="$1"
   local old_name="$2"
   local new_name="$3"
   local old_escaped
+  local new_escaped
+  local old_value
+  local escaped_old_value
   local tmp
 
   old_escaped="$(escape_regex "$old_name")"
+  new_escaped="$(escape_regex "$new_name")"
   tmp="$(mktemp "${file}.XXXXXX")"
 
   if active_env_var_exists "$file" "$old_name" && ! active_env_var_exists "$file" "$new_name"; then
     sed -E "s/^([[:space:]]*)${old_escaped}([[:space:]]*=)/\\1${new_name}\\2/" "$file" > "$tmp"
+  elif active_env_var_exists "$file" "$old_name" \
+    && active_env_var_exists "$file" "$new_name" \
+    && active_env_var_has_value "$file" "$old_name" \
+    && ! active_env_var_has_value "$file" "$new_name"; then
+    old_value="$(active_env_var_value "$file" "$old_name")"
+    escaped_old_value="$(escape_sed_replacement "$old_value")"
+    sed -E \
+      -e "0,/^([[:space:]]*)${new_escaped}([[:space:]]*=).*/s//\\1${new_name}\\2${escaped_old_value}/" \
+      -e "0,/^([[:space:]]*)${old_escaped}([[:space:]]*=)/s//\\1# ${old_name}\\2/" \
+      "$file" > "$tmp"
   elif active_env_var_exists "$file" "$old_name" && active_env_var_exists "$file" "$new_name"; then
     sed -E "s/^([[:space:]]*)${old_escaped}([[:space:]]*=)/\\1# ${old_name}\\2/" "$file" > "$tmp"
   else
