@@ -48,8 +48,8 @@ Docker daemon access is available only through the explicit Docker override docu
 
 Required API keys:
 
-- `ZHIPU_API_KEY` for the default GLM-5 model mapping
-- `GEMINI_API_KEY` for the configured `multimodal-looker` agent using Gemini vision
+- `OCD_ZHIPU_API_KEY` for the default GLM-5 model mapping
+- `OCD_GEMINI_API_KEY` for the configured `multimodal-looker` agent using Gemini vision
 
 Get the required keys:
 
@@ -58,14 +58,14 @@ Get the required keys:
 1. Open the [Z.AI Open Platform API key page](https://z.ai/manage-apikey/apikey-list)
 2. Sign in or create an account
 3. Create a new API key
-4. Copy the generated key into `.env` as `ZHIPU_API_KEY`
+4. Copy the generated key into `.env` as `OCD_ZHIPU_API_KEY`
 
 ### Google AI Studio
 
 1. Open [Google AI Studio](https://aistudio.google.com/apikey)
 2. Sign in with your Google account
 3. Click **Create API Key**
-4. Copy the generated key into `.env` as `GEMINI_API_KEY`
+4. Copy the generated key into `.env` as `OCD_GEMINI_API_KEY`
 
 ```bash
 # 1. Clone the repository
@@ -74,7 +74,7 @@ cd opencode-docker
 
 # 2. Copy environment file and set your API key
 cp .env.example .env
-# Edit .env — set ZHIPU_API_KEY and GEMINI_API_KEY
+# Edit .env — set OCD_ZHIPU_API_KEY and OCD_GEMINI_API_KEY
 
 # 3. Build and start
 task build
@@ -104,6 +104,7 @@ Use the small `Taskfile.yml` for the normal local entrypoints:
 | `task logs` | Follow the `opencode` service logs |
 | `task shell` | Open a bash shell in the running container |
 | `task opencode -- ...` | Run `opencode` inside the running container |
+| `task migrate-env` | Rename legacy `.env` keys and add missing entries from `.env.example` |
 | `task test` | Run all Bats suites |
 
 ### Docker stack control
@@ -176,12 +177,12 @@ Use these variables only when the defaults do not fit your setup.
 
 ### Core runtime variables
 
-**All env vars are optional except `ZHIPU_API_KEY` and `GEMINI_API_KEY`.**
+**All env vars are optional except `OCD_ZHIPU_API_KEY` and `OCD_GEMINI_API_KEY`.**
 
 | Variable             | Default   | What it configures                                                                                  |
 | -------------------- | --------- | --------------------------------------------------------------------------------------------------- |
-| `ZHIPU_API_KEY`      | *(required)* | Z.AI Coding Plan API key for GLM-5 models                                                       |
-| `GEMINI_API_KEY`     | *(required)* | Google AI Studio API key for Gemini vision model used by the configured multimodal agent        |
+| `OCD_ZHIPU_API_KEY`      | *(required)* | Z.AI Coding Plan API key for GLM-5 models                                                       |
+| `OCD_GEMINI_API_KEY`     | *(required)* | Google AI Studio API key for Gemini vision model used by the configured multimodal agent        |
 | `OPENCODE_MODE`      | `web`     | Server mode: `web` (browser UI) or `serve` (API endpoint)                                          |
 | `OPENCODE_PORT`      | `4000`    | Server port inside the container (1024–65535)                                                       |
 | `OPENCODE_PRINT_LOGS` | `false`  | Maps to `opencode --print-logs` and streams OpenCode logs to container stderr                       |

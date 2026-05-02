@@ -18,6 +18,11 @@ tasks:
     cmds:
       - "{{.DOCKER_COMPOSE}} config"
 
+  migrate-env:
+    desc: Migrate .env names and add missing entries from .env.example
+    cmds:
+      - scripts/migrate-env.sh '{{.ENV_FILE | default ".env"}}' '{{.ENV_EXAMPLE | default ".env.example"}}'
+
   build:
     desc: Build the opencode image
     cmds:
