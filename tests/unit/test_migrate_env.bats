@@ -79,3 +79,21 @@ EOF
   assert_env_file_contains "$TEST_ENV_FILE" '^OCD_ZHIPU_API_KEY=current-secret$'
   assert_env_file_contains "$TEST_ENV_FILE" '^# ZHIPU_API_KEY=legacy-secret$'
 }
+
+@test "migrate-env ignores commented renamed placeholders when migrating active legacy values" {
+  cat > "$TEST_ENV_FILE" <<'EOF'
+# OCD_ZHIPU_API_KEY=
+ZHIPU_API_KEY=legacy-secret
+EOF
+
+  cat > "$TEST_EXAMPLE_FILE" <<'EOF'
+OCD_ZHIPU_API_KEY=
+EOF
+
+  run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
+
+  assert_success
+  assert_env_file_contains "$TEST_ENV_FILE" '^OCD_ZHIPU_API_KEY=legacy-secret$'
+  assert_env_file_contains "$TEST_ENV_FILE" '^# OCD_ZHIPU_API_KEY=$'
+  refute_env_file_contains "$TEST_ENV_FILE" '^ZHIPU_API_KEY=legacy-secret$'
+}
