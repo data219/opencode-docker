@@ -13,7 +13,7 @@ ARG INSTALL_ELIXIR=false
 ARG NODE_VERSION=20.20.2
 # renovate: datasource=github-releases depName=composer/composer
 ARG COMPOSER_VERSION=2.9.7
-# renovate: datasource=github-tags depName=pyenv/pyenv
+# renovate: datasource=github-tags depName=pyenv/pyenv extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG PYENV_VERSION=v2.6.27
 # renovate: datasource=github-releases depName=rust-lang/rustup
 ARG RUSTUP_VERSION=1.29.0
@@ -42,18 +42,18 @@ ARG DOCKER_CLI_VERSION=29.4.1
 ARG DOCKER_COMPOSE_VERSION=2.40.3
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
 ARG ATLCLI_VERSION=0.16.0
-# renovate: datasource=github-tags depName=nvm-sh/nvm
+# renovate: datasource=github-tags depName=nvm-sh/nvm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG NVM_VERSION=v0.40.1
 # renovate: datasource=golang-version depName=go
 ARG GO_VERSION=1.24.0
 # renovate: datasource=github-releases depName=golangci/golangci-lint
 ARG GO_LINT_VERSION=1.62.0
-# renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=loose
-ARG JAVA_VERSION_TAG=jdk-21.0.3+9
+# renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
+ARG JAVA_VERSION=21.0.3+9
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
 ARG RUBY_VERSION=3.3.6
-# renovate: datasource=github-tags depName=swiftlang/swift versioning=loose
-ARG SWIFT_VERSION=swift-6.0-RELEASE
+# renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
+ARG SWIFT_VERSION=6.0
 # renovate: datasource=npm depName=oh-my-opencode
 ARG OMO_VERSION=3.17.12
 
@@ -243,8 +243,8 @@ RUN curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${G
 
 # --- Optional: Java (Temurin JDK 21) ---
 RUN if [ "$INSTALL_JAVA" = "true" ]; then \
-      JAVA_ARCHIVE_VERSION="${JAVA_VERSION_TAG#jdk-}" \
-      && JAVA_ARCHIVE_VERSION="${JAVA_ARCHIVE_VERSION/+/_}" \
+      JAVA_VERSION_TAG="jdk-${JAVA_VERSION}" \
+      && JAVA_ARCHIVE_VERSION="${JAVA_VERSION/+/_}" \
       && curl -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/${JAVA_VERSION_TAG}/OpenJDK21U-jdk_x64_linux_hotspot_${JAVA_ARCHIVE_VERSION}.tar.gz" -o /tmp/openjdk.tar.gz \
       && mkdir -p /home/opencode/.local/java \
       && tar -xzf /tmp/openjdk.tar.gz -C /home/opencode/.local/java --strip-components=1 \
@@ -261,7 +261,7 @@ RUN if [ "$INSTALL_RUBY" = "true" ]; then \
 
 # --- Optional: Swift 6.0 ---
 RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
-      SWIFT_RELEASE="${SWIFT_VERSION#swift-}" \
+      SWIFT_RELEASE="${SWIFT_VERSION}-RELEASE" \
       && SWIFT_RELEASE_LOWER="${SWIFT_RELEASE,,}" \
       && curl -fsSL "https://download.swift.org/swift-${SWIFT_RELEASE_LOWER}/ubuntu2404/swift-${SWIFT_RELEASE}/swift-${SWIFT_RELEASE}-ubuntu24.04.tar.gz" -o /tmp/swift.tar.gz \
       && mkdir -p /home/opencode/.local/swift \

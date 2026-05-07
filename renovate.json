@@ -7,19 +7,19 @@
     {
       "customType": "regex",
       "fileMatch": [
-        "/^Dockerfile$/"
+        "^Dockerfile$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: packageName=(?<packageName>\\S+))?(?: versioning=(?<versioning>\\S+))?\\s+ARG [A-Z0-9_]+_(?:VERSION|TAG)=(?<currentValue>\\S+)\\s"
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+ARG [A-Z0-9_]+_(?:VERSION|TAG)=(?<currentValue>\\S+)\\s"
       ]
     },
     {
       "customType": "regex",
       "fileMatch": [
-        "/^Dockerfile$/"
+        "^Dockerfile$"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) packageName=(?<packageName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+ARG GVM_REF=(?<currentValue>\\S+)\\s+ARG GVM_COMMIT=(?<currentDigest>\\S+)\\s"
+        "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?) (?:lookupName|packageName)=(?<packageName>[^\\s]+?)(?: versioning=(?<versioning>[^\\s]+?))?\\s+ARG GVM_REF=(?<currentValue>\\S+)\\s+ARG GVM_COMMIT=(?<currentDigest>\\S+)\\s"
       ]
     }
   ]
