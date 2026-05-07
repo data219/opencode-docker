@@ -47,7 +47,7 @@ ARG NVM_VERSION=v0.40.1
 # renovate: datasource=golang-version depName=go
 ARG GO_VERSION=1.24.0
 # renovate: datasource=github-releases depName=golangci/golangci-lint
-ARG GO_LINT_VERSION=1.62.0
+ARG GO_LINT_VERSION=1.64.8
 # renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
 ARG JAVA_VERSION=21.0.3+9
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
