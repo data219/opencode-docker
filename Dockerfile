@@ -31,7 +31,7 @@ ARG OPENCODE_VERSION=1.14.21
 # renovate: datasource=npm depName=agent-browser
 ARG AGENT_BROWSER_VERSION=0.25.4
 # renovate: datasource=github-releases depName=mikefarah/yq
-ARG YQ_VERSION=4.40.5
+ARG YQ_VERSION=4.53.2
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
 ARG GH_VERSION=2.89.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
