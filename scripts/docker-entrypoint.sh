@@ -111,6 +111,43 @@ OPENCHAMBER_ENABLED_RAW="${OPENCHAMBER_ENABLED:-false}"
 OPENCHAMBER_PORT="${OPENCHAMBER_PORT:-4020}"
 OPENCHAMBER_UI_PASSWORD="${OPENCHAMBER_UI_PASSWORD:-}"
 
+cleanup_stale_openchamber_runtime_files() {
+  local data_dir run_dir pid_file instance_file pid state cmdline stale_reason
+
+  data_dir="${OPENCHAMBER_DATA_DIR:-${USER_HOME:-/home/opencode}/.config/openchamber}"
+  run_dir="$data_dir/run"
+  pid_file="$run_dir/openchamber-${OPENCHAMBER_PORT}.pid"
+  instance_file="$run_dir/openchamber-${OPENCHAMBER_PORT}.json"
+
+  [ -f "$pid_file" ] || return 0
+
+  pid="$(head -n 1 "$pid_file" 2>/dev/null || true)"
+  if ! echo "$pid" | grep -qE '^[0-9]+$'; then
+    stale_reason="invalid PID '$pid'"
+  elif [ ! -d "/proc/$pid" ]; then
+    stale_reason="PID $pid is not running"
+  else
+    state="$(awk '/^State:/ { print $2; exit }' "/proc/$pid/status" 2>/dev/null || true)"
+    if [ "$state" = "Z" ]; then
+      stale_reason="PID $pid is a zombie"
+    else
+      cmdline="$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)"
+      if [ -z "$cmdline" ]; then
+        stale_reason="PID $pid has no readable command line"
+      elif ! echo "$cmdline" | grep -qE '(^|[[:space:]/])openchamber([[:space:]]|$)'; then
+        stale_reason="PID $pid is not OpenChamber"
+      fi
+    fi
+  fi
+
+  if [ -n "${stale_reason:-}" ]; then
+    echo "Removing stale OpenChamber runtime files for port $OPENCHAMBER_PORT ($stale_reason)"
+    if ! rm -f "$pid_file" "$instance_file"; then
+      echo "WARNING: Failed to remove stale OpenChamber runtime files; continuing startup" >&2
+    fi
+  fi
+}
+
 case "$OPENCHAMBER_ENABLED_RAW" in
   true|TRUE|1|yes|YES)
     OPENCHAMBER_START=true
@@ -122,6 +159,7 @@ esac
 
 if [ "$OPENCHAMBER_START" = "true" ]; then
   if command -v openchamber >/dev/null 2>&1; then
+    cleanup_stale_openchamber_runtime_files
     echo "Starting OpenChamber on port $OPENCHAMBER_PORT..."
     OPENCHAMBER_CMD=(env
       OPENCODE_HOST="http://127.0.0.1:${PORT}"

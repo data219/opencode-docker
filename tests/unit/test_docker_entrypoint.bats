@@ -15,6 +15,11 @@ setup() {
   echo '#!/bin/bash' > "$MOCK_BIN_DIR/opencode"
   echo 'echo "mock-opencode: $@"' >> "$MOCK_BIN_DIR/opencode"
   chmod +x "$MOCK_BIN_DIR/opencode"
+
+  # Mock openchamber binary
+  echo '#!/bin/bash' > "$MOCK_BIN_DIR/openchamber"
+  echo 'echo "mock-openchamber: $@"' >> "$MOCK_BIN_DIR/openchamber"
+  chmod +x "$MOCK_BIN_DIR/openchamber"
   
   PATH="$MOCK_BIN_DIR:$PATH"
   export PATH
@@ -49,6 +54,11 @@ run_entrypoint() {
     -u OPENCODE_CORS
     -u OPENCODE_PRINT_LOGS
     -u OPENCODE_LOG_LEVEL
+    -u OPENCHAMBER_ENABLED
+    -u OPENCHAMBER_PORT
+    -u OPENCHAMBER_UI_PASSWORD
+    -u OPENCHAMBER_DATA_DIR
+    -u USER_HOME
     -u CONFIG_DIR
     -u DEFAULTS_DIR
     "PATH=$PATH"
@@ -270,4 +280,120 @@ MOCK
   run_entrypoint OPENCODE_MODE=web OPENCODE_PORT=4000 OPENCODE_LOG_LEVEL=TRACE
   [ "$status" -ne 0 ]
   assert_output --partial "Invalid OPENCODE_LOG_LEVEL"
+}
+
+@test "entrypoint removes stale OpenChamber pid file before starting" {
+  openchamber_data_dir="$(mktemp -d)"
+  mkdir -p "$openchamber_data_dir/run"
+  echo "$$" > "$openchamber_data_dir/run/openchamber-4020.pid"
+  echo '{"port":4020}' > "$openchamber_data_dir/run/openchamber-4020.json"
+
+  run_entrypoint \
+    OPENCODE_MODE=web \
+    OPENCODE_PORT=4000 \
+    OPENCHAMBER_ENABLED=true \
+    OPENCHAMBER_PORT=4020 \
+    OPENCHAMBER_DATA_DIR="$openchamber_data_dir"
+
+  [ "$status" -eq 0 ]
+  assert_output --partial "Removing stale OpenChamber runtime files for port 4020"
+  assert_output --partial "mock-openchamber: serve --port 4020 --host 0.0.0.0 --foreground"
+  [ ! -e "$openchamber_data_dir/run/openchamber-4020.pid" ]
+  [ ! -e "$openchamber_data_dir/run/openchamber-4020.json" ]
+
+  rm -rf "$openchamber_data_dir"
+}
+
+@test "entrypoint removes OpenChamber pid file when process command line is unreadable" {
+  openchamber_data_dir="$(mktemp -d)"
+  mkdir -p "$openchamber_data_dir/run"
+  echo "$$" > "$openchamber_data_dir/run/openchamber-4020.pid"
+  echo '{"port":4020}' > "$openchamber_data_dir/run/openchamber-4020.json"
+
+  cat > "$MOCK_BIN_DIR/tr" <<'MOCK'
+#!/bin/bash
+exit 0
+MOCK
+  chmod +x "$MOCK_BIN_DIR/tr"
+
+  run_entrypoint \
+    OPENCODE_MODE=web \
+    OPENCODE_PORT=4000 \
+    OPENCHAMBER_ENABLED=true \
+    OPENCHAMBER_PORT=4020 \
+    OPENCHAMBER_DATA_DIR="$openchamber_data_dir"
+
+  [ "$status" -eq 0 ]
+  assert_output --partial "Removing stale OpenChamber runtime files for port 4020"
+  [ ! -e "$openchamber_data_dir/run/openchamber-4020.pid" ]
+  [ ! -e "$openchamber_data_dir/run/openchamber-4020.json" ]
+
+  rm -rf "$openchamber_data_dir"
+}
+
+@test "entrypoint continues when stale OpenChamber runtime files cannot be removed" {
+  openchamber_data_dir="$(mktemp -d)"
+  fail_bin_dir="$(mktemp -d)"
+  original_path="$PATH"
+  mkdir -p "$openchamber_data_dir/run"
+  echo "$$" > "$openchamber_data_dir/run/openchamber-4020.pid"
+  echo '{"port":4020}' > "$openchamber_data_dir/run/openchamber-4020.json"
+
+  cat > "$fail_bin_dir/rm" <<'MOCK'
+#!/bin/bash
+exit 1
+MOCK
+  chmod +x "$fail_bin_dir/rm"
+
+  PATH="$fail_bin_dir:$PATH" run_entrypoint \
+    OPENCODE_MODE=web \
+    OPENCODE_PORT=4000 \
+    OPENCHAMBER_ENABLED=true \
+    OPENCHAMBER_PORT=4020 \
+    OPENCHAMBER_DATA_DIR="$openchamber_data_dir"
+  PATH="$original_path"
+
+  [ "$status" -eq 0 ]
+  assert_output --partial "WARNING: Failed to remove stale OpenChamber runtime files; continuing startup"
+  assert_output --partial "mock-opencode: web --hostname 0.0.0.0 --port 4000"
+
+  rm -rf "$openchamber_data_dir" "$fail_bin_dir"
+}
+
+@test "entrypoint starts OpenChamber without USER_HOME or data dir override" {
+  run_entrypoint \
+    OPENCODE_MODE=web \
+    OPENCODE_PORT=4000 \
+    OPENCHAMBER_ENABLED=true \
+    OPENCHAMBER_PORT=4020
+
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-openchamber: serve --port 4020 --host 0.0.0.0 --foreground"
+  assert_output --partial "mock-opencode: web --hostname 0.0.0.0 --port 4000"
+}
+
+@test "entrypoint keeps OpenChamber pid file for running OpenChamber process" {
+  openchamber_data_dir="$(mktemp -d)"
+  mkdir -p "$openchamber_data_dir/run"
+  bash -c 'exec -a openchamber sleep 30' &
+  running_openchamber_pid=$!
+  echo "$running_openchamber_pid" > "$openchamber_data_dir/run/openchamber-4020.pid"
+  echo '{"port":4020}' > "$openchamber_data_dir/run/openchamber-4020.json"
+
+  run_entrypoint \
+    OPENCODE_MODE=web \
+    OPENCODE_PORT=4000 \
+    OPENCHAMBER_ENABLED=true \
+    OPENCHAMBER_PORT=4020 \
+    OPENCHAMBER_DATA_DIR="$openchamber_data_dir"
+
+  kill "$running_openchamber_pid" 2>/dev/null || true
+  wait "$running_openchamber_pid" 2>/dev/null || true
+
+  [ "$status" -eq 0 ]
+  refute_output --partial "Removing stale OpenChamber runtime files"
+  [ -e "$openchamber_data_dir/run/openchamber-4020.pid" ]
+  [ -e "$openchamber_data_dir/run/openchamber-4020.json" ]
+
+  rm -rf "$openchamber_data_dir"
 }
