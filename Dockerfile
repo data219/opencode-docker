@@ -10,7 +10,7 @@ ARG INSTALL_RUBY=false
 ARG INSTALL_SWIFT=false
 ARG INSTALL_ELIXIR=false
 # renovate: datasource=node-version depName=node versioning=node
-ARG NODE_VERSION=20.20.2
+ARG NODE_VERSION=24.15.0
 # renovate: datasource=github-releases depName=composer/composer
 ARG COMPOSER_VERSION=2.9.7
 # renovate: datasource=github-tags depName=pyenv/pyenv extractVersion=^v(?<version>\d+\.\d+\.\d+)$
