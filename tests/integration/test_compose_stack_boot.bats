@@ -172,6 +172,9 @@ start_test_stack() {
   run compose_ci exec -T opencode sh -lc 'command -v atlcli'
   [ "$status" -eq 0 ]
 
+  run compose_ci exec -T opencode sh -lc 'command -v cloudflared && cloudflared --version'
+  [ "$status" -eq 0 ]
+
   run compose_ci exec -T -u opencode opencode sh -lc '
     command -v python >/dev/null &&
     command -v python3 >/dev/null &&

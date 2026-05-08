@@ -36,6 +36,8 @@ ARG YQ_VERSION=4.40.5
 ARG GH_VERSION=2.89.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
 ARG GLAB_VERSION=1.94.0
+# renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
+ARG CLOUDFLARED_VERSION=2026.3.0
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
 ARG DOCKER_CLI_VERSION=29.4.1
 # renovate: datasource=github-releases depName=docker/compose versioning=semver
@@ -159,6 +161,19 @@ RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
 RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
        -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq
+
+# --- Install cloudflared for OpenChamber remote tunnel support ---
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) cloudflared_arch="amd64" ;; \
+      arm64) cloudflared_arch="arm64" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${cloudflared_arch}" \
+      -o /usr/local/bin/cloudflared; \
+    chmod +x /usr/local/bin/cloudflared; \
+    cloudflared --version
 
 # --- Install GitHub/GitLab/Atlassian CLIs ---
 RUN set -eux; \
