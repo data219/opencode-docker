@@ -29,7 +29,7 @@ ARG GOSU_VERSION=1.17
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.14.41
 # renovate: datasource=npm depName=agent-browser
-ARG AGENT_BROWSER_VERSION=0.25.4
+ARG AGENT_BROWSER_VERSION=0.27.0
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.40.5
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
