@@ -47,7 +47,7 @@ ARG ATLCLI_VERSION=0.16.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG NVM_VERSION=v0.40.1
 # renovate: datasource=golang-version depName=go
-ARG GO_VERSION=1.24.0
+ARG GO_VERSION=1.26.3
 # renovate: datasource=github-releases depName=golangci/golangci-lint
 ARG GO_LINT_VERSION=1.62.0
 # renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
