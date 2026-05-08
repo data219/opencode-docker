@@ -33,7 +33,7 @@ ARG AGENT_BROWSER_VERSION=0.27.0
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.53.2
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
-ARG GH_VERSION=2.89.0
+ARG GH_VERSION=2.92.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
 ARG GLAB_VERSION=1.94.0
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
