@@ -304,6 +304,7 @@ RUN mkdir -p /opt/opencode-defaults
 # Non-managed copies serve as initial seed only (first start with empty volume).
 COPY bootstrap/config/opencode.json /opt/opencode-defaults/opencode.json.managed
 COPY bootstrap/config/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc.managed
+COPY bootstrap/config/AGENTS.md /opt/opencode-defaults/AGENTS.md.managed
 COPY bootstrap/config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
 COPY bootstrap/config/.gitmessage /opt/opencode-defaults/.gitmessage
 
@@ -321,6 +322,7 @@ RUN mkdir -p /home/opencode/.config/opencode \
     /home/opencode/.config/opencode/skills
 RUN cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/opencode/opencode.json \
   && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc.managed /home/opencode/.config/opencode/oh-my-openagent.jsonc \
+  && cp -a /opt/opencode-defaults/AGENTS.md.managed /home/opencode/.config/opencode/AGENTS.md \
   && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
   && cp -a /opt/opencode-defaults/.gitmessage /home/opencode/.gitmessage \
   && if [ -f /opt/opencode-defaults/oh-my-opencode-omo.json ]; then cp -a /opt/opencode-defaults/oh-my-opencode-omo.json /home/opencode/.config/opencode/oh-my-opencode-omo.json; fi \

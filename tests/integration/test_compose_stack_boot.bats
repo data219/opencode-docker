@@ -124,6 +124,10 @@ start_test_stack() {
   [ "$status" -eq 0 ]
   [ -f "${TEST_HOME_ROOT}/.config/opencode/oh-my-openagent.jsonc" ]
 
+  run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/AGENTS.md
+  [ "$status" -eq 0 ]
+  [ -f "${TEST_HOME_ROOT}/.config/opencode/AGENTS.md" ]
+
   run compose_ci exec -T -u opencode opencode sh -lc 'opencode debug paths | grep -F "config     /home/opencode/.config/opencode"'
   [ "$status" -eq 0 ]
 
