@@ -389,10 +389,12 @@ teardown_init_test_env() {
   setup_init_test_env
   echo '{"test": true}' > "$DEFAULTS_DIR/opencode.json"
   echo '{"agent": true}' > "$DEFAULTS_DIR/oh-my-openagent.jsonc"
+  echo '# Global OpenCode Instructions' > "$DEFAULTS_DIR/AGENTS.md"
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
   [ -f "$CONFIG_DIR/opencode.json" ]
   [ -f "$CONFIG_DIR/oh-my-openagent.jsonc" ]
+  [ -f "$CONFIG_DIR/AGENTS.md" ]
   teardown_init_test_env
 }
 
