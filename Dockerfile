@@ -35,7 +35,7 @@ ARG YQ_VERSION=4.53.2
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
 ARG GH_VERSION=2.92.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
-ARG GLAB_VERSION=1.94.0
+ARG GLAB_VERSION=1.95.0
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
 ARG CLOUDFLARED_VERSION=2026.3.0
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
