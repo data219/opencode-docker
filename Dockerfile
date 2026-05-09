@@ -305,7 +305,15 @@ RUN mkdir -p /opt/opencode-defaults \
   && if [ -f /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc ]; then \
        cp /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent-omo.jsonc; \
      fi \
-  && rm -rf /tmp/omo-install /tmp/bun-install /tmp/bun.zip /tmp/bun-linux-x64 /root/.bun
+  && rm -rf \
+    /tmp/omo-install \
+    /tmp/bun-install \
+    /tmp/bun.zip \
+    /tmp/bun-linux-x64 \
+    /tmp/bunx-* \
+    /tmp/node-compile-cache \
+    /root/.bun \
+    /root/.cache
 
 # --- Optional: Rust via rustup ---
 ARG INSTALL_RUST=false
