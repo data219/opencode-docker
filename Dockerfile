@@ -144,7 +144,7 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
 RUN npm install -g opencode-ai@${OPENCODE_VERSION}
 
 # renovate: datasource=npm depName=@openchamber/web
-ARG OPENCHAMBER_VERSION=1.10.2
+ARG OPENCHAMBER_VERSION=1.10.4
 
 # --- Install OpenChamber (alternative Web GUI for OpenCode) ---
 RUN npm install -g @openchamber/web@${OPENCHAMBER_VERSION}
