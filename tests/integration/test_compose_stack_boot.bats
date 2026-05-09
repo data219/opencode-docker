@@ -21,6 +21,7 @@ prepare_test_stack() {
   export GIT_COMMITTER_EMAIL=""
   export OPENCODE_MODE="web"
   export OPENCODE_PORT="${TEST_OPENCODE_PORT}"
+  export OPENCHAMBER_PORT="$((TEST_OPENCODE_PORT + 2000))"
   export OPENCODE_BIND_ADDRESS="127.0.0.1"
   export OPENCODE_CONTAINER_NAME="${TEST_CONTAINER_NAME}"
   export OPENCODE_HOME_DIR="${TEST_HOME_ROOT}"
@@ -176,16 +177,26 @@ start_test_stack() {
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T -u opencode opencode sh -lc '
+    command -v php >/dev/null &&
+    php --version >/dev/null &&
+    command -v node >/dev/null &&
+    node --version >/dev/null &&
+    command -v npm >/dev/null &&
+    npm --version >/dev/null &&
     command -v python >/dev/null &&
     command -v python3 >/dev/null &&
     python --version >/dev/null &&
     python3 --version >/dev/null &&
     python -m pip --version >/dev/null &&
     python -m venv /tmp/opencode-python-smoke &&
-    /tmp/opencode-python-smoke/bin/python -c "print(\"python-ready\")"
+    /tmp/opencode-python-smoke/bin/python -c "print(\"python-ready\")" &&
+    command -v go >/dev/null &&
+    go version >/dev/null &&
+    ! command -v rustc >/dev/null &&
+    ! test -d /opt/rustup/toolchains
   '
   [ "$status" -eq 0 ]
-  [ "$output" = "python-ready" ]
+  [[ "$output" = *"python-ready"* ]]
 
   run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json
   [ "$status" -eq 0 ]

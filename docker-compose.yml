@@ -7,6 +7,8 @@ services:
         - INSTALL_RUBY=${INSTALL_RUBY:-false}
         - INSTALL_SWIFT=${INSTALL_SWIFT:-false}
         - INSTALL_ELIXIR=${INSTALL_ELIXIR:-false}
+        - INSTALL_NVM=${INSTALL_NVM:-false}
+        - INSTALL_RUST=${INSTALL_RUST:-false}
     container_name: ${OPENCODE_CONTAINER_NAME:-opencode}
     ports:
       - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCODE_PORT:-4000}:${OPENCODE_PORT:-4000}'
