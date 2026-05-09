@@ -25,7 +25,7 @@ ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
 # renovate: datasource=github-releases depName=oven-sh/bun
 ARG BUN_VERSION=1.3.12
 # renovate: datasource=github-releases depName=tianon/gosu
-ARG GOSU_VERSION=1.17
+ARG GOSU_VERSION=1.19
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.14.41
 # renovate: datasource=npm depName=agent-browser
