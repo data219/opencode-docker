@@ -22,12 +22,10 @@
 
 - Programming languages/runtimes:
   - [Python](https://www.python.org/) (pyenv)
-  - [Node.js](https://nodejs.org/) (nvm, JavaScript/TypeScript)
+  - [Node.js](https://nodejs.org/) (JavaScript/TypeScript)
   - [Go](https://go.dev/)
-  - [Rust](https://www.rust-lang.org/)
   - [PHP 8.4](https://www.php.net/)
-  - [Bun](https://bun.sh/)
-  - Optional (build args): Java Temurin 21, Ruby 3.3, Swift 6.0, Elixir/OTP 27
+  - Optional (build args): Rust, nvm-managed Node.js, Java Temurin 21, Ruby 3.3, Swift 6.0, Elixir/OTP 27
 
 - Developer tooling:
   - `docker` CLI with Compose plugin, `golangci-lint`, `yq`, `jq`, `git`, `curl`

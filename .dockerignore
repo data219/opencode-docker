@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 .git
+.test-home.*
 tests/
 *.md
 LICENSE

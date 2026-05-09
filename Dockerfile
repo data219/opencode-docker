@@ -9,6 +9,7 @@ ARG INSTALL_JAVA=false
 ARG INSTALL_RUBY=false
 ARG INSTALL_SWIFT=false
 ARG INSTALL_ELIXIR=false
+ARG INSTALL_NVM=false
 # renovate: datasource=node-version depName=node versioning=node
 ARG NODE_VERSION=24.15.0
 # renovate: datasource=github-releases depName=composer/composer
@@ -25,7 +26,7 @@ ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
 # renovate: datasource=github-releases depName=oven-sh/bun
 ARG BUN_VERSION=1.3.12
 # renovate: datasource=github-releases depName=tianon/gosu
-ARG GOSU_VERSION=1.19
+ARG GOSU_VERSION=1.17
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.14.41
 # renovate: datasource=npm depName=agent-browser
@@ -100,7 +101,7 @@ RUN groupadd -g 1000 opencode \
 
 # --- Install gosu for privilege drop ---
 RUN ARCH=$(dpkg --print-architecture) \
-    && curl -fsSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${ARCH}" -o /usr/local/bin/gosu \
+    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${ARCH}" -o /usr/local/bin/gosu \
     && chmod +x /usr/local/bin/gosu \
     && gosu --version
 
@@ -125,29 +126,32 @@ RUN set -eux; \
     rm -rf /tmp/docker /tmp/docker.tgz
 
 # --- ENV vars for version managers ---
-ENV NVM_DIR=/home/opencode/.nvm
+ENV NVM_DIR=/opt/nvm
 ENV PYENV_ROOT=/home/opencode/.pyenv
-ENV RUSTUP_HOME=/home/opencode/.rustup
-ENV CARGO_HOME=/home/opencode/.cargo
+ENV RUSTUP_HOME=/opt/rustup
+ENV CARGO_HOME=/opt/cargo
 ENV GVM_ROOT=/home/opencode/.gvm
 ENV GOPATH=/home/opencode/go
-ENV BUN_INSTALL=/home/opencode/.bun
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/opt/agent-browser/chrome/chrome
 
-# --- Install Node.js 20 LTS for OpenCode ---
+# --- Install Node.js for OpenCode ---
 RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
        -o /tmp/node.tar.xz \
     && tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 \
     && rm -f /tmp/node.tar.xz
 
 # --- Install OpenCode ---
-RUN npm install -g opencode-ai@${OPENCODE_VERSION}
+RUN npm install -g opencode-ai@${OPENCODE_VERSION} \
+    && npm cache clean --force \
+    && rm -rf /root/.npm
 
 # renovate: datasource=npm depName=@openchamber/web
 ARG OPENCHAMBER_VERSION=1.10.4
 
 # --- Install OpenChamber (alternative Web GUI for OpenCode) ---
-RUN npm install -g @openchamber/web@${OPENCHAMBER_VERSION}
+RUN npm install -g @openchamber/web@${OPENCHAMBER_VERSION} \
+    && npm cache clean --force \
+    && rm -rf /root/.npm
 
 # --- Install agent-browser CLI and browser runtime ---
 RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
@@ -155,7 +159,8 @@ RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
     && HOME=/opt/opencode-browser-home XDG_CACHE_HOME=/opt/opencode-browser-home/.cache agent-browser install \
     && browser_dir="$(find /opt/opencode-browser-home/.agent-browser/browsers -mindepth 1 -maxdepth 1 -type d | head -n 1)" \
     && mv "$browser_dir" /opt/agent-browser/chrome \
-    && rm -rf /opt/opencode-browser-home
+    && npm cache clean --force \
+    && rm -rf /opt/opencode-browser-home /root/.npm
 
 # --- Install yq v4.40.5 ---
 RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
@@ -213,47 +218,38 @@ RUN curl -fsSL "https://getcomposer.org/download/${COMPOSER_VERSION}/composer.ph
 # USER opencode — entrypoint handles user switch
 
 # --- Install nvm ---
-RUN mkdir -p /home/opencode/.nvm \
-    && curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+RUN mkdir -p "$NVM_DIR" \
+    && if [ "$INSTALL_NVM" = "true" ]; then \
+         curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash \
+         && . "$NVM_DIR/nvm.sh" \
+         && nvm install "${NODE_VERSION}" \
+         && nvm alias default "${NODE_VERSION}" \
+         && nvm cache clear \
+         && npm cache clean --force; \
+       fi \
+    && rm -rf /root/.npm "$NVM_DIR/.cache"
 
 # --- Install pyenv ---
 RUN git clone --branch "${PYENV_VERSION}" --depth 1 https://github.com/pyenv/pyenv.git /home/opencode/.pyenv
 
-# --- Install rustup ---
-RUN mkdir -p /home/opencode/.rustup /home/opencode/.cargo \
-    && curl --proto '=https' --tlsv1.2 -sSf "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
-       -o /tmp/rustup-init \
-    && chmod +x /tmp/rustup-init \
-    && /tmp/rustup-init -y --default-toolchain "${RUST_TOOLCHAIN_VERSION}" --no-modify-path \
-    && rm -f /tmp/rustup-init
-
 # --- Install Go directly from go.dev ---
 RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" \
        -o /tmp/go.tar.gz \
-    && mkdir -p /home/opencode/.local/go \
-    && tar -xzf /tmp/go.tar.gz -C /home/opencode/.local/go \
+    && mkdir -p /opt/go \
+    && tar -xzf /tmp/go.tar.gz -C /opt/go --strip-components=1 \
     && rm -f /tmp/go.tar.gz
-ENV GOROOT=/home/opencode/.local/go/go
+ENV GOROOT=/opt/go
 ENV PATH="${GOROOT}/bin:${PATH}"
 
 # --- Install gvm (Go Version Manager) ---
 RUN mkdir -p /home/opencode/.gvm /home/opencode/go \
     && bash -c "curl -fsSL https://raw.githubusercontent.com/moovweb/gvm/${GVM_COMMIT}/binscripts/gvm-installer | bash" || true
 
-# --- Install bun for OmO ---
-RUN mkdir -p /home/opencode/.bun/bin \
-    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
-       -o /tmp/bun.zip \
-    && unzip -q /tmp/bun.zip -d /tmp \
-    && mv /tmp/bun-linux-x64/bun /home/opencode/.bun/bin/bun \
-    && chmod +x /home/opencode/.bun/bin/bun \
-    && rm -rf /tmp/bun.zip /tmp/bun-linux-x64
-
 # --- Install golangci-lint ---
 RUN curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${GO_LINT_VERSION}/golangci-lint-${GO_LINT_VERSION}-linux-amd64.tar.gz" \
        -o /tmp/golangci-lint.tar.gz \
     && tar -xzf /tmp/golangci-lint.tar.gz -C /tmp \
-    && mv /tmp/golangci-lint-${GO_LINT_VERSION}-linux-amd64/golangci-lint /home/opencode/.local/go/go/bin/ \
+    && mv /tmp/golangci-lint-${GO_LINT_VERSION}-linux-amd64/golangci-lint /opt/go/bin/ \
     && rm -rf /tmp/golangci-lint*
 
 # --- Optional: Java (Temurin JDK 21) ---
@@ -291,7 +287,13 @@ RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
 # NOTE: OmO writes to XDG_CONFIG_HOME/opencode/. We redirect it via HOME to a temp dir,
 #       then pick the agent config. Our opencode.json seed (with {env:} provider) takes priority.
 RUN mkdir -p /opt/opencode-defaults \
-  && HOME=/tmp/omo-install /home/opencode/.bun/bin/bun x oh-my-opencode@${OMO_VERSION} install \
+  && mkdir -p /tmp/bun-install/bin \
+  && curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
+    -o /tmp/bun.zip \
+  && unzip -q /tmp/bun.zip -d /tmp \
+  && mv /tmp/bun-linux-x64/bun /tmp/bun-install/bin/bun \
+  && chmod +x /tmp/bun-install/bin/bun \
+  && HOME=/tmp/omo-install BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
     --no-tui --zai-coding-plan=no --claude=no --openai=no --gemini=yes --copilot=no \
   && if [ -f /tmp/omo-install/.config/opencode/oh-my-opencode.json ]; then \
        cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-opencode-omo.json; \
@@ -303,10 +305,30 @@ RUN mkdir -p /opt/opencode-defaults \
   && if [ -f /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc ]; then \
        cp /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent-omo.jsonc; \
      fi \
-  && if [ -d /tmp/omo-install ]; then rm -rf /tmp/omo-install; fi
+  && rm -rf /tmp/omo-install /tmp/bun-install /tmp/bun.zip /tmp/bun-linux-x64 /root/.bun
+
+# --- Optional: Rust via rustup ---
+ARG INSTALL_RUST=false
+RUN install -d -o opencode -g opencode "$RUSTUP_HOME" "$CARGO_HOME" \
+    && if [ "$INSTALL_RUST" = "true" ]; then \
+         curl --proto '=https' --tlsv1.2 -sSf "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
+           -o /tmp/rustup-init \
+         && chmod +x /tmp/rustup-init \
+         && HOME=/home/opencode gosu opencode /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN_VERSION}" --no-modify-path \
+         && rm -f /tmp/rustup-init; \
+       fi
 
 # --- Build PATH ---
-ENV PATH="/home/opencode/.cargo/bin:/home/opencode/.pyenv/shims:/home/opencode/.pyenv/bin:/home/opencode/.nvm/versions/node/$(ls /home/opencode/.nvm/versions/node/ 2>/dev/null | head -1)/bin:/home/opencode/.bun/bin:/home/opencode/.local/go/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV PATH="/opt/cargo/bin:/opt/nvm/versions/node/v${NODE_VERSION}/bin:/home/opencode/.pyenv/shims:/home/opencode/.pyenv/bin:/opt/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+RUN printf '%s\n' \
+    'export NVM_DIR=/opt/nvm' \
+    'export RUSTUP_HOME=/opt/rustup' \
+    'export CARGO_HOME=/opt/cargo' \
+    'export GOROOT=/opt/go' \
+    'export GOPATH=/home/opencode/go' \
+    "export PATH=\"/opt/cargo/bin:/opt/nvm/versions/node/v${NODE_VERSION}/bin:/home/opencode/.pyenv/shims:/home/opencode/.pyenv/bin:/opt/go/bin:\$PATH\"" \
+    > /etc/profile.d/opencode-toolchains.sh
 
 # --- Switch back to root for config copy and permissions ---
 USER root
