@@ -78,7 +78,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        libssl-dev libcurl4-openssl-dev libxml2-dev \
        libpq-dev libsqlite3-dev libffi-dev libzip-dev \
        libicu-dev libonig-dev sqlite3 zip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/debconf/* \
+    && rm -rf /usr/lib/python3.13/test \
+    && find /usr/lib/python3* -type d -name '__pycache__' -prune -exec rm -rf {} + \
+    && if [ -d /usr/local/lib ]; then find /usr/local/lib -type d -name '__pycache__' -prune -exec rm -rf {} +; fi
 
 # --- Install PHP via sury.org ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -138,7 +142,8 @@ ENV AGENT_BROWSER_EXECUTABLE_PATH=/opt/agent-browser/chrome/chrome
 RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
        -o /tmp/node.tar.xz \
     && tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 \
-    && rm -f /tmp/node.tar.xz
+    && rm -f /tmp/node.tar.xz \
+    && rm -rf /usr/local/lib/node_modules/npm/docs /usr/local/lib/node_modules/npm/man
 
 # --- Install OpenCode ---
 RUN npm install -g opencode-ai@${OPENCODE_VERSION} \
@@ -230,14 +235,16 @@ RUN mkdir -p "$NVM_DIR" \
     && rm -rf /root/.npm "$NVM_DIR/.cache"
 
 # --- Install pyenv ---
-RUN git clone --branch "${PYENV_VERSION}" --depth 1 https://github.com/pyenv/pyenv.git /home/opencode/.pyenv
+RUN git clone --branch "${PYENV_VERSION}" --depth 1 https://github.com/pyenv/pyenv.git /home/opencode/.pyenv \
+    && rm -rf /home/opencode/.pyenv/.git /home/opencode/.pyenv/test /home/opencode/.pyenv/plugins/python-build/test
 
 # --- Install Go directly from go.dev ---
 RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" \
        -o /tmp/go.tar.gz \
     && mkdir -p /opt/go \
     && tar -xzf /tmp/go.tar.gz -C /opt/go --strip-components=1 \
-    && rm -f /tmp/go.tar.gz
+    && rm -f /tmp/go.tar.gz \
+    && rm -rf /opt/go/test
 ENV GOROOT=/opt/go
 ENV PATH="${GOROOT}/bin:${PATH}"
 
