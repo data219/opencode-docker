@@ -25,7 +25,9 @@ if [ "$(id -u)" = "0" ]; then
   
   for dir in /home/opencode/.config /home/opencode/.cache /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state; do
     mkdir -p "$dir"
-    chown -R opencode:opencode "$dir"
+    if [ "$(stat -c %U "$dir" 2>/dev/null)" = "root" ]; then
+      chown -R opencode:opencode "$dir"
+    fi
   done
 fi
 
@@ -191,6 +193,46 @@ fi
 
 if [ -f "$USER_HOME/.gitmessage" ]; then
   git_set_or_seed "commit.template" "$USER_HOME/.gitmessage"
+fi
+
+CNTB_OAUTH2_CLIENT_ID_RAW="${CNTB_OAUTH2_CLIENT_ID:-}"
+CNTB_OAUTH2_CLIENT_SECRET_RAW="${CNTB_OAUTH2_CLIENT_SECRET:-}"
+CNTB_OAUTH2_USER_RAW="${CNTB_OAUTH2_USER:-}"
+CNTB_OAUTH2_PASSWORD_RAW="${CNTB_OAUTH2_PASSWORD:-}"
+CNTB_CREDENTIAL_COUNT=0
+for value in "$CNTB_OAUTH2_CLIENT_ID_RAW" "$CNTB_OAUTH2_CLIENT_SECRET_RAW" "$CNTB_OAUTH2_USER_RAW" "$CNTB_OAUTH2_PASSWORD_RAW"; do
+  if [ -n "$value" ]; then
+    CNTB_CREDENTIAL_COUNT=$((CNTB_CREDENTIAL_COUNT + 1))
+  fi
+done
+
+if [ "$CNTB_CREDENTIAL_COUNT" -gt 0 ] && [ "$CNTB_CREDENTIAL_COUNT" -lt 4 ]; then
+  echo "ERROR: Incomplete cntb credentials. Set all of CNTB_OAUTH2_CLIENT_ID, CNTB_OAUTH2_CLIENT_SECRET, CNTB_OAUTH2_USER, and CNTB_OAUTH2_PASSWORD." >&2
+  exit 1
+fi
+
+if [ "$CNTB_CREDENTIAL_COUNT" -eq 4 ]; then
+  if ! command -v cntb >/dev/null 2>&1; then
+    echo "ERROR: cntb credentials are set but cntb is not installed." >&2
+    exit 1
+  fi
+
+  CNTB_CONFIG_CMD=(
+    env
+    "HOME=$USER_HOME"
+    cntb config set-credentials
+    "--oauth2-clientid=$CNTB_OAUTH2_CLIENT_ID_RAW"
+    "--oauth2-client-secret=$CNTB_OAUTH2_CLIENT_SECRET_RAW"
+    "--oauth2-user=$CNTB_OAUTH2_USER_RAW"
+    "--oauth2-password=$CNTB_OAUTH2_PASSWORD_RAW"
+  )
+
+  if [ "$(id -u)" = "0" ]; then
+    gosu opencode "${CNTB_CONFIG_CMD[@]}"
+    chown -f opencode:opencode "$USER_HOME/.cntb.yaml" 2>/dev/null || true
+  else
+    "${CNTB_CONFIG_CMD[@]}"
+  fi
 fi
 
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
