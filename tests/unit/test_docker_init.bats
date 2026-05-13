@@ -365,6 +365,7 @@ teardown_init_test_env() {
   printf '%s\n' \
     '#!/bin/bash' \
     'echo "HOME=$HOME" >> "$MOCK_CNTB_LOG"' \
+    'echo "CNTB_OAUTH2_CLIENT_SECRET=${CNTB_OAUTH2_CLIENT_SECRET-unset}" >> "$MOCK_CNTB_LOG"' \
     'printf "%s\n" "$*" >> "$MOCK_CNTB_LOG"' \
     > "$mock_bin_dir/cntb"
   chmod +x "$mock_bin_dir/cntb"
@@ -387,7 +388,16 @@ teardown_init_test_env() {
   [ "$status" -eq 0 ]
   [ -f "$cntb_log" ]
   grep -F "HOME=$USER_HOME" "$cntb_log"
-  grep -F "config set-credentials --oauth2-clientid=client-id --oauth2-client-secret=client-secret --oauth2-user=api-user --oauth2-password=api-password" "$cntb_log"
+  grep -F "CNTB_OAUTH2_CLIENT_SECRET=unset" "$cntb_log"
+  grep -Fx "config set-credentials" "$cntb_log"
+  [ -f "$USER_HOME/.cntb.yaml" ]
+  [ "$(stat -c %a "$USER_HOME/.cntb.yaml")" = "600" ]
+  grep -F "oauth2-clientid: 'client-id'" "$USER_HOME/.cntb.yaml"
+  grep -F "oauth2-client-secret: 'client-secret'" "$USER_HOME/.cntb.yaml"
+  grep -F "oauth2-user: 'api-user'" "$USER_HOME/.cntb.yaml"
+  grep -F "oauth2-password: 'api-password'" "$USER_HOME/.cntb.yaml"
+  [[ "$(cat "$cntb_log")" != *"client-secret"* ]]
+  [[ "$(cat "$cntb_log")" != *"api-password"* ]]
   [[ "$output" != *"client-secret"* ]]
   [[ "$output" != *"api-password"* ]]
 

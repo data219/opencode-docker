@@ -217,22 +217,49 @@ if [ "$CNTB_CREDENTIAL_COUNT" -eq 4 ]; then
     exit 1
   fi
 
+  CNTB_CONFIG_FILE="$USER_HOME/.cntb.yaml"
+  mkdir -p "$(dirname "$CNTB_CONFIG_FILE")"
+
+  yaml_quote() {
+    printf "'%s'" "$(printf '%s' "$1" | sed "s/'/''/g")"
+  }
+
+  CNTB_OLD_UMASK="$(umask)"
+  umask 077
+  {
+    printf '%s\n' "debug: warn"
+    printf '%s\n' "oauth2-tokenurl: https://auth.contabo.com/auth/realms/contabo/protocol/openid-connect/token"
+    printf 'oauth2-clientid: %s\n' "$(yaml_quote "$CNTB_OAUTH2_CLIENT_ID_RAW")"
+    printf 'oauth2-client-secret: %s\n' "$(yaml_quote "$CNTB_OAUTH2_CLIENT_SECRET_RAW")"
+    printf 'oauth2-user: %s\n' "$(yaml_quote "$CNTB_OAUTH2_USER_RAW")"
+    printf 'oauth2-password: %s\n' "$(yaml_quote "$CNTB_OAUTH2_PASSWORD_RAW")"
+    printf '%s\n' "api: https://api.contabo.com"
+  } > "$CNTB_CONFIG_FILE"
+  umask "$CNTB_OLD_UMASK"
+  chmod 600 "$CNTB_CONFIG_FILE"
+
+  CNTB_OAUTH2_CLIENT_ID_RAW=
+  CNTB_OAUTH2_CLIENT_SECRET_RAW=
+  CNTB_OAUTH2_USER_RAW=
+  CNTB_OAUTH2_PASSWORD_RAW=
+  unset CNTB_OAUTH2_CLIENT_ID CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
+
+  if [ "$(id -u)" = "0" ]; then
+    chown -f opencode:opencode "$CNTB_CONFIG_FILE" 2>/dev/null || true
+  fi
+
   CNTB_CONFIG_CMD=(
     env
     "HOME=$USER_HOME"
     cntb config set-credentials
-    "--oauth2-clientid=$CNTB_OAUTH2_CLIENT_ID_RAW"
-    "--oauth2-client-secret=$CNTB_OAUTH2_CLIENT_SECRET_RAW"
-    "--oauth2-user=$CNTB_OAUTH2_USER_RAW"
-    "--oauth2-password=$CNTB_OAUTH2_PASSWORD_RAW"
   )
 
   if [ "$(id -u)" = "0" ]; then
     gosu opencode "${CNTB_CONFIG_CMD[@]}"
-    chown -f opencode:opencode "$USER_HOME/.cntb.yaml" 2>/dev/null || true
   else
     "${CNTB_CONFIG_CMD[@]}"
   fi
+  unset CNTB_CONFIG_CMD CNTB_CONFIG_FILE CNTB_OLD_UMASK
 fi
 
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
