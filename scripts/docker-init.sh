@@ -25,7 +25,9 @@ if [ "$(id -u)" = "0" ]; then
   
   for dir in /home/opencode/.config /home/opencode/.cache /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state; do
     mkdir -p "$dir"
-    chown -R opencode:opencode "$dir"
+    if [ "$(stat -c %U "$dir" 2>/dev/null)" = "root" ]; then
+      chown -R opencode:opencode "$dir"
+    fi
   done
 fi
 
@@ -191,6 +193,73 @@ fi
 
 if [ -f "$USER_HOME/.gitmessage" ]; then
   git_set_or_seed "commit.template" "$USER_HOME/.gitmessage"
+fi
+
+CNTB_OAUTH2_CLIENT_ID_RAW="${CNTB_OAUTH2_CLIENT_ID:-}"
+CNTB_OAUTH2_CLIENT_SECRET_RAW="${CNTB_OAUTH2_CLIENT_SECRET:-}"
+CNTB_OAUTH2_USER_RAW="${CNTB_OAUTH2_USER:-}"
+CNTB_OAUTH2_PASSWORD_RAW="${CNTB_OAUTH2_PASSWORD:-}"
+CNTB_CREDENTIAL_COUNT=0
+for value in "$CNTB_OAUTH2_CLIENT_ID_RAW" "$CNTB_OAUTH2_CLIENT_SECRET_RAW" "$CNTB_OAUTH2_USER_RAW" "$CNTB_OAUTH2_PASSWORD_RAW"; do
+  if [ -n "$value" ]; then
+    CNTB_CREDENTIAL_COUNT=$((CNTB_CREDENTIAL_COUNT + 1))
+  fi
+done
+
+if [ "$CNTB_CREDENTIAL_COUNT" -gt 0 ] && [ "$CNTB_CREDENTIAL_COUNT" -lt 4 ]; then
+  echo "ERROR: Incomplete cntb credentials. Set all of CNTB_OAUTH2_CLIENT_ID, CNTB_OAUTH2_CLIENT_SECRET, CNTB_OAUTH2_USER, and CNTB_OAUTH2_PASSWORD." >&2
+  exit 1
+fi
+
+if [ "$CNTB_CREDENTIAL_COUNT" -eq 4 ]; then
+  if ! command -v cntb >/dev/null 2>&1; then
+    echo "ERROR: cntb credentials are set but cntb is not installed." >&2
+    exit 1
+  fi
+
+  CNTB_CONFIG_FILE="$USER_HOME/.cntb.yaml"
+  mkdir -p "$(dirname "$CNTB_CONFIG_FILE")"
+
+  yaml_quote() {
+    printf "'%s'" "$(printf '%s' "$1" | sed "s/'/''/g")"
+  }
+
+  CNTB_OLD_UMASK="$(umask)"
+  umask 077
+  {
+    printf '%s\n' "debug: warn"
+    printf '%s\n' "oauth2-tokenurl: https://auth.contabo.com/auth/realms/contabo/protocol/openid-connect/token"
+    printf 'oauth2-clientid: %s\n' "$(yaml_quote "$CNTB_OAUTH2_CLIENT_ID_RAW")"
+    printf 'oauth2-client-secret: %s\n' "$(yaml_quote "$CNTB_OAUTH2_CLIENT_SECRET_RAW")"
+    printf 'oauth2-user: %s\n' "$(yaml_quote "$CNTB_OAUTH2_USER_RAW")"
+    printf 'oauth2-password: %s\n' "$(yaml_quote "$CNTB_OAUTH2_PASSWORD_RAW")"
+    printf '%s\n' "api: https://api.contabo.com"
+  } > "$CNTB_CONFIG_FILE"
+  umask "$CNTB_OLD_UMASK"
+  chmod 600 "$CNTB_CONFIG_FILE"
+
+  CNTB_OAUTH2_CLIENT_ID_RAW=
+  CNTB_OAUTH2_CLIENT_SECRET_RAW=
+  CNTB_OAUTH2_USER_RAW=
+  CNTB_OAUTH2_PASSWORD_RAW=
+  unset CNTB_OAUTH2_CLIENT_ID CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
+
+  if [ "$(id -u)" = "0" ]; then
+    chown -f opencode:opencode "$CNTB_CONFIG_FILE" 2>/dev/null || true
+  fi
+
+  CNTB_CONFIG_CMD=(
+    env
+    "HOME=$USER_HOME"
+    cntb config set-credentials
+  )
+
+  if [ "$(id -u)" = "0" ]; then
+    gosu opencode "${CNTB_CONFIG_CMD[@]}"
+  else
+    "${CNTB_CONFIG_CMD[@]}"
+  fi
+  unset CNTB_CONFIG_CMD CNTB_CONFIG_FILE CNTB_OLD_UMASK
 fi
 
 # Seed OmO agent config if not yet present (OmO install writes to temp dir during build).

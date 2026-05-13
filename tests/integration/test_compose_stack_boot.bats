@@ -170,6 +170,9 @@ start_test_stack() {
   run compose_ci exec -T opencode sh -lc 'command -v glab'
   [ "$status" -eq 0 ]
 
+  run compose_ci exec -T opencode sh -lc 'command -v cntb && cntb version'
+  [ "$status" -eq 0 ]
+
   run compose_ci exec -T opencode sh -lc 'command -v atlcli'
   [ "$status" -eq 0 ]
 

@@ -37,6 +37,8 @@ ARG YQ_VERSION=4.53.2
 ARG GH_VERSION=2.92.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
 ARG GLAB_VERSION=1.95.0
+# renovate: datasource=github-releases depName=contabo/cntb versioning=semver
+ARG CNTB_VERSION=1.6
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
 ARG CLOUDFLARED_VERSION=2026.3.0
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
@@ -185,16 +187,17 @@ RUN set -eux; \
     chmod +x /usr/local/bin/cloudflared; \
     cloudflared --version
 
-# --- Install GitHub/GitLab/Atlassian CLIs ---
+# --- Install GitHub/GitLab/Contabo/Atlassian CLIs ---
 RUN set -eux; \
     arch="$(dpkg --print-architecture)"; \
     case "${arch}" in \
-      amd64) gh_arch="amd64"; glab_arch="amd64"; atlcli_arch="x64" ;; \
-      arm64) gh_arch="arm64"; glab_arch="arm64"; atlcli_arch="arm64" ;; \
+      amd64) gh_arch="amd64"; glab_arch="amd64"; cntb_arch="amd64"; atlcli_arch="x64" ;; \
+      arm64) gh_arch="arm64"; glab_arch="arm64"; cntb_arch="arm64"; atlcli_arch="arm64" ;; \
       *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
     esac; \
     gh_archive="gh_${GH_VERSION}_linux_${gh_arch}.tar.gz"; \
     glab_archive="glab_${GLAB_VERSION}_linux_${glab_arch}.tar.gz"; \
+    cntb_archive="cntb_v${CNTB_VERSION}_linux_${cntb_arch}.tar.gz"; \
     atlcli_archive="atlcli-linux-${atlcli_arch}.tar.gz"; \
     install_archive() { \
       binary="$1"; \
@@ -212,6 +215,7 @@ RUN set -eux; \
     }; \
     install_archive gh "https://github.com/cli/cli/releases/download/v${GH_VERSION}/${gh_archive}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" "${gh_archive}"; \
     install_archive glab "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/${GLAB_VERSION}/${glab_archive}" "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/${GLAB_VERSION}/checksums.txt" "${glab_archive}"; \
+    install_archive cntb "https://github.com/contabo/cntb/releases/download/v${CNTB_VERSION}/${cntb_archive}" "https://github.com/contabo/cntb/releases/download/v${CNTB_VERSION}/checksums.txt" "${cntb_archive}"; \
     install_archive atlcli "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/${atlcli_archive}" "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/checksums.txt" "${atlcli_archive}"
 
 # --- Install Composer (needs root for /usr/local/bin) ---

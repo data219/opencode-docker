@@ -6,12 +6,14 @@ setup_init_test_env() {
   export USER_HOME="$INIT_TEST_TMPDIR/home"
   export HOME="$USER_HOME"
   export GIT_CONFIG_GLOBAL="$USER_HOME/.gitconfig"
+  unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
+  unset CNTB_OAUTH2_CLIENT_ID CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
   mkdir -p "$DEFAULTS_DIR" "$CONFIG_DIR"
   mkdir -p "$USER_HOME"
   # If running as root, ensure opencode user exists for chown block
   if [ "$(id -u)" = "0" ]; then
-    id opencode 2>/dev/null || useradd -u 1000 -M -s /bin/bash opencode 2>/dev/null || true
-    mkdir -p /home/opencode/.config /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state /home/opencode/.local/share/opencode /home/opencode/workspace
+    id opencode >/dev/null 2>/dev/null || useradd -u 1000 -M -s /bin/bash opencode 2>/dev/null || true
+    mkdir -p /home/opencode/.config /home/opencode/.config/opencode /home/opencode/.config/opencode/skills /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state /home/opencode/.local/share/opencode /home/opencode/workspace
   fi
 }
 
@@ -352,6 +354,73 @@ teardown_init_test_env() {
   teardown_init_test_env
 }
 
+@test "docker-init.sh configures cntb credentials when all Contabo env vars are set" {
+  setup_init_test_env
+
+  local mock_bin_dir cntb_log old_path
+  mock_bin_dir="$(mktemp -d)"
+  cntb_log="$INIT_TEST_TMPDIR/cntb.log"
+  old_path="$PATH"
+
+  printf '%s\n' \
+    '#!/bin/bash' \
+    'echo "HOME=$HOME" >> "$MOCK_CNTB_LOG"' \
+    'echo "CNTB_OAUTH2_CLIENT_SECRET=${CNTB_OAUTH2_CLIENT_SECRET-unset}" >> "$MOCK_CNTB_LOG"' \
+    'printf "%s\n" "$*" >> "$MOCK_CNTB_LOG"' \
+    > "$mock_bin_dir/cntb"
+  chmod +x "$mock_bin_dir/cntb"
+
+  printf '%s\n' \
+    '#!/bin/bash' \
+    'shift' \
+    'exec "$@"' \
+    > "$mock_bin_dir/gosu"
+  chmod +x "$mock_bin_dir/gosu"
+
+  export PATH="$mock_bin_dir:$PATH"
+  export MOCK_CNTB_LOG="$cntb_log"
+  export CNTB_OAUTH2_CLIENT_ID="client-id"
+  export CNTB_OAUTH2_CLIENT_SECRET="client-secret"
+  export CNTB_OAUTH2_USER="api-user"
+  export CNTB_OAUTH2_PASSWORD="api-password"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$cntb_log" ]
+  grep -F "HOME=$USER_HOME" "$cntb_log"
+  grep -F "CNTB_OAUTH2_CLIENT_SECRET=unset" "$cntb_log"
+  grep -Fx "config set-credentials" "$cntb_log"
+  [ -f "$USER_HOME/.cntb.yaml" ]
+  [ "$(stat -c %a "$USER_HOME/.cntb.yaml")" = "600" ]
+  grep -F "oauth2-clientid: 'client-id'" "$USER_HOME/.cntb.yaml"
+  grep -F "oauth2-client-secret: 'client-secret'" "$USER_HOME/.cntb.yaml"
+  grep -F "oauth2-user: 'api-user'" "$USER_HOME/.cntb.yaml"
+  grep -F "oauth2-password: 'api-password'" "$USER_HOME/.cntb.yaml"
+  [[ "$(cat "$cntb_log")" != *"client-secret"* ]]
+  [[ "$(cat "$cntb_log")" != *"api-password"* ]]
+  [[ "$output" != *"client-secret"* ]]
+  [[ "$output" != *"api-password"* ]]
+
+  PATH="$old_path"
+  rm -rf "$mock_bin_dir"
+  unset MOCK_CNTB_LOG CNTB_OAUTH2_CLIENT_ID CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
+  teardown_init_test_env
+}
+
+@test "docker-init.sh rejects partial cntb credential env vars" {
+  setup_init_test_env
+
+  export CNTB_OAUTH2_CLIENT_ID="client-id"
+  unset CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
+
+  run bash scripts/docker-init.sh
+  [ "$status" -ne 0 ]
+  [[ "$output" = *"Incomplete cntb credentials"* ]]
+
+  unset CNTB_OAUTH2_CLIENT_ID
+  teardown_init_test_env
+}
+
 @test "docker-init.sh preserves existing config on version upgrade and updates version marker" {
   setup_init_test_env
 
@@ -456,6 +525,7 @@ teardown_init_test_env() {
   local expected_owner="12345:12346"
   rm -rf "$skills_dir"
   mkdir -p "$DEFAULTS_DIR/skills/github" "$skills_dir"
+  chown opencode:opencode /home/opencode/.config /home/opencode/.config/opencode
   chown "$expected_owner" "$skills_dir"
   echo "bootstrap-new" > "$DEFAULTS_DIR/skills/github/new.txt"
 
