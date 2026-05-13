@@ -24,7 +24,7 @@ if [ "$(id -u)" = "0" ]; then
     fi
   done
   
-  for dir in /home/opencode/.config /home/opencode/.cache /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state; do
+  for dir in /home/opencode/.config /home/opencode/.cache /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state "$USER_HOME/.omo"; do
     mkdir -p "$dir"
     if [ "$(stat -c %U "$dir" 2>/dev/null)" = "root" ]; then
       chown -R opencode:opencode "$dir"

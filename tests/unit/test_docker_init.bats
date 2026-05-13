@@ -529,6 +529,7 @@ teardown_init_test_env() {
 
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
+  [ -d "$USER_HOME/.omo" ]
   [ -f "$teams_dir/implementation-delivery/README.md" ]
   [ "$(stat -c %Y "$teams_dir/implementation-delivery/config.json")" -eq "$before_config_mtime" ]
   grep -F '"description":"user"' "$teams_dir/implementation-delivery/config.json"
