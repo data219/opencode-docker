@@ -543,10 +543,11 @@ teardown_init_test_env() {
 
   setup_init_test_env
 
-  local teams_dir="$USER_HOME/.omo/teams"
+  local omo_dir="$USER_HOME/.omo"
+  local teams_dir="$omo_dir/teams"
   local expected_owner="12345:12346"
-  mkdir -p "$OMO_DEFAULTS_DIR/teams/debugging-response" "$teams_dir"
-  chown "$expected_owner" "$teams_dir"
+  mkdir -p "$OMO_DEFAULTS_DIR/teams/debugging-response" "$omo_dir"
+  chown "$expected_owner" "$omo_dir"
   echo '{"name":"debugging-response"}' > "$OMO_DEFAULTS_DIR/teams/debugging-response/config.json"
 
   run bash scripts/docker-init.sh

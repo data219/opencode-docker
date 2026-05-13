@@ -303,7 +303,10 @@ if [ -d "$OMO_DEFAULTS_DIR/teams" ]; then
     if [ -n "$OMO_TEAMS_OWNER" ]; then
       chown -R "$OMO_TEAMS_OWNER" "$OMO_TEAMS_DIR"
     else
-      chown -R opencode:opencode "$USER_HOME/.omo" 2>/dev/null || true
+      omo_fallback_owner="$(stat -c '%u:%g' "$USER_HOME/.omo" 2>/dev/null || stat -c '%u:%g' "$USER_HOME" 2>/dev/null || true)"
+      if [ -n "$omo_fallback_owner" ]; then
+        chown -R "$omo_fallback_owner" "$OMO_TEAMS_DIR" 2>/dev/null || true
+      fi
     fi
   fi
 fi
