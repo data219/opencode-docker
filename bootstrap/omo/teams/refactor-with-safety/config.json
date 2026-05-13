@@ -1,0 +1,39 @@
+{
+  "name": "refactor-with-safety",
+  "description": "Execute larger refactors while preserving behavior, tests, and operational safety.",
+  "lead": {
+    "kind": "subagent_type",
+    "subagent_type": "sisyphus"
+  },
+  "members": [
+    {
+      "kind": "subagent_type",
+      "subagent_type": "atlas",
+      "prompt": "Coordinate the refactor. Split work into safe increments, define ownership boundaries, prevent unrelated cleanup, and ensure behavior preservation and verification remain explicit."
+    },
+    {
+      "kind": "category",
+      "name": "refactorer",
+      "category": "deep",
+      "prompt": "Own the refactor implementation. Keep changes incremental, preserve public behavior, avoid unrelated cleanup, and report every touched boundary. Coordinate before editing shared contracts or broad files."
+    },
+    {
+      "kind": "category",
+      "name": "behavior-guardian",
+      "category": "deep",
+      "prompt": "Own behavior preservation. Identify expected behavior, existing tests, golden outputs, compatibility constraints, and user-visible contracts. Flag behavior changes and missing regression coverage."
+    },
+    {
+      "kind": "category",
+      "name": "integration-reviewer",
+      "category": "deep",
+      "prompt": "Review integration points, configuration/versioning, Docker or CI impact, migration order, rollback concerns, operational risk, and documentation updates."
+    },
+    {
+      "kind": "category",
+      "name": "verification-engineer",
+      "category": "quick",
+      "prompt": "Own the verification plan. Find the smallest command set that proves behavior was preserved and the refactor is safe. Report exact commands, outcomes, and any checks that could not run."
+    }
+  ]
+}

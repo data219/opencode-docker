@@ -1,0 +1,34 @@
+{
+  "name": "solution-design",
+  "description": "Analyze requirements, compare implementation options, and prepare architecture decisions without changing files.",
+  "lead": {
+    "kind": "subagent_type",
+    "subagent_type": "sisyphus"
+  },
+  "members": [
+    {
+      "kind": "category",
+      "name": "requirements-analyst",
+      "category": "deep",
+      "prompt": "Analyze the request and repository context. Identify functional requirements, non-functional requirements, constraints, assumptions, open questions, risks, and acceptance criteria. Do not implement or edit files."
+    },
+    {
+      "kind": "category",
+      "name": "solution-researcher",
+      "category": "deep",
+      "prompt": "Compare viable technical approaches using repository context and authoritative sources when available. Evaluate maintainability, complexity, scalability, security, operations, migration risk, and testability. Mark unverifiable claims as assumptions. Do not implement or edit files."
+    },
+    {
+      "kind": "category",
+      "name": "adr-writer",
+      "category": "deep",
+      "prompt": "Prepare a concise architecture decision draft with title, status, context, decision, considered options, consequences, risks, and follow-up tasks. Do not implement or edit files unless explicitly asked by the lead."
+    },
+    {
+      "kind": "category",
+      "name": "edge-case-reviewer",
+      "category": "quick",
+      "prompt": "Review the proposed solution for missing edge cases, ambiguous requirements, hidden coupling, migration pitfalls, rollout concerns, and likely implementation failure modes. Return only actionable concerns. Do not implement or edit files."
+    }
+  ]
+}

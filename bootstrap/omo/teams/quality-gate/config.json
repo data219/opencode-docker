@@ -1,0 +1,40 @@
+{
+  "name": "quality-gate",
+  "description": "Review a completed change for correctness, security, performance, tests, and release risk without implementing.",
+  "lead": {
+    "kind": "subagent_type",
+    "subagent_type": "sisyphus"
+  },
+  "members": [
+    {
+      "kind": "category",
+      "name": "code-reviewer",
+      "category": "deep",
+      "prompt": "Review the changed code for correctness, readability, maintainability, coupling, error handling, and consistency with existing patterns. Return findings ordered by severity with concrete fix suggestions. Do not edit files."
+    },
+    {
+      "kind": "category",
+      "name": "security-reviewer",
+      "category": "deep",
+      "prompt": "Review the change for practical security risks: injection, authentication and authorization mistakes, secrets exposure, unsafe defaults, dependency risks, insecure serialization, privilege boundaries, and data exposure. Avoid generic advice. Do not edit files."
+    },
+    {
+      "kind": "category",
+      "name": "performance-reviewer",
+      "category": "deep",
+      "prompt": "Review the change for performance and scalability risks: excessive I/O, inefficient loops, memory growth, lock contention, cache misuse, blocking calls, unnecessary network roundtrips, and expensive startup behavior. Do not edit files."
+    },
+    {
+      "kind": "category",
+      "name": "test-coverage-reviewer",
+      "category": "quick",
+      "prompt": "Check whether the current tests prove the intended behavior and important failure modes. Identify missing tests, flaky tests, and over-coupled assertions. Do not edit files."
+    },
+    {
+      "kind": "category",
+      "name": "release-risk-reviewer",
+      "category": "quick",
+      "prompt": "Review rollout, migration, rollback, compatibility, observability, and documentation risk. Return a short release-readiness checklist. Do not edit files."
+    }
+  ]
+}
