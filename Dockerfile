@@ -367,11 +367,15 @@ COPY bootstrap/config/.gitmessage /opt/opencode-defaults/.gitmessage
 # --- Copy bootstrap skills to defaults (seeded at runtime by docker-init.sh) ---
 COPY bootstrap/skills/ /opt/opencode-defaults/skills/
 
+# --- Copy bootstrap OmO teams to defaults (seeded at runtime by docker-init.sh) ---
+COPY bootstrap/omo/ /opt/omo-defaults/
+
 # --- Create volume mount points and seed with defaults ---
 # These directories MUST exist in the image for Docker bind mounts to work correctly.
 RUN mkdir -p /home/opencode/.config/opencode \
     /home/opencode/.config/gh \
     /home/opencode/.config/glab \
+    /home/opencode/.omo/teams \
     /home/opencode/.local/share/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace \
@@ -384,12 +388,14 @@ RUN cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/op
   && if [ -f /opt/opencode-defaults/oh-my-opencode-omo.json ]; then cp -a /opt/opencode-defaults/oh-my-opencode-omo.json /home/opencode/.config/opencode/oh-my-opencode-omo.json; fi \
   && if [ -f /opt/opencode-defaults/oh-my-openagent-omo.json ]; then cp -a /opt/opencode-defaults/oh-my-openagent-omo.json /home/opencode/.config/opencode/oh-my-openagent-omo.json; fi \
   && if [ -f /opt/opencode-defaults/oh-my-openagent-omo.jsonc ]; then cp -a /opt/opencode-defaults/oh-my-openagent-omo.jsonc /home/opencode/.config/opencode/oh-my-openagent-omo.jsonc; fi \
-  && cp -a /opt/opencode-defaults/skills/. /home/opencode/.config/opencode/skills/
+  && cp -a /opt/opencode-defaults/skills/. /home/opencode/.config/opencode/skills/ \
+  && cp -a /opt/omo-defaults/teams/. /home/opencode/.omo/teams/
 RUN chown -R opencode:opencode \
     /home/opencode/.gitmessage \
     /home/opencode/.config/opencode \
     /home/opencode/.config/gh \
     /home/opencode/.config/glab \
+    /home/opencode/.omo \
     /home/opencode/.local/share/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace

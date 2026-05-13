@@ -1,0 +1,39 @@
+{
+  "name": "implementation-delivery",
+  "description": "Deliver a well-scoped feature or fix with implementation, tests, documentation sync, and risk review.",
+  "lead": {
+    "kind": "subagent_type",
+    "subagent_type": "sisyphus"
+  },
+  "members": [
+    {
+      "kind": "subagent_type",
+      "subagent_type": "atlas",
+      "prompt": "Coordinate delivery. Break the request into a concrete todo list, assign a single implementation owner, keep scope tight, and verify that acceptance criteria, tests, and docs are covered before completion."
+    },
+    {
+      "kind": "category",
+      "name": "implementation-worker",
+      "category": "deep",
+      "prompt": "Own the implementation. Make minimal, targeted changes following existing project patterns. Avoid speculative abstractions and unrelated cleanup. Coordinate before touching broad or shared files. Report changed files, assumptions, and verification needs."
+    },
+    {
+      "kind": "category",
+      "name": "test-engineer",
+      "category": "deep",
+      "prompt": "Own verification coverage. Identify existing tests, add or update focused regression tests where appropriate, and run the smallest relevant checks. Prefer deterministic tests that match the repository style. Report exact commands and outcomes."
+    },
+    {
+      "kind": "category",
+      "name": "docs-sync",
+      "category": "quick",
+      "prompt": "Check whether README, examples, configuration docs, comments, or changelog snippets need updates. Make only necessary documentation changes and report any intentionally skipped docs."
+    },
+    {
+      "kind": "category",
+      "name": "risk-reviewer",
+      "category": "deep",
+      "prompt": "Review the implementation plan and final diff for regressions, security issues, operational risks, maintainability problems, and missing tests. Focus on concrete blockers and high-signal improvements."
+    }
+  ]
+}

@@ -4,6 +4,7 @@ set -euo pipefail
 trap 'echo "ERROR: docker-init.sh failed at line $LINENO" >&2' ERR
 
 DEFAULTS_DIR="${DEFAULTS_DIR:-/opt/opencode-defaults}"
+OMO_DEFAULTS_DIR="${OMO_DEFAULTS_DIR:-/opt/omo-defaults}"
 CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
 USER_HOME="${USER_HOME:-/home/opencode}"
 CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
@@ -16,7 +17,7 @@ if [ "$(id -u)" = "0" ]; then
     chown -R opencode:opencode /home/opencode
   fi
 
-  for dir in .config .config/opencode .config/opencode/skills .config/gh .config/glab .local .local/share .local/state .local/state/opencode .local/share/opencode workspace; do
+  for dir in .config .config/opencode .config/opencode/skills .config/gh .config/glab .omo .omo/teams .local .local/share .local/state .local/state/opencode .local/share/opencode workspace; do
     dir_path="/home/opencode/$dir"
     if [ -d "$dir_path" ] && [ "$(stat -c %U "$dir_path" 2>/dev/null)" = "root" ]; then
       chown -R opencode:opencode "$dir_path"
@@ -275,6 +276,36 @@ fi
 # Ensure git files are writable by runtime user.
 if [ "$(id -u)" = "0" ]; then
   chown -f opencode:opencode "$USER_HOME/.gitmessage" "$GIT_CONFIG_TARGET" 2>/dev/null || true
+fi
+
+# --- Sync bootstrap OmO teams ---
+if [ -d "$OMO_DEFAULTS_DIR/teams" ]; then
+  OMO_TEAMS_DIR="$USER_HOME/.omo/teams"
+  OMO_TEAMS_OWNER=
+  if [ -d "$OMO_TEAMS_DIR" ]; then
+    OMO_TEAMS_OWNER="$(stat -c '%u:%g' "$OMO_TEAMS_DIR" 2>/dev/null || true)"
+  fi
+  mkdir -p "$OMO_TEAMS_DIR"
+
+  # Merge bootstrap teams, but don't overwrite existing user modifications.
+  for team_dir in "$OMO_DEFAULTS_DIR/teams"/*; do
+    [ -d "${team_dir}" ] || continue
+    target_dir="$OMO_TEAMS_DIR/$(basename "${team_dir}")"
+    if [ ! -d "${target_dir}" ]; then
+      cp -a "${team_dir}" "$target_dir"
+    else
+      cp -an "${team_dir}/." "$target_dir/"
+    fi
+  done
+
+  # Preserve the bind mount owner instead of the image source owner.
+  if [ "$(id -u)" = "0" ] && [ -d "$OMO_TEAMS_DIR" ]; then
+    if [ -n "$OMO_TEAMS_OWNER" ]; then
+      chown -R "$OMO_TEAMS_OWNER" "$OMO_TEAMS_DIR"
+    else
+      chown -R opencode:opencode "$USER_HOME/.omo" 2>/dev/null || true
+    fi
+  fi
 fi
 
 # --- Sync bootstrap skills ---

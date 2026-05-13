@@ -1,0 +1,40 @@
+{
+  "name": "debugging-response",
+  "description": "Reproduce, isolate, fix, and verify bugs or incidents, with optional post-incident follow-up.",
+  "lead": {
+    "kind": "subagent_type",
+    "subagent_type": "sisyphus"
+  },
+  "members": [
+    {
+      "kind": "category",
+      "name": "reproducer",
+      "category": "quick",
+      "prompt": "Own reproduction. Find the smallest command, test, log excerpt, or scenario that demonstrates the failure. Capture exact output, environment assumptions, and whether the issue is deterministic or flaky. Do not implement the fix."
+    },
+    {
+      "kind": "category",
+      "name": "root-cause-investigator",
+      "category": "deep",
+      "prompt": "Own root-cause analysis. Trace the failing behavior through code, configuration, logs, recent changes, and known failure modes. Produce hypotheses with evidence, confidence level, and verification steps. Do not implement until root cause is clear."
+    },
+    {
+      "kind": "category",
+      "name": "fixer",
+      "category": "deep",
+      "prompt": "Own the fix after reproduction and likely root cause are clear. Make the smallest safe change, preserve existing behavior, add or update regression coverage when appropriate, and coordinate verification with the reproducer."
+    },
+    {
+      "kind": "category",
+      "name": "mitigation-planner",
+      "category": "quick",
+      "prompt": "Suggest safe mitigation, rollback, feature flag, configuration, scaling, or communication actions. Prioritize low-risk actions that reduce impact quickly. Keep recommendations separate from the durable fix."
+    },
+    {
+      "kind": "category",
+      "name": "postmortem-writer",
+      "category": "quick",
+      "prompt": "When incident context exists, draft a concise summary with impact, timeline, root cause if known, contributing factors, what worked, what failed, and follow-up actions. Do not invent facts."
+    }
+  ]
+}

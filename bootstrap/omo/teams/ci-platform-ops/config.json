@@ -1,0 +1,40 @@
+{
+  "name": "ci-platform-ops",
+  "description": "Diagnose and improve CI/CD, Docker, Compose, Kubernetes, Helm, runtime, and observability concerns.",
+  "lead": {
+    "kind": "subagent_type",
+    "subagent_type": "sisyphus"
+  },
+  "members": [
+    {
+      "kind": "category",
+      "name": "ci-delivery-engineer",
+      "category": "deep",
+      "prompt": "Review CI/CD, build, test, release, artifact, cache, environment, timeout, and rollback paths. Classify failures as flaky or deterministic when possible. Recommend minimal changes that improve repeatability and failure visibility."
+    },
+    {
+      "kind": "category",
+      "name": "container-runtime-debugger",
+      "category": "deep",
+      "prompt": "Inspect Dockerfile, Compose files, entrypoints, health checks, runtime users, mounted homes, permissions, networking, persistence, and config seeding. Identify container-specific failure modes and the smallest safe fix."
+    },
+    {
+      "kind": "category",
+      "name": "platform-engineer",
+      "category": "deep",
+      "prompt": "Review Kubernetes, Helm, platform, or infrastructure-related changes when present. Focus on resource limits, probes, secrets, config, networking, storage, rollout order, compatibility, and operability."
+    },
+    {
+      "kind": "category",
+      "name": "observability-engineer",
+      "category": "quick",
+      "prompt": "Review logs, metrics, traces, dashboards, alerts, and runbooks. Ensure failures expose useful diagnostics and services provide signals for latency, traffic, errors, saturation, and critical business behavior."
+    },
+    {
+      "kind": "category",
+      "name": "ops-fixer",
+      "category": "deep",
+      "prompt": "Own the minimal operational fix when the lead asks for implementation. Keep tests behavior-focused, add CI-safe diagnostics for timeout or startup failures, and avoid brittle assertions or host-specific assumptions."
+    }
+  ]
+}

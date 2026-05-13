@@ -2,23 +2,24 @@
 setup_init_test_env() {
   INIT_TEST_TMPDIR="$(mktemp -d)"
   export DEFAULTS_DIR="$INIT_TEST_TMPDIR/defaults"
+  export OMO_DEFAULTS_DIR="$INIT_TEST_TMPDIR/omo-defaults"
   export CONFIG_DIR="$INIT_TEST_TMPDIR/config"
   export USER_HOME="$INIT_TEST_TMPDIR/home"
   export HOME="$USER_HOME"
   export GIT_CONFIG_GLOBAL="$USER_HOME/.gitconfig"
   unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
   unset CNTB_OAUTH2_CLIENT_ID CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
-  mkdir -p "$DEFAULTS_DIR" "$CONFIG_DIR"
+  mkdir -p "$DEFAULTS_DIR" "$OMO_DEFAULTS_DIR" "$CONFIG_DIR"
   mkdir -p "$USER_HOME"
   # If running as root, ensure opencode user exists for chown block
   if [ "$(id -u)" = "0" ]; then
     id opencode >/dev/null 2>/dev/null || useradd -u 1000 -M -s /bin/bash opencode 2>/dev/null || true
-    mkdir -p /home/opencode/.config /home/opencode/.config/opencode /home/opencode/.config/opencode/skills /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state /home/opencode/.local/share/opencode /home/opencode/workspace
+    mkdir -p /home/opencode/.config /home/opencode/.config/opencode /home/opencode/.config/opencode/skills /home/opencode/.omo /home/opencode/.omo/teams /home/opencode/.local /home/opencode/.local/share /home/opencode/.local/state /home/opencode/.local/share/opencode /home/opencode/workspace
   fi
 }
 
 teardown_init_test_env() {
-  unset DEFAULTS_DIR CONFIG_DIR USER_HOME HOME GIT_CONFIG_GLOBAL
+  unset DEFAULTS_DIR OMO_DEFAULTS_DIR CONFIG_DIR USER_HOME HOME GIT_CONFIG_GLOBAL
   rm -rf "$INIT_TEST_TMPDIR"
 }
 
@@ -511,6 +512,49 @@ teardown_init_test_env() {
   [ "$(stat -c %Y "$skills_dir/github/existing.txt")" -eq "$before_existing_mtime" ]
 
   rm -rf "$skills_dir"
+  teardown_init_test_env
+}
+
+@test "docker-init.sh merges bootstrap OmO teams without overwriting user files" {
+  setup_init_test_env
+
+  local teams_dir="$USER_HOME/.omo/teams"
+  mkdir -p "$OMO_DEFAULTS_DIR/teams/implementation-delivery" "$teams_dir/implementation-delivery"
+
+  echo '{"name":"implementation-delivery","description":"bootstrap"}' > "$OMO_DEFAULTS_DIR/teams/implementation-delivery/config.json"
+  echo "bootstrap-new" > "$OMO_DEFAULTS_DIR/teams/implementation-delivery/README.md"
+  echo '{"name":"implementation-delivery","description":"user"}' > "$teams_dir/implementation-delivery/config.json"
+  touch -t 202001010000 "$teams_dir/implementation-delivery/config.json"
+  before_config_mtime="$(stat -c %Y "$teams_dir/implementation-delivery/config.json")"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$teams_dir/implementation-delivery/README.md" ]
+  [ "$(stat -c %Y "$teams_dir/implementation-delivery/config.json")" -eq "$before_config_mtime" ]
+  grep -F '"description":"user"' "$teams_dir/implementation-delivery/config.json"
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh preserves bind-mount ownership for synced OmO teams" {
+  if [ "$(id -u)" != "0" ]; then
+    skip "requires root to verify ownership normalization"
+  fi
+
+  setup_init_test_env
+
+  local teams_dir="$USER_HOME/.omo/teams"
+  local expected_owner="12345:12346"
+  mkdir -p "$OMO_DEFAULTS_DIR/teams/debugging-response" "$teams_dir"
+  chown "$expected_owner" "$teams_dir"
+  echo '{"name":"debugging-response"}' > "$OMO_DEFAULTS_DIR/teams/debugging-response/config.json"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(stat -c '%u:%g' "$teams_dir")" = "$expected_owner" ]
+  [ "$(stat -c '%u:%g' "$teams_dir/debugging-response")" = "$expected_owner" ]
+  [ "$(stat -c '%u:%g' "$teams_dir/debugging-response/config.json")" = "$expected_owner" ]
+
   teardown_init_test_env
 }
 
