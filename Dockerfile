@@ -48,7 +48,7 @@ ARG DOCKER_COMPOSE_VERSION=5.1.3
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
 ARG ATLCLI_VERSION=0.16.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG NVM_VERSION=v0.40.1
+ARG NVM_VERSION=0.40.4
 # renovate: datasource=golang-version depName=go
 ARG GO_VERSION=1.26.3
 # renovate: datasource=github-releases depName=golangci/golangci-lint
