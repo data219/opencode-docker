@@ -58,7 +58,7 @@ ARG JAVA_VERSION=21.0.3+9
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
 ARG RUBY_VERSION=3.3.6
 # renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
-ARG SWIFT_VERSION=6.0
+ARG SWIFT_VERSION=6.3.2
 # renovate: datasource=npm depName=oh-my-opencode
 ARG OMO_VERSION=4.0.0
 
