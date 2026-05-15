@@ -46,7 +46,7 @@ ARG DOCKER_CLI_VERSION=29.4.1
 # renovate: datasource=github-releases depName=docker/compose versioning=semver
 ARG DOCKER_COMPOSE_VERSION=5.1.3
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
-ARG ATLCLI_VERSION=0.16.0
+ARG ATLCLI_VERSION=0.17.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG NVM_VERSION=v0.40.1
 # renovate: datasource=golang-version depName=go
