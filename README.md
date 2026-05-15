@@ -13,6 +13,7 @@
 
 - AI coding assistant:
   - [OpenCode](https://github.com/opencode-ai/opencode)
+  - [OpenChamber](https://www.npmjs.com/package/@openchamber/web) as an optional alternative web UI for OpenCode
   - [Oh My OpenAgent](https://github.com/code-yeongyu/oh-my-openagent) with GLM-5 model mappings for all agent roles
 
 - Platform tools:
@@ -121,6 +122,20 @@ This keeps the default stack isolated while making Docker access a deliberate op
 
 Use these only when you want to activate additional tooling beyond the default OpenCode web setup.
 
+### OpenChamber web UI
+
+OpenChamber is installed in the image and can run alongside the default OpenCode web UI. Enable it in `.env`:
+
+```bash
+OPENCHAMBER_ENABLED=true
+OPENCHAMBER_PORT=4020
+OPENCHAMBER_UI_PASSWORD=change-me
+```
+
+Then start the stack and open `http://localhost:4020`.
+
+`OPENCHAMBER_PORT` is published through the same host bind address as OpenCode. If `OPENCODE_BIND_ADDRESS=0.0.0.0`, set `OPENCHAMBER_UI_PASSWORD` before enabling OpenChamber.
+
 ### CLI authentication
 
 Authenticate the bundled CLIs if you want to use them inside the container.
@@ -195,6 +210,9 @@ Use these variables only when the defaults do not fit your setup.
 | `OPENCODE_PRINT_LOGS` | `false`  | Maps to `opencode --print-logs` and streams OpenCode logs to container stderr                       |
 | `OPENCODE_LOG_LEVEL` | *(empty)* | Maps to `opencode --log-level` with `DEBUG`, `INFO`, `WARN`, or `ERROR`                            |
 | `OPENCODE_CORS` | *(empty)* | Maps to `opencode --cors` for one additional allowed origin; omitted entirely when empty             |
+| `OPENCHAMBER_ENABLED` | `false` | Starts the optional OpenChamber web UI alongside OpenCode when set to `true`                         |
+| `OPENCHAMBER_PORT` | `4020` | OpenChamber port inside the container and host-published port in Docker Compose                         |
+| `OPENCHAMBER_UI_PASSWORD` | *(empty)* | Optional OpenChamber UI password. Set this when exposing the port beyond localhost               |
 | `OPENCODE_SERVER_USERNAME` | OpenCode default (`opencode`) | Optional basic auth username; empty values are not forwarded            |
 | `OPENCODE_SERVER_PASSWORD` | *(empty)* | Basic auth password. If empty, no auth is enforced — restrict via `OPENCODE_BIND_ADDRESS`       |
 | `OPENCODE_BIND_ADDRESS` | `127.0.0.1` | **Host-level only.** Which interface Docker listens on. Never passed into the container.       |
