@@ -60,7 +60,7 @@ ARG RUBY_VERSION=3.3.6
 # renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
 ARG SWIFT_VERSION=6.0
 # renovate: datasource=npm depName=oh-my-opencode
-ARG OMO_VERSION=4.0.0
+ARG OMO_VERSION=4.1.2
 
 # --- System packages (with BuildKit cache for apt) ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
