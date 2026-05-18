@@ -45,6 +45,7 @@ The Docker Compose stack includes these command-line tools:
 - `cloudflared`: Cloudflare tunnel CLI for exposing local services when configured.
 - `docker`: Docker client for image, container, network, and volume operations.
 - `docker compose`: Compose plugin for managing multi-container local stacks.
+- `make`: Build automation tool for Makefile-driven project tasks.
 - `ansible`: Automation CLI for playbooks, inventories, and provisioning tasks.
 - `terraform`: Infrastructure-as-code CLI for planning and applying Terraform modules.
 - `kubectl`: Kubernetes CLI for inspecting and managing clusters and workloads.
@@ -55,6 +56,26 @@ The Docker Compose stack includes these command-line tools:
 - `git`: Version control CLI for repository history, branches, diffs, and commits.
 - `curl`: HTTP client for API calls, downloads, and network checks.
 - `wget`: HTTP client for file downloads and simple network checks.
+
+## Available Programming Languages
+
+The Docker Compose stack always includes these programming language runtimes and package tools:
+
+- Node.js: JavaScript and TypeScript runtime for npm-based projects and CLIs.
+- Python: Python 3 runtime, `pip`, virtual environments, and `pyenv` for Python version management.
+- Go: Go toolchain plus `gvm` support for Go version management.
+- PHP: PHP 8.4 CLI with common extensions for PHP and Symfony-style projects.
+- Composer: PHP dependency manager.
+- Shell: Bash and POSIX shell tooling for scripts and automation.
+
+Optional build-time language runtimes may also be installed. Check whether the command exists before relying on one:
+
+- Java: available only when the image was built with `INSTALL_JAVA=true`.
+- Ruby: available only when the image was built with `INSTALL_RUBY=true`.
+- Swift: available only when the image was built with `INSTALL_SWIFT=true`.
+- Elixir/Erlang: available only when the image was built with `INSTALL_ELIXIR=true`.
+- nvm-managed Node.js: available only when the image was built with `INSTALL_NVM=true`.
+- Rust: available only when the image was built with `INSTALL_RUST=true`.
 
 ## Git
 
