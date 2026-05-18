@@ -3,11 +3,33 @@
   "extends": [
     "config:recommended"
   ],
+  "addLabels": [
+    "renovate"
+  ],
+  "packageRules": [
+    {
+      "description": "Automerge semver patch and minor updates after successful checks",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": false
+    },
+    {
+      "description": "Keep semver major updates manual because they can include breaking changes",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^Dockerfile$/"
+      "fileMatch": [
+        "^Dockerfile$"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+ARG [A-Z0-9_]+_(?:VERSION|TAG)=(?<currentValue>\\S+)\\s"
@@ -15,8 +37,8 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/^Dockerfile$/"
+      "fileMatch": [
+        "^Dockerfile$"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?) (?:lookupName|packageName)=(?<packageName>[^\\s]+?)(?: versioning=(?<versioning>[^\\s]+?))?\\s+ARG GVM_REF=(?<currentValue>\\S+)\\s+ARG GVM_COMMIT=(?<currentDigest>\\S+)\\s"
