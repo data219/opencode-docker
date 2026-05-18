@@ -273,7 +273,7 @@ RUN --mount=type=secret,id=github_token,required=false \
       gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg "${tmpdir}/kubernetes-apt-keyring.gpg"; \
       echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${kubectl_minor}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list; \
       apt-get update; \
-      apt-get install -y --no-install-recommends "kubectl=${KUBECTL_VERSION}-1.1"; \
+      apt-get install -y --no-install-recommends "kubectl=${KUBECTL_VERSION}-*"; \
       rm -rf /var/lib/apt/lists/* "${tmpdir}"; \
     }; \
     install_binary yq "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_${common_arch}"; \
