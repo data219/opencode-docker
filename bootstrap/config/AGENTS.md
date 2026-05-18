@@ -34,6 +34,49 @@ Check command sources in this order unless project documentation says otherwise:
 
 Prefer `docker compose exec` for running services and `docker compose run --rm` for one-off commands.
 
+## Available Tools
+
+The Docker Compose stack includes these command-line tools:
+
+- `gh`: GitHub CLI for repositories, issues, pull requests, and Actions checks.
+- `glab`: GitLab CLI for projects, merge requests, issues, and pipelines.
+- `cntb`: Contabo CLI for cloud resource inspection and operations.
+- `atlcli`: Atlassian CLI for Jira and Confluence workflows.
+- `cloudflared`: Cloudflare tunnel CLI for exposing local services when configured.
+- `docker`: Docker client for image, container, network, and volume operations.
+- `docker compose`: Compose plugin for managing multi-container local stacks.
+- `make`: Build automation tool for Makefile-driven project tasks.
+- `ansible`: Automation CLI for playbooks, inventories, and provisioning tasks.
+- `terraform`: Infrastructure-as-code CLI for planning and applying Terraform modules.
+- `kubectl`: Kubernetes CLI for inspecting and managing clusters and workloads.
+- `helm`: Kubernetes package manager for chart rendering, installs, and upgrades.
+- `jq`: JSON processor for filtering, transforming, and validating JSON data.
+- `yq`: YAML, JSON, and XML processor for config inspection and edits.
+- `shellcheck`: Static analyzer for shell scripts.
+- `git`: Version control CLI for repository history, branches, diffs, and commits.
+- `curl`: HTTP client for API calls, downloads, and network checks.
+- `wget`: HTTP client for file downloads and simple network checks.
+
+## Available Programming Languages
+
+The Docker Compose stack always includes these programming language runtimes and package tools:
+
+- Node.js: JavaScript and TypeScript runtime for npm-based projects and CLIs.
+- Python: Python 3 runtime, `pip`, virtual environments, and `pyenv` for Python version management.
+- Go: Go toolchain plus `gvm` support for Go version management.
+- PHP: PHP 8.4 CLI with common extensions for PHP and Symfony-style projects.
+- Composer: PHP dependency manager.
+- Shell: Bash and POSIX shell tooling for scripts and automation.
+
+Optional build-time language runtimes may also be installed. Check whether the command exists before relying on one:
+
+- Java: available only when the image was built with `INSTALL_JAVA=true`.
+- Ruby: available only when the image was built with `INSTALL_RUBY=true`.
+- Swift: available only when the image was built with `INSTALL_SWIFT=true`.
+- Elixir/Erlang: available only when the image was built with `INSTALL_ELIXIR=true`.
+- nvm-managed Node.js: available only when the image was built with `INSTALL_NVM=true`.
+- Rust: available only when the image was built with `INSTALL_RUST=true`.
+
 ## Git
 
 Use conventional commits for normal commits.

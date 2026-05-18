@@ -60,7 +60,7 @@ Docker Compose mounts `${OPENCODE_HOME_DIR:-./data/home}` to `/home/opencode`, s
 | `OPENCHAMBER_PORT` | `4020` | OpenChamber port inside the container and on the host. |
 | `OPENCHAMBER_UI_PASSWORD` | empty | Optional OpenChamber UI password. Set this for non-local exposure. |
 | `FORCE_SKILL_SYNC` | `false` | Replaces bootstrapped skills with image defaults when set to `true`. |
-| `GH_TOKEN` / `GITHUB_TOKEN` | empty | Non-interactive GitHub CLI auth. |
+| `GH_TOKEN` / `GITHUB_TOKEN` | empty | Non-interactive GitHub CLI auth; also used as optional BuildKit secrets for GitHub-hosted CLI downloads. |
 | `GLAB_TOKEN` / `GITLAB_TOKEN` | empty | Non-interactive GitLab CLI auth. |
 | `CNTB_OAUTH2_*` | empty | Contabo CLI auth. Set all four OAuth2 variables together. |
 | `ATLCLI_*` | empty | Atlassian CLI token and profile defaults. |
@@ -127,7 +127,7 @@ Compose can render with an empty Gemini key because the variable is not checked 
 
 ### Platform and language tools
 
-Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `cloudflared`, `docker`, `docker compose`, `jq`, `yq`, `git`, and `curl`.
+Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `shellcheck`, `git`, `curl`, and `wget`.
 
 Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. Java, Ruby, Swift, Elixir/Erlang, nvm-managed Node.js, and Rust are optional build-time installs.
 
