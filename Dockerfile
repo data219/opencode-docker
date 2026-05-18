@@ -205,17 +205,31 @@ RUN --mount=type=secret,id=github_token,required=false \
             set +x; \
             github_token="$(tr -d '\r\n' < "${token_file}")"; \
             if [ -n "${github_token}" ]; then \
+              set +e; \
               curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 180 --speed-limit 1024 --speed-time 60 -H "Authorization: Bearer ${github_token}" "${url}" -o "${output}"; \
               curl_status="$?"; \
+              set -e; \
               github_token=""; \
               set -x; \
-              return "${curl_status}"; \
+              if [ "${curl_status}" -eq 0 ]; then return 0; fi; \
             fi; \
             set -x; \
           fi; \
           ;; \
       esac; \
       curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 180 --speed-limit 1024 --speed-time 60 "${url}" -o "${output}"; \
+    }; \
+    verify_checksum_entry() { \
+      checksum_archive="$1"; \
+      checksum_package="$2"; \
+      checksum_source="$3"; \
+      checksum_expected="$4"; \
+      awk -v target="${checksum_archive}" -v package="${checksum_package}" '$2 == target { print $1 "  " package }' "${checksum_source}" > "${checksum_expected}"; \
+      if [ ! -s "${checksum_expected}" ]; then \
+        echo "checksum entry not found for ${checksum_archive} in ${tmpdir}/${checksum_source}" >&2; \
+        return 1; \
+      fi; \
+      sha256sum -c "${checksum_expected}"; \
     }; \
     install_archive() { \
       binary="$1"; \
@@ -226,7 +240,7 @@ RUN --mount=type=secret,id=github_token,required=false \
       mkdir -p "${tmpdir}/unpack"; \
       curl_download "${url}" "${tmpdir}/pkg.tgz"; \
       curl_download "${checksum_url}" "${tmpdir}/checksums.txt"; \
-      (cd "${tmpdir}" && awk -v target="${archive_name}" '$2 == target { print $1 "  " "pkg.tgz" }' checksums.txt | sha256sum -c -); \
+      (cd "${tmpdir}" && verify_checksum_entry "${archive_name}" pkg.tgz checksums.txt pkg.tgz.sha256); \
       tar -xzf "${tmpdir}/pkg.tgz" -C "${tmpdir}/unpack"; \
       install -m 0755 "$(find "${tmpdir}/unpack" -type f -name "${binary}" | head -n 1)" "/usr/local/bin/${binary}"; \
       rm -rf "${tmpdir}"; \
@@ -240,7 +254,7 @@ RUN --mount=type=secret,id=github_token,required=false \
       mkdir -p "${tmpdir}/unpack"; \
       curl_download "${url}" "${tmpdir}/pkg.zip"; \
       curl_download "${checksum_url}" "${tmpdir}/checksums.txt"; \
-      (cd "${tmpdir}" && awk -v target="${archive_name}" '$2 == target { print $1 "  " "pkg.zip" }' checksums.txt | sha256sum -c -); \
+      (cd "${tmpdir}" && verify_checksum_entry "${archive_name}" pkg.zip checksums.txt pkg.zip.sha256); \
       unzip -q "${tmpdir}/pkg.zip" -d "${tmpdir}/unpack"; \
       install -m 0755 "$(find "${tmpdir}/unpack" -type f -name "${binary}" | head -n 1)" "/usr/local/bin/${binary}"; \
       rm -rf "${tmpdir}"; \
