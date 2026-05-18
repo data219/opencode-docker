@@ -33,6 +33,12 @@ ARG OPENCODE_VERSION=1.15.4
 ARG AGENT_BROWSER_VERSION=0.27.0
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.53.2
+# renovate: datasource=github-releases depName=hashicorp/terraform
+ARG TERRAFORM_VERSION=1.15.3
+# renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG KUBECTL_VERSION=1.36.1
+# renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG HELM_VERSION=4.2.0
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
 ARG GH_VERSION=2.92.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
@@ -80,6 +86,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        libssl-dev libcurl4-openssl-dev libxml2-dev \
        libpq-dev libsqlite3-dev libffi-dev libzip-dev \
        libicu-dev libonig-dev sqlite3 zip \
+       ansible-core shellcheck \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/debconf/* \
     && rm -rf /usr/lib/python3.13/test \
@@ -169,36 +176,47 @@ RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
     && npm cache clean --force \
     && rm -rf /opt/opencode-browser-home /root/.npm
 
-# --- Install yq v4.40.5 ---
-RUN curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" \
-       -o /usr/local/bin/yq \
-    && chmod +x /usr/local/bin/yq
-
-# --- Install cloudflared for OpenChamber remote tunnel support ---
-RUN set -eux; \
+# --- Install GitHub/GitLab/Contabo/Atlassian and platform CLIs ---
+RUN --mount=type=secret,id=github_token,required=false \
+    --mount=type=secret,id=github_token_alt,required=false \
+    set -eux; \
     arch="$(dpkg --print-architecture)"; \
     case "${arch}" in \
-      amd64) cloudflared_arch="amd64" ;; \
-      arm64) cloudflared_arch="arm64" ;; \
+      amd64) common_arch="amd64"; atlcli_arch="x64"; hashicorp_arch="amd64" ;; \
+      arm64) common_arch="arm64"; atlcli_arch="arm64"; hashicorp_arch="arm64" ;; \
       *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
     esac; \
-    curl -fsSL "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${cloudflared_arch}" \
-      -o /usr/local/bin/cloudflared; \
-    chmod +x /usr/local/bin/cloudflared; \
-    cloudflared --version
-
-# --- Install GitHub/GitLab/Contabo/Atlassian CLIs ---
-RUN set -eux; \
-    arch="$(dpkg --print-architecture)"; \
-    case "${arch}" in \
-      amd64) gh_arch="amd64"; glab_arch="amd64"; cntb_arch="amd64"; atlcli_arch="x64" ;; \
-      arm64) gh_arch="arm64"; glab_arch="arm64"; cntb_arch="arm64"; atlcli_arch="arm64" ;; \
-      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
-    esac; \
-    gh_archive="gh_${GH_VERSION}_linux_${gh_arch}.tar.gz"; \
-    glab_archive="glab_${GLAB_VERSION}_linux_${glab_arch}.tar.gz"; \
-    cntb_archive="cntb_v${CNTB_VERSION}_linux_${cntb_arch}.tar.gz"; \
+    gh_archive="gh_${GH_VERSION}_linux_${common_arch}.tar.gz"; \
+    glab_archive="glab_${GLAB_VERSION}_linux_${common_arch}.tar.gz"; \
+    cntb_archive="cntb_v${CNTB_VERSION}_linux_${common_arch}.tar.gz"; \
     atlcli_archive="atlcli-linux-${atlcli_arch}.tar.gz"; \
+    terraform_archive="terraform_${TERRAFORM_VERSION}_linux_${hashicorp_arch}.zip"; \
+    helm_archive="helm-v${HELM_VERSION}-linux-${common_arch}.tar.gz"; \
+    curl_download() { \
+      url="$1"; \
+      output="$2"; \
+      token_file=""; \
+      case "${url}" in \
+        https://github.com/*|https://api.github.com/*) \
+          if [ -s /run/secrets/github_token ]; then token_file=/run/secrets/github_token; \
+          elif [ -s /run/secrets/github_token_alt ]; then token_file=/run/secrets/github_token_alt; \
+          fi; \
+          if [ -n "${token_file}" ]; then \
+            set +x; \
+            github_token="$(tr -d '\r\n' < "${token_file}")"; \
+            if [ -n "${github_token}" ]; then \
+              curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 180 --speed-limit 1024 --speed-time 60 -H "Authorization: Bearer ${github_token}" "${url}" -o "${output}"; \
+              curl_status="$?"; \
+              github_token=""; \
+              set -x; \
+              return "${curl_status}"; \
+            fi; \
+            set -x; \
+          fi; \
+          ;; \
+      esac; \
+      curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 180 --speed-limit 1024 --speed-time 60 "${url}" -o "${output}"; \
+    }; \
     install_archive() { \
       binary="$1"; \
       url="$2"; \
@@ -206,17 +224,62 @@ RUN set -eux; \
       archive_name="$4"; \
       tmpdir="$(mktemp -d)"; \
       mkdir -p "${tmpdir}/unpack"; \
-      curl -fsSL "${url}" -o "${tmpdir}/pkg.tgz"; \
-      curl -fsSL "${checksum_url}" -o "${tmpdir}/checksums.txt"; \
+      curl_download "${url}" "${tmpdir}/pkg.tgz"; \
+      curl_download "${checksum_url}" "${tmpdir}/checksums.txt"; \
       (cd "${tmpdir}" && awk -v target="${archive_name}" '$2 == target { print $1 "  " "pkg.tgz" }' checksums.txt | sha256sum -c -); \
       tar -xzf "${tmpdir}/pkg.tgz" -C "${tmpdir}/unpack"; \
       install -m 0755 "$(find "${tmpdir}/unpack" -type f -name "${binary}" | head -n 1)" "/usr/local/bin/${binary}"; \
       rm -rf "${tmpdir}"; \
     }; \
+    install_zip() { \
+      binary="$1"; \
+      url="$2"; \
+      checksum_url="$3"; \
+      archive_name="$4"; \
+      tmpdir="$(mktemp -d)"; \
+      mkdir -p "${tmpdir}/unpack"; \
+      curl_download "${url}" "${tmpdir}/pkg.zip"; \
+      curl_download "${checksum_url}" "${tmpdir}/checksums.txt"; \
+      (cd "${tmpdir}" && awk -v target="${archive_name}" '$2 == target { print $1 "  " "pkg.zip" }' checksums.txt | sha256sum -c -); \
+      unzip -q "${tmpdir}/pkg.zip" -d "${tmpdir}/unpack"; \
+      install -m 0755 "$(find "${tmpdir}/unpack" -type f -name "${binary}" | head -n 1)" "/usr/local/bin/${binary}"; \
+      rm -rf "${tmpdir}"; \
+    }; \
+    install_binary() { \
+      binary="$1"; \
+      url="$2"; \
+      curl_download "${url}" "/usr/local/bin/${binary}"; \
+      chmod +x "/usr/local/bin/${binary}"; \
+    }; \
+    install_kubectl() { \
+      kubectl_minor="${KUBECTL_VERSION%.*}"; \
+      tmpdir="$(mktemp -d)"; \
+      install -d -m 0755 /etc/apt/keyrings; \
+      curl_download "https://pkgs.k8s.io/core:/stable:/v${kubectl_minor}/deb/Release.key" "${tmpdir}/kubernetes-apt-keyring.gpg"; \
+      gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg "${tmpdir}/kubernetes-apt-keyring.gpg"; \
+      echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${kubectl_minor}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list; \
+      apt-get update; \
+      apt-get install -y --no-install-recommends "kubectl=${KUBECTL_VERSION}-1.1"; \
+      rm -rf /var/lib/apt/lists/* "${tmpdir}"; \
+    }; \
+    install_binary yq "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_${common_arch}"; \
+    install_binary cloudflared "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-${common_arch}"; \
+    install_zip terraform "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/${terraform_archive}" "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" "${terraform_archive}"; \
+    install_kubectl; \
+    install_archive helm "https://get.helm.sh/${helm_archive}" "https://get.helm.sh/${helm_archive}.sha256sum" "${helm_archive}"; \
     install_archive gh "https://github.com/cli/cli/releases/download/v${GH_VERSION}/${gh_archive}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt" "${gh_archive}"; \
     install_archive glab "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/${GLAB_VERSION}/${glab_archive}" "https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/packages/generic/glab/${GLAB_VERSION}/checksums.txt" "${glab_archive}"; \
     install_archive cntb "https://github.com/contabo/cntb/releases/download/v${CNTB_VERSION}/${cntb_archive}" "https://github.com/contabo/cntb/releases/download/v${CNTB_VERSION}/checksums.txt" "${cntb_archive}"; \
-    install_archive atlcli "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/${atlcli_archive}" "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/checksums.txt" "${atlcli_archive}"
+    install_archive atlcli "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/${atlcli_archive}" "https://github.com/BjoernSchotte/atlcli/releases/download/v${ATLCLI_VERSION}/checksums.txt" "${atlcli_archive}"; \
+    yq --version; \
+    cloudflared --version; \
+    terraform version; \
+    kubectl version --client=true; \
+    helm version --short; \
+    gh --version | head -n 1; \
+    glab --version; \
+    cntb version; \
+    atlcli --version
 
 # --- Install Composer (needs root for /usr/local/bin) ---
 RUN curl -fsSL "https://getcomposer.org/download/${COMPOSER_VERSION}/composer.phar" \

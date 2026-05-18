@@ -34,6 +34,28 @@ Check command sources in this order unless project documentation says otherwise:
 
 Prefer `docker compose exec` for running services and `docker compose run --rm` for one-off commands.
 
+## Available Tools
+
+The Docker Compose stack includes these command-line tools:
+
+- `gh`: GitHub CLI for repositories, issues, pull requests, and Actions checks.
+- `glab`: GitLab CLI for projects, merge requests, issues, and pipelines.
+- `cntb`: Contabo CLI for cloud resource inspection and operations.
+- `atlcli`: Atlassian CLI for Jira and Confluence workflows.
+- `cloudflared`: Cloudflare tunnel CLI for exposing local services when configured.
+- `docker`: Docker client for image, container, network, and volume operations.
+- `docker compose`: Compose plugin for managing multi-container local stacks.
+- `ansible`: Automation CLI for playbooks, inventories, and provisioning tasks.
+- `terraform`: Infrastructure-as-code CLI for planning and applying Terraform modules.
+- `kubectl`: Kubernetes CLI for inspecting and managing clusters and workloads.
+- `helm`: Kubernetes package manager for chart rendering, installs, and upgrades.
+- `jq`: JSON processor for filtering, transforming, and validating JSON data.
+- `yq`: YAML, JSON, and XML processor for config inspection and edits.
+- `shellcheck`: Static analyzer for shell scripts.
+- `git`: Version control CLI for repository history, branches, diffs, and commits.
+- `curl`: HTTP client for API calls, downloads, and network checks.
+- `wget`: HTTP client for file downloads and simple network checks.
+
 ## Git
 
 Use conventional commits for normal commits.
