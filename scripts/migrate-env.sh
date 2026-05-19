@@ -58,6 +58,25 @@ active_env_var_value() {
   grep -E "^[[:space:]]*${escaped_name}[[:space:]]*=" "$file" | head -n 1 | sed -E "s/^[[:space:]]*${escaped_name}[[:space:]]*=//"
 }
 
+normalize_env_value() {
+  local value="$1"
+
+  value="${value%%#*}"
+  value="$(printf '%s' "$value" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+
+  if [ "${#value}" -ge 2 ]; then
+    local first_char="${value:0:1}"
+    local last_char="${value: -1}"
+
+    if { [ "$first_char" = '"' ] && [ "$last_char" = '"' ]; } \
+      || { [ "$first_char" = "'" ] && [ "$last_char" = "'" ]; }; then
+      value="${value:1:${#value}-2}"
+    fi
+  fi
+
+  printf '%s' "$value"
+}
+
 escape_sed_replacement() {
   printf '%s' "$1" | sed -E 's/[\/&\\]/\\&/g'
 }
@@ -121,10 +140,30 @@ append_missing_from_example() {
   done < "$example_file"
 }
 
+preserve_active_docker_socket_bind() {
+  local env_file="$1"
+  local socket_value
+
+  if active_env_var_exists "$env_file" "OPENCODE_DOCKER_SOCKET_BIND"; then
+    return
+  fi
+
+  if ! active_env_var_exists "$env_file" "OPENCODE_DOCKER_SOCKET"; then
+    return
+  fi
+
+  socket_value="$(active_env_var_value "$env_file" "OPENCODE_DOCKER_SOCKET")"
+  socket_value="$(normalize_env_value "$socket_value")"
+  if [ "$socket_value" = "/var/run/docker.sock" ]; then
+    printf '\nOPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock\n' >> "$env_file"
+  fi
+}
+
 for rename in "${RENAMES[@]}"; do
   old_name="${rename%%:*}"
   new_name="${rename#*:}"
   rename_env_var "$ENV_FILE" "$old_name" "$new_name"
 done
 
+preserve_active_docker_socket_bind "$ENV_FILE"
 append_missing_from_example "$ENV_FILE" "$EXAMPLE_FILE"

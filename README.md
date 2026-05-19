@@ -97,7 +97,7 @@ Important boundaries:
 - The init script can generate an SSH key inside the mounted home. It is not your host SSH key unless you put it there.
 - The container has network access for model providers, package registries, Git hosts, and tunnel services.
 - `OPENCODE_BIND_ADDRESS=0.0.0.0` publishes ports on all host interfaces.
-- The Docker override mounts `/var/run/docker.sock`, which gives access to the host Docker daemon.
+- Docker socket mode mounts `/var/run/docker.sock`, which gives access to the host Docker daemon.
 - Cloudflare tunnel profiles expose the service over the internet. Set `OPENCODE_SERVER_PASSWORD` first.
 
 > [!WARNING]
@@ -149,16 +149,24 @@ Use `Taskfile.yml` for local work:
 | `task test-integration` | Build and boot the real Compose stack, then check runtime behavior. |
 | `task test` | Run unit, integration, and lint suites. |
 
-### Docker socket override
+### Docker socket mode
 
-Use the Docker override when OpenCode needs to run Docker commands against the host daemon:
+Enable Docker socket mode when OpenCode needs to run Docker commands against the host daemon.
+Uncomment only this setting in `.env`:
 
 ```bash
-WITH_DOCKER=true task up
-docker compose -f docker-compose.yml -f docker-compose.docker.yml exec opencode docker version
+OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
 ```
 
-The override mounts `/var/run/docker.sock` and sets `DOCKER_HOST=unix:///var/run/docker.sock`.
+Compose derives the container Docker environment from `OPENCODE_DOCKER_SOCKET_BIND`.
+Verify it with:
+
+```bash
+task up
+docker compose exec opencode docker version
+```
+
+Docker socket access is effectively host-root equivalent because it can control the host Docker daemon.
 
 ### OpenChamber
 
@@ -174,20 +182,32 @@ open http://localhost:4020
 
 ### Cloudflare tunnels
 
+Tunnel services live in the main Compose file and are enabled through `COMPOSE_PROFILES`.
+
 Quick tunnel:
 
+```env
+COMPOSE_PROFILES=tunnel-quick
+```
+
 ```bash
-task tunnel-quick
-docker compose -f docker-compose.yml -f docker-compose.tunnel.yml logs cloudflared
+task up
+docker compose logs cloudflared
 ```
 
 Managed tunnel:
 
-```bash
-CF_TUNNEL_TOKEN=... task tunnel-managed
+```env
+COMPOSE_PROFILES=tunnel-managed
+CF_TUNNEL_TOKEN=...
 ```
 
-Use `task tunnel-down` to stop tunnel services without stopping OpenCode.
+```bash
+task up
+docker compose logs cloudflared-managed
+```
+
+Use `task tunnel-down` to stop tunnel services without stopping OpenCode. Enable only one tunnel profile for normal use.
 
 ## Testing and verification
 

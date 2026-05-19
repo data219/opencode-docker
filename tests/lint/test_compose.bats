@@ -1,37 +1,120 @@
+compose_config() {
+  env \
+    -u COMPOSE_FILE \
+    -u COMPOSE_PROJECT_NAME \
+    -u COMPOSE_PROFILES \
+    -u DOCKER_HOST \
+    -u OPENCODE_DOCKER_SOCKET_BIND \
+    -u OPENCODE_DOCKER_SOCKET \
+    -u CF_TUNNEL_TOKEN \
+    -u CF_TUNNEL_TARGET_HOST \
+    -u CF_TUNNEL_TARGET_PORT \
+    -u OPENCODE_PORT \
+    "$@" \
+    docker compose --env-file /dev/null -f docker-compose.yml config
+}
+
 @test "docker-compose.yml exists" {
   [ -f docker-compose.yml ]
 }
 
 @test "docker-compose.yml validates with docker compose config" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
-  OCD_ZHIPU_API_KEY=test \
+  compose_config \
+    OCD_ZHIPU_API_KEY=test \
     GIT_AUTHOR_NAME= \
     GIT_AUTHOR_EMAIL= \
     GIT_COMMITTER_NAME= \
-    GIT_COMMITTER_EMAIL= \
-    docker compose config > /dev/null
+    GIT_COMMITTER_EMAIL= > /dev/null
 }
 
-@test "docker-compose.docker.yml validates with docker compose config" {
+@test "default docker socket mount uses project-local disabled placeholder" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
-  OCD_ZHIPU_API_KEY=test docker compose -f docker-compose.yml -f docker-compose.docker.yml config > /dev/null
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"source: "$(pwd)"/.docker-socket-disabled"* ]]
+  [[ "$output" == *"target: /var/run/docker.sock"* ]]
+  [[ "$output" == *"OPENCODE_DOCKER_SOCKET: \"\""* ]]
+  [[ "$output" == *"DOCKER_HOST: \"\""* ]]
 }
 
-@test "docker-compose.tunnel.yml file exists" {
-  [ -f docker-compose.tunnel.yml ]
-}
-
-@test "docker-compose.tunnel.yml validates with docker compose config (quick profile)" {
+@test "docker-compose.yml validates quick tunnel profile" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
-  OCD_ZHIPU_API_KEY=test docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile quick config > /dev/null
+  compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    COMPOSE_PROFILES=tunnel-quick > /dev/null
 }
 
-@test "docker-compose.tunnel.yml validates with docker compose config (managed profile)" {
+@test "docker-compose.yml validates managed tunnel profile" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
-  OCD_ZHIPU_API_KEY=test CF_TUNNEL_TOKEN=test docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile managed config > /dev/null
+  compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    CF_TUNNEL_TOKEN=test \
+    COMPOSE_PROFILES=tunnel-managed > /dev/null
 }
 
-@test "docker-compose.tunnel.yml does not require CF_TUNNEL_TOKEN for quick profile" {
+@test "quick tunnel profile does not require CF_TUNNEL_TOKEN" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
-  OCD_ZHIPU_API_KEY=test docker compose -f docker-compose.yml -f docker-compose.tunnel.yml --profile quick config > /dev/null
+  compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    COMPOSE_PROFILES=tunnel-quick > /dev/null
+}
+
+@test "docker socket env renders host docker socket mount" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"source: /var/run/docker.sock"* ]]
+  [[ "$output" == *"target: /var/run/docker.sock"* ]]
+  [[ "$output" == *"OPENCODE_DOCKER_SOCKET: /var/run/docker.sock"* ]]
+  [[ "$output" == *"DOCKER_HOST: unix:///var/run/docker.sock"* ]]
+}
+
+@test "docker socket env uses container socket path for alternate host socket" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    OPENCODE_DOCKER_SOCKET_BIND=/run/user/1000/docker.sock
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"source: /run/user/1000/docker.sock"* ]]
+  [[ "$output" == *"target: /var/run/docker.sock"* ]]
+  [[ "$output" == *"OPENCODE_DOCKER_SOCKET: /var/run/docker.sock"* ]]
+  [[ "$output" == *"DOCKER_HOST: unix:///var/run/docker.sock"* ]]
+}
+
+@test "ambient DOCKER_HOST alone does not enable docker host env" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    DOCKER_HOST=tcp://docker.example:2375
+
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"DOCKER_HOST: tcp://docker.example:2375"* ]]
+  [[ "$output" == *"DOCKER_HOST: \"\""* ]]
+}
+
+@test "legacy OPENCODE_DOCKER_SOCKET alone does not enable docker socket env" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
+
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"OPENCODE_DOCKER_SOCKET: /var/run/docker.sock"* ]]
+  [[ "$output" == *"OPENCODE_DOCKER_SOCKET: \"\""* ]]
+}
+
+@test "task compose commands are pinned to this compose file" {
+  command -v task > /dev/null 2>&1 || skip "task not available"
+
+  run task --dry config
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"docker compose -f docker-compose.yml config"* ]]
 }
