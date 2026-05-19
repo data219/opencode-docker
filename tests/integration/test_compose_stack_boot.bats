@@ -201,7 +201,7 @@ start_test_stack() {
   [ "$status" -eq 0 ]
   [[ "$output" = *"python-ready"* ]]
 
-  run compose_ci exec -T opencode test -f /opt/opencode-defaults/oh-my-openagent-omo.json
+  run compose_ci exec -T opencode test -f /opt/opencode-defaults/omo-generated-oh-my-openagent.json
   [ "$status" -eq 0 ]
 }
 

@@ -263,13 +263,13 @@ if [ "$CNTB_CREDENTIAL_COUNT" -eq 4 ]; then
   unset CNTB_CONFIG_CMD CNTB_CONFIG_FILE CNTB_OLD_UMASK
 fi
 
-# Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
+# Seed OmO agent config if not yet present (OmO now installs normally to /home/opencode).
 # Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.
 if [ ! -f "$CONFIG_DIR/oh-my-openagent.jsonc" ]; then
-  if [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.jsonc" ]; then
-    cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.jsonc" "$CONFIG_DIR/oh-my-openagent.jsonc"
-  elif [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.json" ]; then
-    cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
+  if [ -f "$DEFAULTS_DIR/omo-generated-oh-my-openagent.jsonc" ]; then
+    cp -a -- "$DEFAULTS_DIR/omo-generated-oh-my-openagent.jsonc" "$CONFIG_DIR/oh-my-openagent.jsonc"
+  elif [ -f "$DEFAULTS_DIR/omo-generated-oh-my-openagent.json" ]; then
+    cp -a -- "$DEFAULTS_DIR/omo-generated-oh-my-openagent.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
   fi
 fi
 
