@@ -76,7 +76,7 @@ tasks:
   tunnel-managed:
     desc: Start Cloudflare managed tunnel (stable domain, requires CF_TUNNEL_TOKEN)
     cmds:
-      - 'test -n "$CF_TUNNEL_TOKEN" || { echo "ERROR: CF_TUNNEL_TOKEN is required for task tunnel-managed" >&2; exit 1; }'
+      - 'test -n "${CF_TUNNEL_TOKEN:-}" || { echo "ERROR: CF_TUNNEL_TOKEN is required for task tunnel-managed" >&2; exit 1; }'
       - "COMPOSE_PROFILES=tunnel-managed {{.DOCKER_COMPOSE}} up -d"
 
   tunnel-down:

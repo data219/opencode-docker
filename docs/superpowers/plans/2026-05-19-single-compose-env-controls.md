@@ -128,7 +128,7 @@ Edit the `opencode` service volumes and environment to include Docker socket con
       - OPENCHAMBER_ENABLED=${OPENCHAMBER_ENABLED:-false}
       - OPENCHAMBER_PORT=${OPENCHAMBER_PORT:-4020}
       - OPENCHAMBER_UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD:-}
-      - OPENCODE_DOCKER_SOCKET=${OPENCODE_DOCKER_SOCKET_BIND:-}
+      - OPENCODE_DOCKER_SOCKET=${OPENCODE_DOCKER_SOCKET_BIND:+/var/run/docker.sock}
       - DOCKER_HOST=${OPENCODE_DOCKER_SOCKET_BIND:+unix:///var/run/docker.sock}
       - OCD_ZHIPU_API_KEY=${OCD_ZHIPU_API_KEY:?OCD_ZHIPU_API_KEY is required}
       - OCD_GEMINI_API_KEY=${OCD_GEMINI_API_KEY:-}
@@ -410,7 +410,7 @@ In `.env`, uncomment:
 OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
 ```
 
-Compose derives the container `OPENCODE_DOCKER_SOCKET` and `DOCKER_HOST` values from the bind setting.
+Compose derives the container `OPENCODE_DOCKER_SOCKET` and `DOCKER_HOST` values from the bind setting. `OPENCODE_DOCKER_SOCKET` uses the container mount path `/var/run/docker.sock`, even when the host bind source uses another socket path.
 
 Then start the stack and verify Docker access:
 

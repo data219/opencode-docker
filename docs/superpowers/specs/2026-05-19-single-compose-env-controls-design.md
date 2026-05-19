@@ -44,7 +44,7 @@ Docker socket mode is enabled by setting:
 OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
 ```
 
-Compose derives the container `OPENCODE_DOCKER_SOCKET` and `DOCKER_HOST` values from `OPENCODE_DOCKER_SOCKET_BIND`. Ambient host values for `OPENCODE_DOCKER_SOCKET` and `DOCKER_HOST` must not activate Docker access by themselves.
+Compose derives the container `OPENCODE_DOCKER_SOCKET` and `DOCKER_HOST` values from `OPENCODE_DOCKER_SOCKET_BIND`. `OPENCODE_DOCKER_SOCKET` uses the container mount path `/var/run/docker.sock`, even when the host bind source uses another socket path. Ambient host values for `OPENCODE_DOCKER_SOCKET` and `DOCKER_HOST` must not activate Docker access by themselves.
 
 This keeps the service name `opencode` while avoiding a second profiled OpenCode service. The `/dev/null` default makes the socket bind inert unless the user opts in.
 

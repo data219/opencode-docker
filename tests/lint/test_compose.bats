@@ -63,6 +63,19 @@ compose_config() {
   [[ "$output" == *"DOCKER_HOST: unix:///var/run/docker.sock"* ]]
 }
 
+@test "docker socket env uses container socket path for alternate host socket" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test \
+    OPENCODE_DOCKER_SOCKET_BIND=/run/user/1000/docker.sock
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"source: /run/user/1000/docker.sock"* ]]
+  [[ "$output" == *"target: /var/run/docker.sock"* ]]
+  [[ "$output" == *"OPENCODE_DOCKER_SOCKET: /var/run/docker.sock"* ]]
+  [[ "$output" == *"DOCKER_HOST: unix:///var/run/docker.sock"* ]]
+}
+
 @test "ambient DOCKER_HOST alone does not enable docker host env" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
   run compose_config \
