@@ -86,15 +86,13 @@ Replace `tests/lint/test_compose.bats` with:
   run env \
     OCD_ZHIPU_API_KEY=test \
     OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock \
-    OPENCODE_DOCKER_SOCKET=/var/run/docker.sock \
-    DOCKER_HOST=unix:///var/run/docker.sock \
     docker compose config
 
   [ "$status" -eq 0 ]
   [[ "$output" == *"source: /var/run/docker.sock"* ]]
   [[ "$output" == *"target: /var/run/docker.sock"* ]]
-  [[ "$output" == *"OPENCODE_DOCKER_SOCKET=/var/run/docker.sock"* ]]
-  [[ "$output" == *"DOCKER_HOST=unix:///var/run/docker.sock"* ]]
+  [[ "$output" == *"OPENCODE_DOCKER_SOCKET: /var/run/docker.sock"* ]]
+  [[ "$output" == *"DOCKER_HOST: unix:///var/run/docker.sock"* ]]
 }
 ```
 
@@ -130,8 +128,8 @@ Edit the `opencode` service volumes and environment to include Docker socket con
       - OPENCHAMBER_ENABLED=${OPENCHAMBER_ENABLED:-false}
       - OPENCHAMBER_PORT=${OPENCHAMBER_PORT:-4020}
       - OPENCHAMBER_UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD:-}
-      - OPENCODE_DOCKER_SOCKET=${OPENCODE_DOCKER_SOCKET:-}
-      - DOCKER_HOST=${DOCKER_HOST:-}
+      - OPENCODE_DOCKER_SOCKET=${OPENCODE_DOCKER_SOCKET_BIND:-}
+      - DOCKER_HOST=${OPENCODE_DOCKER_SOCKET_BIND:+unix:///var/run/docker.sock}
       - OCD_ZHIPU_API_KEY=${OCD_ZHIPU_API_KEY:?OCD_ZHIPU_API_KEY is required}
       - OCD_GEMINI_API_KEY=${OCD_GEMINI_API_KEY:-}
       - GH_TOKEN=${GH_TOKEN:-}
@@ -222,7 +220,6 @@ EOF
 
   cat > "$TEST_EXAMPLE_FILE" <<'EOF'
 # OPENCODE_DOCKER_SOCKET_BIND=/dev/null
-# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
 EOF
 
   run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
@@ -239,16 +236,12 @@ EOF
 
   cat > "$TEST_EXAMPLE_FILE" <<'EOF'
 # OPENCODE_DOCKER_SOCKET_BIND=/dev/null
-# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
-# DOCKER_HOST=unix:///var/run/docker.sock
 EOF
 
   run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
 
   assert_success
   assert_env_file_contains "$TEST_ENV_FILE" '^# OPENCODE_DOCKER_SOCKET_BIND=/dev/null$'
-  assert_env_file_contains "$TEST_ENV_FILE" '^# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock$'
-  assert_env_file_contains "$TEST_ENV_FILE" '^# DOCKER_HOST=unix:///var/run/docker.sock$'
   refute_env_file_contains "$TEST_ENV_FILE" '^OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock$'
 }
 ```
@@ -302,9 +295,9 @@ Replace the Docker host delegation block with:
 # Optional: Docker host delegation.
 # Uncomment this block when OpenCode needs to run Docker commands against the
 # host daemon. Docker socket access is effectively host-root equivalent.
+# Compose derives the container OPENCODE_DOCKER_SOCKET and DOCKER_HOST values
+# when this bind is set.
 # OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
-# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
-# DOCKER_HOST=unix:///var/run/docker.sock
 ```
 
 Replace the Cloudflare tunnel command examples with:
@@ -415,9 +408,9 @@ In `.env`, uncomment:
 
 ```env
 OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
-OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
-DOCKER_HOST=unix:///var/run/docker.sock
 ```
+
+Compose derives the container `OPENCODE_DOCKER_SOCKET` and `DOCKER_HOST` values from the bind setting.
 
 Then start the stack and verify Docker access:
 
