@@ -20,6 +20,7 @@ services:
       - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCHAMBER_PORT:-4020}:${OPENCHAMBER_PORT:-4020}'
     volumes:
       - ${OPENCODE_HOME_DIR:-./data/home}:/home/opencode
+      - ${OPENCODE_DOCKER_SOCKET_BIND:-/dev/null}:/var/run/docker.sock
     environment:
       # WARNING: Container binds 0.0.0.0 internally (required for port forwarding).
       # Set OPENCODE_BIND_ADDRESS (host-level) and OPENCODE_SERVER_PASSWORD to restrict access.
@@ -34,6 +35,8 @@ services:
       - OPENCHAMBER_ENABLED=${OPENCHAMBER_ENABLED:-false}
       - OPENCHAMBER_PORT=${OPENCHAMBER_PORT:-4020}
       - OPENCHAMBER_UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD:-}
+      - OPENCODE_DOCKER_SOCKET=${OPENCODE_DOCKER_SOCKET_BIND:-}
+      - DOCKER_HOST=${OPENCODE_DOCKER_SOCKET_BIND:+unix:///var/run/docker.sock}
       - OCD_ZHIPU_API_KEY=${OCD_ZHIPU_API_KEY:?OCD_ZHIPU_API_KEY is required}
       # Optional: Google AI Studio API key for Gemini vision model (multimodal-looker agent).
       # Only needed if you want vision/multimodal features; without it the agent falls back to the default Z.AI model.
@@ -64,6 +67,30 @@ services:
       timeout: 10s
       start_period: 120s
       retries: 3
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: ["tunnel", "--url", "http://${CF_TUNNEL_TARGET_HOST:-opencode}:${CF_TUNNEL_TARGET_PORT:-${OPENCODE_PORT:-4000}}"]
+    depends_on:
+      opencode:
+        condition: service_healthy
+    profiles:
+      - tunnel-quick
+
+  cloudflared-managed:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-managed
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN:-}
+    depends_on:
+      opencode:
+        condition: service_healthy
+    profiles:
+      - tunnel-managed
 
 secrets:
   github_token:
