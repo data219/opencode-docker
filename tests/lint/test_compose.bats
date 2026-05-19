@@ -111,6 +111,8 @@ compose_config() {
 }
 
 @test "task compose commands are pinned to this compose file" {
+  command -v task > /dev/null 2>&1 || skip "task not available"
+
   run task --dry config
 
   [ "$status" -eq 0 ]
