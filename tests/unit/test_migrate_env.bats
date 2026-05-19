@@ -114,3 +114,61 @@ EOF
   assert_env_file_contains "$TEST_ENV_FILE" '^OCD_ZHIPU_API_KEY=legacy-secret$'
   assert_env_file_contains "$TEST_ENV_FILE" '^# ZHIPU_API_KEY=legacy-secret$'
 }
+
+@test "migrate-env preserves active legacy docker socket as bind variable" {
+  cat > "$TEST_ENV_FILE" <<'EOF'
+OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
+EOF
+
+  cat > "$TEST_EXAMPLE_FILE" <<'EOF'
+# OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
+# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
+# DOCKER_HOST=unix:///var/run/docker.sock
+EOF
+
+  run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
+
+  assert_success
+  assert_env_file_contains "$TEST_ENV_FILE" '^OPENCODE_DOCKER_SOCKET=/var/run/docker.sock$'
+  assert_env_file_contains "$TEST_ENV_FILE" '^OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock$'
+  assert_env_file_contains "$TEST_ENV_FILE" '^# DOCKER_HOST=unix:///var/run/docker.sock$'
+}
+
+@test "migrate-env preserves compose-valid active legacy docker socket variants" {
+  cat > "$TEST_EXAMPLE_FILE" <<'EOF'
+# OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
+EOF
+
+  for legacy_line in \
+    "OPENCODE_DOCKER_SOCKET = /var/run/docker.sock" \
+    "OPENCODE_DOCKER_SOCKET=/var/run/docker.sock   " \
+    "OPENCODE_DOCKER_SOCKET=/var/run/docker.sock # legacy"
+  do
+    printf '%s\n' "$legacy_line" > "$TEST_ENV_FILE"
+
+    run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
+
+    assert_success
+    assert_env_file_contains "$TEST_ENV_FILE" '^OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock$'
+  done
+}
+
+@test "migrate-env keeps inactive docker socket examples commented" {
+  cat > "$TEST_ENV_FILE" <<'EOF'
+# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
+EOF
+
+  cat > "$TEST_EXAMPLE_FILE" <<'EOF'
+# OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock
+# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
+# DOCKER_HOST=unix:///var/run/docker.sock
+EOF
+
+  run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
+
+  assert_success
+  refute_env_file_contains "$TEST_ENV_FILE" '^OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock$'
+  assert_env_file_contains "$TEST_ENV_FILE" '^# OPENCODE_DOCKER_SOCKET=/var/run/docker.sock$'
+  assert_env_file_contains "$TEST_ENV_FILE" '^# OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock$'
+  assert_env_file_contains "$TEST_ENV_FILE" '^# DOCKER_HOST=unix:///var/run/docker.sock$'
+}

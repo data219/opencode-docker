@@ -3,14 +3,7 @@ version: "3"
 vars:
   BATS: tests/bats-core/bin/bats
   BATS_ARGS: --recursive --timing
-  # Enable the Docker socket overlay with: WITH_DOCKER=true task up
-  DOCKER_COMPOSE:
-    sh: |
-      if [ "{{.WITH_DOCKER | default "false"}}" = "true" ]; then
-        printf '%s\n' 'docker compose -f docker-compose.yml -f docker-compose.docker.yml'
-      else
-        printf '%s\n' 'docker compose -f docker-compose.yml'
-      fi
+  DOCKER_COMPOSE: docker compose
 
 tasks:
   config:
@@ -78,15 +71,15 @@ tasks:
   tunnel-quick:
     desc: Start Cloudflare quick tunnel (random URL, no account)
     cmds:
-      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml --profile quick up -d"
+      - "COMPOSE_PROFILES=tunnel-quick {{.DOCKER_COMPOSE}} up -d"
 
   tunnel-managed:
     desc: Start Cloudflare managed tunnel (stable domain, requires CF_TUNNEL_TOKEN)
     cmds:
-      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml --profile managed up -d"
+      - "COMPOSE_PROFILES=tunnel-managed {{.DOCKER_COMPOSE}} up -d"
 
   tunnel-down:
     desc: Stop Cloudflare tunnel services without affecting the main stack
     cmds:
-      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml stop cloudflared cloudflared-managed || true"
-      - "{{.DOCKER_COMPOSE}} -f docker-compose.tunnel.yml rm -f cloudflared cloudflared-managed || true"
+      - "{{.DOCKER_COMPOSE}} stop cloudflared cloudflared-managed || true"
+      - "{{.DOCKER_COMPOSE}} rm -f cloudflared cloudflared-managed || true"
