@@ -62,7 +62,19 @@ normalize_env_value() {
   local value="$1"
 
   value="${value%%#*}"
-  printf '%s' "$value" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//'
+  value="$(printf '%s' "$value" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+
+  if [ "${#value}" -ge 2 ]; then
+    local first_char="${value:0:1}"
+    local last_char="${value: -1}"
+
+    if { [ "$first_char" = '"' ] && [ "$last_char" = '"' ]; } \
+      || { [ "$first_char" = "'" ] && [ "$last_char" = "'" ]; }; then
+      value="${value:1:${#value}-2}"
+    fi
+  fi
+
+  printf '%s' "$value"
 }
 
 escape_sed_replacement() {

@@ -494,10 +494,10 @@ rm -f docker-compose.docker.yml docker-compose.tunnel.yml
 Run:
 
 ```bash
-rg -n "docker-compose\\.docker|docker-compose\\.tunnel|-f docker-compose" .
+rg -n "docker-compose\\.docker|docker-compose\\.tunnel|-f docker-compose\\.(docker|tunnel)" README.md Taskfile.yml .env.example tests scripts docker-compose.yml renovate.json .github 2>/dev/null
 ```
 
-Expected: no output outside historical docs in git history, which `rg` does not search by default.
+Expected: no output.
 
 - [ ] **Step 3: Render base Compose config**
 

@@ -142,7 +142,9 @@ EOF
   for legacy_line in \
     "OPENCODE_DOCKER_SOCKET = /var/run/docker.sock" \
     "OPENCODE_DOCKER_SOCKET=/var/run/docker.sock   " \
-    "OPENCODE_DOCKER_SOCKET=/var/run/docker.sock # legacy"
+    "OPENCODE_DOCKER_SOCKET=/var/run/docker.sock # legacy" \
+    "OPENCODE_DOCKER_SOCKET=\"/var/run/docker.sock\"" \
+    "OPENCODE_DOCKER_SOCKET='/var/run/docker.sock'"
   do
     printf '%s\n' "$legacy_line" > "$TEST_ENV_FILE"
 
