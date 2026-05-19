@@ -20,7 +20,7 @@ services:
       - '${OPENCODE_BIND_ADDRESS:-127.0.0.1}:${OPENCHAMBER_PORT:-4020}:${OPENCHAMBER_PORT:-4020}'
     volumes:
       - ${OPENCODE_HOME_DIR:-./data/home}:/home/opencode
-      - ${OPENCODE_DOCKER_SOCKET_BIND:-/dev/null}:/var/run/docker.sock
+      - ${OPENCODE_DOCKER_SOCKET_BIND:-./.docker-socket-disabled}:/var/run/docker.sock
     environment:
       # WARNING: Container binds 0.0.0.0 internally (required for port forwarding).
       # Set OPENCODE_BIND_ADDRESS (host-level) and OPENCODE_SERVER_PASSWORD to restrict access.

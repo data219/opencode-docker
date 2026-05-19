@@ -3,7 +3,7 @@ version: "3"
 vars:
   BATS: tests/bats-core/bin/bats
   BATS_ARGS: --recursive --timing
-  DOCKER_COMPOSE: docker compose
+  DOCKER_COMPOSE: docker compose -f docker-compose.yml
 
 tasks:
   config:

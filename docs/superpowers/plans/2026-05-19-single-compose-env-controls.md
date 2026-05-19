@@ -14,7 +14,7 @@
 
 - Modify: `docker-compose.yml`
   - Owns the full stack: `opencode`, `cloudflared`, and `cloudflared-managed`.
-  - Adds the inert Docker socket bind default through `${OPENCODE_DOCKER_SOCKET_BIND:-/dev/null}`.
+  - Adds the inert Docker socket bind default through `${OPENCODE_DOCKER_SOCKET_BIND:-./.docker-socket-disabled}`.
 - Delete: `docker-compose.docker.yml`
   - Behavior moves into `docker-compose.yml`.
 - Delete: `docker-compose.tunnel.yml`
@@ -113,7 +113,7 @@ Edit the `opencode` service volumes and environment to include Docker socket con
 ```yaml
     volumes:
       - ${OPENCODE_HOME_DIR:-./data/home}:/home/opencode
-      - ${OPENCODE_DOCKER_SOCKET_BIND:-/dev/null}:/var/run/docker.sock
+      - ${OPENCODE_DOCKER_SOCKET_BIND:-./.docker-socket-disabled}:/var/run/docker.sock
     environment:
       # WARNING: Container binds 0.0.0.0 internally (required for port forwarding).
       # Set OPENCODE_BIND_ADDRESS (host-level) and OPENCODE_SERVER_PASSWORD to restrict access.
@@ -219,7 +219,7 @@ OPENCODE_DOCKER_SOCKET=/var/run/docker.sock
 EOF
 
   cat > "$TEST_EXAMPLE_FILE" <<'EOF'
-# OPENCODE_DOCKER_SOCKET_BIND=/dev/null
+# OPENCODE_DOCKER_SOCKET_BIND=./.docker-socket-disabled
 EOF
 
   run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
@@ -235,13 +235,13 @@ OCD_ZHIPU_API_KEY=already-set
 EOF
 
   cat > "$TEST_EXAMPLE_FILE" <<'EOF'
-# OPENCODE_DOCKER_SOCKET_BIND=/dev/null
+# OPENCODE_DOCKER_SOCKET_BIND=./.docker-socket-disabled
 EOF
 
   run scripts/migrate-env.sh "$TEST_ENV_FILE" "$TEST_EXAMPLE_FILE"
 
   assert_success
-  assert_env_file_contains "$TEST_ENV_FILE" '^# OPENCODE_DOCKER_SOCKET_BIND=/dev/null$'
+  assert_env_file_contains "$TEST_ENV_FILE" '^# OPENCODE_DOCKER_SOCKET_BIND=./.docker-socket-disabled$'
   refute_env_file_contains "$TEST_ENV_FILE" '^OPENCODE_DOCKER_SOCKET_BIND=/var/run/docker.sock$'
 }
 ```
@@ -340,7 +340,7 @@ Replace the `vars:` block with:
 vars:
   BATS: tests/bats-core/bin/bats
   BATS_ARGS: --recursive --timing
-  DOCKER_COMPOSE: docker compose
+  DOCKER_COMPOSE: docker compose -f docker-compose.yml
 ```
 
 Replace tunnel tasks with:

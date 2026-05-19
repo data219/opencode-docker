@@ -28,6 +28,18 @@ compose_config() {
     GIT_COMMITTER_EMAIL= > /dev/null
 }
 
+@test "default docker socket mount uses project-local disabled placeholder" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"source: "$(pwd)"/.docker-socket-disabled"* ]]
+  [[ "$output" == *"target: /var/run/docker.sock"* ]]
+  [[ "$output" == *"OPENCODE_DOCKER_SOCKET: \"\""* ]]
+  [[ "$output" == *"DOCKER_HOST: \"\""* ]]
+}
+
 @test "docker-compose.yml validates quick tunnel profile" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
   compose_config \
@@ -96,4 +108,11 @@ compose_config() {
   [ "$status" -eq 0 ]
   [[ "$output" != *"OPENCODE_DOCKER_SOCKET: /var/run/docker.sock"* ]]
   [[ "$output" == *"OPENCODE_DOCKER_SOCKET: \"\""* ]]
+}
+
+@test "task compose commands are pinned to this compose file" {
+  run task --dry config
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"docker compose -f docker-compose.yml config"* ]]
 }
