@@ -23,6 +23,16 @@ Codex has no findings when the bot posts an issue comment beginning with:
 Codex Review: Didn't find any major issues
 ```
 
+Codex is unavailable or misconfigured for the repo when it replies with:
+
+```text
+To use Codex here, create an environment for this repo
+```
+
+After this signal, do not trigger Codex again for the PR unless setup changes are detected or the user confirms setup was changed.
+
+Setup-change evidence can include changes to designated Codex environment settings, repository integration settings, or setup paths referenced by the connector response.
+
 ## Thread Handling
 
 Use GraphQL `reviewThreads`; REST and `gh pr view` are not enough.

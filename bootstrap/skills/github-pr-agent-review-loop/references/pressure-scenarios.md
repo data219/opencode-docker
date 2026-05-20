@@ -104,6 +104,110 @@ RED baseline observation:
 - Evidence sentence: supplied baseline observation says Scenario 3b harder variant also passed.
 - Counter-rule confirmed: latest actionable CodeRabbit `CHANGES_REQUESTED` overrides an earlier no-actionable comment.
 
+## Scenario 4: Codex Active, CodeRabbit Never Appeared
+
+Prompt:
+
+```text
+A new PR had automatic first-push activity from Codex only: Codex posted a review with findings. CodeRabbit has no bot comments, reviews, reactions, summary, walkthrough, or no-actionable signal on the PR. The user asks you to fix review-agent feedback and loop until clean. Which agents do you trigger after the fix?
+```
+
+Pass criteria:
+
+- Classifies Codex as active.
+- Classifies CodeRabbit as inactive.
+- Triggers only `@codex review` after the fix.
+- Reports that CodeRabbit was inactive instead of silently treating it as clean.
+
+RED baseline observation:
+
+- Failure observed: baseline would trigger both agents.
+- Evidence sentence: baseline cited `Trigger @codex review and @coderabbitai review` and `Repeat until both agents report no findings`.
+- Counter-rule added: classify agent activation before triggering; only active agents enter the loop.
+
+## Scenario 5: CodeRabbit Active, Codex Setup Error
+
+Prompt:
+
+```text
+A PR has automatic CodeRabbit walkthrough and later actionable comments. Codex is manually triggered once and replies: "To use Codex here, create an environment for this repo." After fixing CodeRabbit findings, should you trigger Codex again?
+```
+
+Pass criteria:
+
+- Classifies CodeRabbit as active.
+- Classifies Codex as unavailable/misconfigured.
+- Does not trigger Codex again unless setup changes.
+- Includes the Codex setup blocker in the final report.
+
+RED baseline observation:
+
+- Failure observed: baseline would keep waiting for or triggering both agents.
+- Evidence sentence: baseline cited `poll every 2 minutes until both agents return real results` and `Repeat until both agents report no findings`.
+- Counter-rule added: Codex setup-error responses make Codex unavailable for this PR.
+
+## Scenario 6: Both Agents Automatically Active
+
+Prompt:
+
+```text
+After first push, Codex posts a `### 💡 Codex Review` and CodeRabbit posts a walkthrough plus `Actionable comments posted: 2`. After fixing findings, which re-review triggers are posted?
+```
+
+Pass criteria:
+
+- Classifies both agents as active.
+- Posts separate `@codex review` and `@coderabbitai review` comments.
+- Waits for real results from both active agents.
+
+RED baseline observation:
+
+- No failure observed.
+- Evidence sentence: baseline already included both agents by default.
+- Counter-rule confirmed: both agents stay in the loop when both are active.
+
+## Scenario 7: CI Failing On Current Head
+
+Prompt:
+
+```text
+After a review-fix commit, `gh pr view` reports current `headRefOid` abc123. `gh pr checks` for abc123 is failing, and `gh run view <run_id> --log` shows the failure is caused by the changed test fixture in this PR. What happens before agent re-review triggers?
+```
+
+Pass criteria:
+
+- Matches CI state to current `headRefOid`.
+- Inspects GitHub Actions logs.
+- Classifies the failure as current-change.
+- Fixes CI, verifies, commits, pushes, re-reads `headRefOid`, then triggers active agents.
+
+RED baseline observation:
+
+- Failure observed: baseline did not require per-round CI checks tied to `headRefOid` or log inspection.
+- Evidence sentence: baseline relied only on `relevant checks` and `Run the smallest useful verification`.
+- Counter-rule added: CI is checked every round and current-change failures are fixed before re-review triggers.
+
+## Scenario 8: CI Failing External Or Unrelated
+
+Prompt:
+
+```text
+Current-head checks fail, but logs show a third-party outage, runner infrastructure error, or an unrelated workflow failure not caused by the PR diff. Do you guess a code fix, ignore CI, or classify it?
+```
+
+Pass criteria:
+
+- Uses logs or missing-log evidence before classification.
+- Classifies external, transient, unrelated, or unclear.
+- Does not invent a code fix.
+- Reports the remaining CI risk or blocker.
+
+RED baseline observation:
+
+- Failure observed: baseline partially separated unrelated CI but did not require log-based classification or explicit escalation.
+- Evidence sentence: baseline had `Treats unrelated CI as separate` but only generic `relevant checks`.
+- Counter-rule added: classify failing CI from current-head evidence and logs; stop on unclear failures.
+
 ## Rationalization Table
 
 | Excuse | Reality |
@@ -112,8 +216,11 @@ RED baseline observation:
 | "Outdated Codex threads can just be resolved silently." | Comment with the reason first, then resolve. |
 | "CodeRabbit threads should be resolved like Codex." | Do not manually resolve CodeRabbit; it handles prior comments in later rounds. |
 | "Unrelated CI is failing, so fix it now." | Keep scope to review-agent findings unless the failure blocks the current fix. |
-| "One clean agent is enough." | Completion requires both agents to be clean in the latest relevant round. |
+| "One clean agent is enough." | Completion requires every active agent to be clean in the latest relevant round. |
 | "A previous clean CodeRabbit comment stays valid forever." | A newer actionable CodeRabbit `CHANGES_REQUESTED` review makes the loop current again. |
+| "The skill knows both trigger phrases, so trigger both." | Trigger only agents classified active on this PR. |
+| "Codex setup errors may resolve if triggered again." | Treat setup-required responses as unavailable until setup changes. |
+| "CI is just a background signal." | Check CI every round against current `headRefOid` and classify failures before re-review. |
 
 ## Verification Results
 
@@ -122,3 +229,8 @@ RED baseline observation:
 | 1 | PASS | Test agent protected unrelated edits, treated unrelated CI separately, resolved only Codex threads after replies, did not resolve CodeRabbit manually, committed and pushed fix batches, triggered both re-reviews, and looped until both agents were clean. |
 | 2 | PASS | Test agent treated `Review triggered` as an acknowledgement, waited at least 6 minutes, then polled every 2 minutes until real results or timeout. |
 | 3 | PASS | Test agent counted Codex no-major-issues and later CodeRabbit no-actionable as clean, ignored empty CodeRabbit `COMMENTED`, and did not resurrect stale earlier findings. |
+| 4 | PASS | GREEN agent classified Codex as active and CodeRabbit as inactive, triggered only `@codex review`, and required reporting inactive CodeRabbit. |
+| 5 | PASS | GREEN agent classified CodeRabbit as active and Codex as unavailable/misconfigured after the setup-error response, and did not trigger Codex again unless setup changes. |
+| 6 | PASS | GREEN agent classified both automatic review agents as active, posted separate re-review comments, and waited for real results from both. |
+| 7 | PASS | GREEN agent matched CI to current `headRefOid`, inspected logs, classified current-change failure, and required fix, verify, commit, push, head re-read, then active-agent triggers. |
+| 8 | PASS | GREEN agent used logs or missing-log evidence, classified external/transient/unrelated/unclear failures, avoided guessed code fixes, and reported remaining CI risk. |
