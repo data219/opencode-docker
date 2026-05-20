@@ -86,7 +86,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        libssl-dev libcurl4-openssl-dev libxml2-dev \
        libpq-dev libsqlite3-dev libffi-dev libzip-dev \
        libicu-dev libonig-dev sqlite3 zip \
-       ansible-core shellcheck \
+       ansible-core shellcheck rsync \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/debconf/* \
     && rm -rf /usr/lib/python3.13/test \
@@ -478,6 +478,14 @@ RUN chown -R opencode:opencode \
     /home/opencode/.local/share/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace
+
+# --- Snapshot home directory for non-destructive seeding at runtime ---
+# rsync --ignore-existing at container start will merge this into the bind-mounted home,
+# filling in missing files without overwriting existing ones.
+# Uses --chown to set ownership during copy instead of a separate chown -R layer
+# to avoid a large metadata-only Docker layer from recursive ownership rewrite.
+RUN mkdir -p /opt/opencode-default-home \
+    && rsync -a --chown=opencode:opencode --exclude='.ssh' /home/opencode/ /opt/opencode-default-home/
 
 # --- Copy scripts ---
 COPY scripts/docker-init.sh /scripts/docker-init.sh
