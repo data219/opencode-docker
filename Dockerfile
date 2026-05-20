@@ -62,7 +62,7 @@ ARG GO_LINT_VERSION=2.12.2
 # renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
 ARG JAVA_VERSION=21.0.11+10
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
-ARG RUBY_VERSION=4.0.4
+ARG RUBY_VERSION=4.0.5
 # renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
 ARG SWIFT_VERSION=6.3.2
 # renovate: datasource=npm depName=oh-my-opencode
