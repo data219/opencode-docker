@@ -729,3 +729,102 @@ teardown_init_test_env() {
 
   teardown_init_test_env
 }
+
+@test "home directory seed copies missing files from image defaults" {
+  if [ "$(id -u)" != "0" ]; then
+    skip "requires root for home directory seed"
+  fi
+
+  setup_init_test_env
+
+  export DEFAULT_HOME_DIR="$INIT_TEST_TMPDIR/default-home"
+  mkdir -p "$DEFAULT_HOME_DIR"
+  echo "image-version" > "$DEFAULT_HOME_DIR/.gitmessage"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$USER_HOME/.gitmessage" ]
+  grep -F "image-version" "$USER_HOME/.gitmessage"
+
+  unset DEFAULT_HOME_DIR
+  teardown_init_test_env
+}
+
+@test "home directory seed does not overwrite existing files" {
+  if [ "$(id -u)" != "0" ]; then
+    skip "requires root for home directory seed"
+  fi
+
+  setup_init_test_env
+
+  export DEFAULT_HOME_DIR="$INIT_TEST_TMPDIR/default-home"
+  mkdir -p "$DEFAULT_HOME_DIR"
+  echo "image-version" > "$DEFAULT_HOME_DIR/.gitmessage"
+  echo "user-version" > "$USER_HOME/.gitmessage"
+  touch -t 202001010000 "$USER_HOME/.gitmessage"
+  before_mtime="$(stat -c %Y "$USER_HOME/.gitmessage")"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(stat -c %Y "$USER_HOME/.gitmessage")" -eq "$before_mtime" ]
+  grep -F "user-version" "$USER_HOME/.gitmessage"
+
+  unset DEFAULT_HOME_DIR
+  teardown_init_test_env
+}
+
+@test "home directory seed does not create .ssh when seed lacks it" {
+  if [ "$(id -u)" != "0" ]; then
+    skip "requires root for home directory seed"
+  fi
+
+  setup_init_test_env
+
+  export DEFAULT_HOME_DIR="$INIT_TEST_TMPDIR/default-home"
+  mkdir -p "$DEFAULT_HOME_DIR"
+  # Seed does NOT contain .ssh (excluded at Dockerfile snapshot level)
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  # .ssh dir may exist from SSH key generation, but no seed files should be in it
+  [ ! -f "$USER_HOME/.ssh/authorized_keys" ]
+
+  unset DEFAULT_HOME_DIR
+  teardown_init_test_env
+}
+
+@test "home directory seed skips .config/opencode (managed seeding owns it)" {
+  if [ "$(id -u)" != "0" ]; then
+    skip "requires root for home directory seed"
+  fi
+
+  setup_init_test_env
+
+  export DEFAULT_HOME_DIR="$INIT_TEST_TMPDIR/default-home"
+  mkdir -p "$DEFAULT_HOME_DIR/.config/opencode"
+  echo "seed-config" > "$DEFAULT_HOME_DIR/.config/opencode/oh-my-openagent.jsonc"
+  mkdir -p "$DEFAULT_HOME_DIR/.config/other"
+  echo "other-config" > "$DEFAULT_HOME_DIR/.config/other/test.conf"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  # .config/opencode should NOT be seeded (managed seeding handles it)
+  [ ! -f "$USER_HOME/.config/opencode/oh-my-openagent.jsonc" ]
+  # Other .config subdirectories SHOULD be seeded
+  [ -f "$USER_HOME/.config/other/test.conf" ]
+
+  unset DEFAULT_HOME_DIR
+  teardown_init_test_env
+}
+
+@test "home directory seed is skipped when DEFAULT_HOME_DIR does not exist" {
+  setup_init_test_env
+
+  export DEFAULT_HOME_DIR="/nonexistent-default-home"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+
+  unset DEFAULT_HOME_DIR
+  teardown_init_test_env
+}

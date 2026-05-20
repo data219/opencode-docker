@@ -32,6 +32,35 @@ if [ "$(id -u)" = "0" ]; then
   done
 fi
 
+# --- Seed home directory from image defaults (non-destructive) ---
+# Copies missing files/dirs from the image's home tree using cp -an.
+# -a preserves permissions/ownership/timestamps; -n skips existing files.
+# .config/opencode is explicitly skipped: version-tracked managed seeding
+# below owns that directory and its files.
+# Idempotent: on subsequent starts, -n makes cp a no-op.
+DEFAULT_HOME_DIR="${DEFAULT_HOME_DIR:-/opt/opencode-default-home}"
+if [ "$(id -u)" = "0" ] && [ -d "${DEFAULT_HOME_DIR}" ]; then
+  echo "Seeding home directory from image defaults..."
+  for _item in "${DEFAULT_HOME_DIR}/"* "${DEFAULT_HOME_DIR}/".[!.]*; do
+    [ -e "$_item" ] || continue
+    case "$(basename "$_item")" in
+      .config)
+        # Copy .config contents except opencode/ (managed seeding owns it)
+        mkdir -p "${USER_HOME}/.config"
+        for _sub in "$_item"/* "$_item"/.[!.]*; do
+          [ -e "$_sub" ] || continue
+          [ "$(basename "$_sub")" = "opencode" ] && continue
+          cp -an "$_sub" "${USER_HOME}/.config/" 2>/dev/null || true
+        done
+        ;;
+      *)
+        cp -an "$_item" "${USER_HOME}/" 2>/dev/null || true
+        ;;
+    esac
+  done
+  echo "Home directory seed complete."
+fi
+
 # --- Auto-generate SSH key if missing ---
 SSH_DIR="${USER_HOME}/.ssh"
 SSH_PRIVATE_KEY_PATH="${SSH_DIR}/id_ed25519"
@@ -263,13 +292,13 @@ if [ "$CNTB_CREDENTIAL_COUNT" -eq 4 ]; then
   unset CNTB_CONFIG_CMD CNTB_CONFIG_FILE CNTB_OLD_UMASK
 fi
 
-# Seed OmO agent config if not yet present (OmO install writes to temp dir during build).
+# Seed OmO agent config if not yet present (OmO now installs normally to /home/opencode).
 # Only copy if oh-my-openagent.jsonc doesn't exist yet — don't overwrite user customizations.
 if [ ! -f "$CONFIG_DIR/oh-my-openagent.jsonc" ]; then
-  if [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.jsonc" ]; then
-    cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.jsonc" "$CONFIG_DIR/oh-my-openagent.jsonc"
-  elif [ -f "$DEFAULTS_DIR/oh-my-openagent-omo.json" ]; then
-    cp -a -- "$DEFAULTS_DIR/oh-my-openagent-omo.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
+  if [ -f "$DEFAULTS_DIR/omo-generated-oh-my-openagent.jsonc" ]; then
+    cp -a -- "$DEFAULTS_DIR/omo-generated-oh-my-openagent.jsonc" "$CONFIG_DIR/oh-my-openagent.jsonc"
+  elif [ -f "$DEFAULTS_DIR/omo-generated-oh-my-openagent.json" ]; then
+    cp -a -- "$DEFAULTS_DIR/omo-generated-oh-my-openagent.json" "$CONFIG_DIR/oh-my-openagent.jsonc"
   fi
 fi
 

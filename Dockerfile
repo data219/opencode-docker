@@ -86,7 +86,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        libssl-dev libcurl4-openssl-dev libxml2-dev \
        libpq-dev libsqlite3-dev libffi-dev libzip-dev \
        libicu-dev libonig-dev sqlite3 zip \
-       ansible-core shellcheck \
+       ansible-core shellcheck rsync \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/debconf/* \
     && rm -rf /usr/lib/python3.13/test \
@@ -372,29 +372,31 @@ RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
 # NOTE: Shell form required. Do not convert to exec form.
 # NOTE: --no-tui skips the interactive TUI prompt during Docker build (no TTY in container).
 #       This does NOT affect the opencode runtime — both WebUI and TUI work at runtime.
-# NOTE: OmO writes to XDG_CONFIG_HOME/opencode/. We redirect it via HOME to a temp dir,
-#       then pick the agent config. Our opencode.json seed (with {env:} provider) takes priority.
+# NOTE: We install OmO normally to /home/opencode. After install, we rename the
+#       auto-generated config so our custom bootstrap config (placed later by COPY) takes priority.
 RUN mkdir -p /opt/opencode-defaults \
+  && mkdir -p /home/opencode/.config/opencode \
   && mkdir -p /tmp/bun-install/bin \
   && curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
     -o /tmp/bun.zip \
   && unzip -q /tmp/bun.zip -d /tmp \
   && mv /tmp/bun-linux-x64/bun /tmp/bun-install/bin/bun \
   && chmod +x /tmp/bun-install/bin/bun \
-  && HOME=/tmp/omo-install BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
-    --no-tui --zai-coding-plan=no --claude=no --openai=no --gemini=yes --copilot=no \
-  && if [ -f /tmp/omo-install/.config/opencode/oh-my-opencode.json ]; then \
-       cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-opencode-omo.json; \
-       cp /tmp/omo-install/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/oh-my-openagent-omo.json; \
+  && HOME=/home/opencode BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
+    --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=yes --copilot=no \
+  && if [ -f /home/opencode/.config/opencode/opencode.json ]; then \
+       mv /home/opencode/.config/opencode/opencode.json /opt/opencode-defaults/omo-generated-opencode.json; \
      fi \
-  && if [ -f /tmp/omo-install/.config/opencode/oh-my-openagent.json ]; then \
-       cp /tmp/omo-install/.config/opencode/oh-my-openagent.json /opt/opencode-defaults/oh-my-openagent-omo.json; \
+  && if [ -f /home/opencode/.config/opencode/oh-my-opencode.json ]; then \
+       mv /home/opencode/.config/opencode/oh-my-opencode.json /opt/opencode-defaults/omo-generated-oh-my-opencode.json; \
      fi \
-  && if [ -f /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc ]; then \
-       cp /tmp/omo-install/.config/opencode/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent-omo.jsonc; \
+  && if [ -f /home/opencode/.config/opencode/oh-my-openagent.json ]; then \
+       mv /home/opencode/.config/opencode/oh-my-openagent.json /opt/opencode-defaults/omo-generated-oh-my-openagent.json; \
+     fi \
+  && if [ -f /home/opencode/.config/opencode/oh-my-openagent.jsonc ]; then \
+       mv /home/opencode/.config/opencode/oh-my-openagent.jsonc /opt/opencode-defaults/omo-generated-oh-my-openagent.jsonc; \
      fi \
   && rm -rf \
-    /tmp/omo-install \
     /tmp/bun-install \
     /tmp/bun.zip \
     /tmp/bun-linux-x64 \
@@ -462,9 +464,9 @@ RUN cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/op
   && cp -a /opt/opencode-defaults/AGENTS.md.managed /home/opencode/.config/opencode/AGENTS.md \
   && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
   && cp -a /opt/opencode-defaults/.gitmessage /home/opencode/.gitmessage \
-  && if [ -f /opt/opencode-defaults/oh-my-opencode-omo.json ]; then cp -a /opt/opencode-defaults/oh-my-opencode-omo.json /home/opencode/.config/opencode/oh-my-opencode-omo.json; fi \
-  && if [ -f /opt/opencode-defaults/oh-my-openagent-omo.json ]; then cp -a /opt/opencode-defaults/oh-my-openagent-omo.json /home/opencode/.config/opencode/oh-my-openagent-omo.json; fi \
-  && if [ -f /opt/opencode-defaults/oh-my-openagent-omo.jsonc ]; then cp -a /opt/opencode-defaults/oh-my-openagent-omo.jsonc /home/opencode/.config/opencode/oh-my-openagent-omo.jsonc; fi \
+  && if [ -f /opt/opencode-defaults/omo-generated-oh-my-opencode.json ]; then cp -a /opt/opencode-defaults/omo-generated-oh-my-opencode.json /home/opencode/.config/opencode/omo-generated-oh-my-opencode.json; fi \
+  && if [ -f /opt/opencode-defaults/omo-generated-oh-my-openagent.json ]; then cp -a /opt/opencode-defaults/omo-generated-oh-my-openagent.json /home/opencode/.config/opencode/omo-generated-oh-my-openagent.json; fi \
+  && if [ -f /opt/opencode-defaults/omo-generated-oh-my-openagent.jsonc ]; then cp -a /opt/opencode-defaults/omo-generated-oh-my-openagent.jsonc /home/opencode/.config/opencode/omo-generated-oh-my-openagent.jsonc; fi \
   && cp -a /opt/opencode-defaults/skills/. /home/opencode/.config/opencode/skills/ \
   && cp -a /opt/omo-defaults/teams/. /home/opencode/.omo/teams/
 RUN chown -R opencode:opencode \
@@ -476,6 +478,14 @@ RUN chown -R opencode:opencode \
     /home/opencode/.local/share/opencode \
     /home/opencode/.local/state/opencode \
     /home/opencode/workspace
+
+# --- Snapshot home directory for non-destructive seeding at runtime ---
+# rsync --ignore-existing at container start will merge this into the bind-mounted home,
+# filling in missing files without overwriting existing ones.
+# Uses --chown to set ownership during copy instead of a separate chown -R layer
+# to avoid a large metadata-only Docker layer from recursive ownership rewrite.
+RUN mkdir -p /opt/opencode-default-home \
+    && rsync -a --chown=opencode:opencode --exclude='.ssh' /home/opencode/ /opt/opencode-default-home/
 
 # --- Copy scripts ---
 COPY scripts/docker-init.sh /scripts/docker-init.sh
