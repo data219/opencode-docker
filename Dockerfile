@@ -28,7 +28,7 @@ ARG BUN_VERSION=1.3.12
 # renovate: datasource=github-releases depName=tianon/gosu
 ARG GOSU_VERSION=1.19
 # renovate: datasource=npm depName=opencode-ai
-ARG OPENCODE_VERSION=1.15.6
+ARG OPENCODE_VERSION=1.15.7
 # renovate: datasource=npm depName=agent-browser
 ARG AGENT_BROWSER_VERSION=0.27.0
 # renovate: datasource=github-releases depName=mikefarah/yq
