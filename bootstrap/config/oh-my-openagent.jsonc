@@ -129,7 +129,14 @@
     "max_fallback_attempts": 3,
     "cooldown_seconds": 60
   },
+  "default_mode": {
+    "ultrawork": true,
+    "ralph_loop": true
+  },
   "background_task": {
+    "staleTimeoutMs": 2700000,
+    "messageStalenessTimeoutMs": 3600000,
+    "sessionGoneTimeoutMs": 60000,
     "providerConcurrency": {
       "zai-coding-plan": 3,
       "google": 3
