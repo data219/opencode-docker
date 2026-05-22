@@ -134,9 +134,10 @@
     "ralph_loop": true
   },
   "background_task": {
-    "staleTimeoutMs": 2700000,
-    "messageStalenessTimeoutMs": 3600000,
-    "sessionGoneTimeoutMs": 60000,
+    "staleTimeoutMs": 5400000,
+    "messageStalenessTimeoutMs": 7200000,
+    "taskTtlMs": 7200000,
+    "sessionGoneTimeoutMs": 180000,
     "providerConcurrency": {
       "zai-coding-plan": 3,
       "google": 3
