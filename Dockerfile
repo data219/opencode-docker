@@ -160,7 +160,7 @@ RUN npm install -g opencode-ai@${OPENCODE_VERSION} \
     && rm -rf /root/.npm
 
 # renovate: datasource=npm depName=@openchamber/web
-ARG OPENCHAMBER_VERSION=1.11.4
+ARG OPENCHAMBER_VERSION=1.11.5
 
 # --- Install OpenChamber (alternative Web GUI for OpenCode) ---
 RUN npm install -g @openchamber/web@${OPENCHAMBER_VERSION} \
