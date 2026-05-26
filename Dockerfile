@@ -14,8 +14,8 @@ ARG INSTALL_NVM=false
 ARG NODE_VERSION=24.16.0
 # renovate: datasource=github-releases depName=composer/composer
 ARG COMPOSER_VERSION=2.9.8
-# renovate: datasource=github-tags depName=pyenv/pyenv extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG PYENV_VERSION=2.6.31
+# renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG PYENV_VERSION=v2.6.31
 # renovate: datasource=github-releases depName=rust-lang/rustup
 ARG RUSTUP_VERSION=1.29.0
 # renovate: datasource=github-releases depName=rust-lang/rust
@@ -53,8 +53,8 @@ ARG DOCKER_CLI_VERSION=29.4.1
 ARG DOCKER_COMPOSE_VERSION=5.1.4
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
 ARG ATLCLI_VERSION=0.17.0
-# renovate: datasource=github-tags depName=nvm-sh/nvm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG NVM_VERSION=0.40.4
+# renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG NVM_VERSION=v0.40.4
 # renovate: datasource=golang-version depName=go
 ARG GO_VERSION=1.26.3
 # renovate: datasource=github-releases depName=golangci/golangci-lint
