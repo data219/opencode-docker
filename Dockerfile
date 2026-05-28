@@ -34,7 +34,7 @@ ARG AGENT_BROWSER_VERSION=0.27.0
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.53.2
 # renovate: datasource=github-releases depName=hashicorp/terraform
-ARG TERRAFORM_VERSION=1.15.4
+ARG TERRAFORM_VERSION=1.15.5
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG KUBECTL_VERSION=1.36.1
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
