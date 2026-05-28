@@ -19,7 +19,7 @@ ARG PYENV_VERSION=v2.6.31
 # renovate: datasource=github-releases depName=rust-lang/rustup
 ARG RUSTUP_VERSION=1.29.0
 # renovate: datasource=github-releases depName=rust-lang/rust
-ARG RUST_TOOLCHAIN_VERSION=1.95.0
+ARG RUST_TOOLCHAIN_VERSION=1.96.0
 # renovate: datasource=git-refs depName=moovweb/gvm packageName=https://github.com/moovweb/gvm
 ARG GVM_REF=master
 ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
