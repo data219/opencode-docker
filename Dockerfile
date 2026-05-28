@@ -13,7 +13,7 @@ ARG INSTALL_NVM=false
 # renovate: datasource=node-version depName=node versioning=node
 ARG NODE_VERSION=24.16.0
 # renovate: datasource=github-releases depName=composer/composer
-ARG COMPOSER_VERSION=2.9.8
+ARG COMPOSER_VERSION=2.10.0
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG PYENV_VERSION=v2.6.31
 # renovate: datasource=github-releases depName=rust-lang/rustup
