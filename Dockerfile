@@ -46,7 +46,7 @@ ARG GLAB_VERSION=1.100.0
 # renovate: datasource=github-releases depName=contabo/cntb versioning=semver
 ARG CNTB_VERSION=1.6
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
-ARG CLOUDFLARED_VERSION=2026.5.1
+ARG CLOUDFLARED_VERSION=2026.5.2
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
 ARG DOCKER_CLI_VERSION=29.4.1
 # renovate: datasource=github-releases depName=docker/compose versioning=semver
