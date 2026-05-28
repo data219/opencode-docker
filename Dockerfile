@@ -40,7 +40,7 @@ ARG KUBECTL_VERSION=1.36.1
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG HELM_VERSION=4.2.0
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
-ARG GH_VERSION=2.92.0
+ARG GH_VERSION=2.93.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
 ARG GLAB_VERSION=1.99.0
 # renovate: datasource=github-releases depName=contabo/cntb versioning=semver
