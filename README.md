@@ -64,6 +64,7 @@ Docker Compose mounts `${OPENCODE_HOME_DIR:-./data/home}` to `/home/opencode`, s
 | `GLAB_TOKEN` / `GITLAB_TOKEN` | empty | Non-interactive GitLab CLI auth. |
 | `CNTB_OAUTH2_*` | empty | Contabo CLI auth. Set all four OAuth2 variables together. |
 | `ATLCLI_*` | empty | Atlassian CLI token and profile defaults. |
+| `DOKPLOY_URL` / `DOKPLOY_API_KEY` | empty | Non-interactive Dokploy CLI auth. |
 
 Run `task migrate-env` after pulling changes if your `.env` still uses old names such as `ZHIPU_API_KEY` or `GEMINI_API_KEY`.
 
@@ -127,7 +128,7 @@ Compose can render with an empty Gemini key because the variable is not checked 
 
 ### Platform and language tools
 
-Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `shellcheck`, `git`, `curl`, and `wget`.
+Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `shellcheck`, `git`, `curl`, and `wget`.
 
 Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. Java, Ruby, Swift, Elixir/Erlang, nvm-managed Node.js, and Rust are optional build-time installs.
 

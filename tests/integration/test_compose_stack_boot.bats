@@ -19,6 +19,8 @@ prepare_test_stack() {
   export GIT_AUTHOR_EMAIL=""
   export GIT_COMMITTER_NAME=""
   export GIT_COMMITTER_EMAIL=""
+  export DOKPLOY_URL=""
+  export DOKPLOY_API_KEY=""
   export OPENCODE_MODE="web"
   export OPENCODE_PORT="${TEST_OPENCODE_PORT}"
   export OPENCHAMBER_PORT="$((TEST_OPENCODE_PORT + 2000))"
@@ -176,6 +178,9 @@ start_test_stack() {
   run compose_ci exec -T opencode sh -lc 'command -v atlcli'
   [ "$status" -eq 0 ]
 
+  run compose_ci exec -T opencode sh -lc 'command -v dokploy && dokploy --help >/dev/null'
+  [ "$status" -eq 0 ]
+
   run compose_ci exec -T opencode sh -lc 'command -v cloudflared && cloudflared --version'
   [ "$status" -eq 0 ]
 
@@ -234,6 +239,19 @@ start_test_stack() {
       echo "OPENCODE_SERVER_USERNAME leaked into runtime environment" >&2
       exit 1
     fi
+  '
+  [ "$status" -eq 0 ]
+}
+
+@test "compose stack forwards Dokploy CLI environment variables" {
+  prepare_test_stack
+  export DOKPLOY_URL="https://dokploy.example.test"
+  export DOKPLOY_API_KEY="dokploy-test-key"
+  start_test_stack
+
+  run compose_ci exec -T opencode sh -lc '
+    test "$DOKPLOY_URL" = "https://dokploy.example.test" &&
+    test "$DOKPLOY_API_KEY" = "dokploy-test-key"
   '
   [ "$status" -eq 0 ]
 }

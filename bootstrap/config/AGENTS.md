@@ -42,6 +42,7 @@ The Docker Compose stack includes these command-line tools:
 - `glab`: GitLab CLI for projects, merge requests, issues, and pipelines.
 - `cntb`: Contabo CLI for cloud resource inspection and operations.
 - `atlcli`: Atlassian CLI for Jira and Confluence workflows.
+- `dokploy`: Dokploy CLI for remote Dokploy server management.
 - `cloudflared`: Cloudflare tunnel CLI for exposing local services when configured.
 - `docker`: Docker client for image, container, network, and volume operations.
 - `docker compose`: Compose plugin for managing multi-container local stacks.
