@@ -59,6 +59,8 @@ services:
       - ATLCLI_EMAIL=${ATLCLI_EMAIL:-}
       - ATLCLI_SITE=${ATLCLI_SITE:-}
       - ATLCLI_BASE_URL=${ATLCLI_BASE_URL:-}
+      - DOKPLOY_URL=${DOKPLOY_URL:-}
+      - DOKPLOY_API_KEY=${DOKPLOY_API_KEY:-}
     restart: unless-stopped
     healthcheck:
       test:

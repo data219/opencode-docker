@@ -31,6 +31,8 @@ ARG GOSU_VERSION=1.19
 ARG OPENCODE_VERSION=1.15.12
 # renovate: datasource=npm depName=agent-browser
 ARG AGENT_BROWSER_VERSION=0.27.0
+# renovate: datasource=npm depName=@dokploy/cli
+ARG DOKPLOY_CLI_VERSION=0.29.4
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.53.2
 # renovate: datasource=github-releases depName=hashicorp/terraform
@@ -175,6 +177,11 @@ RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
     && mv "$browser_dir" /opt/agent-browser/chrome \
     && npm cache clean --force \
     && rm -rf /opt/opencode-browser-home /root/.npm
+
+# --- Install Dokploy CLI ---
+RUN npm install -g @dokploy/cli@${DOKPLOY_CLI_VERSION} \
+    && npm cache clean --force \
+    && rm -rf /root/.npm
 
 # --- Install GitHub/GitLab/Contabo/Atlassian and platform CLIs ---
 RUN --mount=type=secret,id=github_token,required=false \
