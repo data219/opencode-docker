@@ -15,7 +15,7 @@ ARG NODE_VERSION=24.16.0
 # renovate: datasource=github-releases depName=composer/composer
 ARG COMPOSER_VERSION=2.10.0
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG PYENV_VERSION=v2.6.31
+ARG PYENV_VERSION=v2.6.32
 # renovate: datasource=github-releases depName=rust-lang/rustup
 ARG RUSTUP_VERSION=1.29.0
 # renovate: datasource=github-releases depName=rust-lang/rust
