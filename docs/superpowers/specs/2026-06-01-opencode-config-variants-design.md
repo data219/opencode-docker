@@ -29,6 +29,7 @@ Research findings:
 - Preserve the repo's non-destructive startup behavior.
 - Keep auth secrets out of committed config files.
 - Document first-time OpenAI ChatGPT login.
+- Make OpenAI Oh My OpenAgent agent/category model choices match upstream OmO's OpenAI-only model-selection logic where possible.
 - Add focused tests for variant validation and switch behavior.
 
 ## Non-Goals
@@ -90,12 +91,36 @@ The Z.AI variant mirrors the current config:
 
 The OpenAI variant should use provider `openai` and OpenAI GPT model IDs from OpenCode's current model catalog.
 
-Use conservative model assignments:
+The Oh My OpenAgent config must not use one generic OpenAI model everywhere. It should mirror OmO's upstream OpenAI-only model-selection output from `src/cli/model-fallback.ts`, `src/cli/openai-only-model-catalog.ts`, and the `single native provider uses OpenAI models when only OpenAI is available` snapshot. Current upstream OpenAI-only assignments are:
 
-- Premium/deep reasoning: `openai/gpt-5.4`
-- Fast coding: `openai/gpt-5.4-mini`
-- Utility/low-cost work: `openai/gpt-5.4-mini`
-- Visual/multimodal categories: OpenAI GPT model, not Gemini
+Agents:
+
+- `sisyphus`: `openai/gpt-5.5`, variant `medium`
+- `hephaestus`: `openai/gpt-5.5`, variant `medium`
+- `prometheus`: `openai/gpt-5.5`, variant `high`
+- `metis`: `openai/gpt-5.5`, variant `high`
+- `oracle`: `openai/gpt-5.5`, variant `high`
+- `momus`: `openai/gpt-5.5`, variant `xhigh`
+- `atlas`: `openai/gpt-5.5`, variant `medium`
+- `sisyphus-junior`: `openai/gpt-5.5`, variant `medium`
+- `explore`: `openai/gpt-5.4-mini-fast`
+- `librarian`: `openai/gpt-5.4-mini-fast`
+- `multimodal-looker`: `openai/gpt-5.5`, variant `medium`, with fallback `openai/gpt-5-nano`
+
+Categories:
+
+- `artistry`: `openai/gpt-5.5`, variant `xhigh`
+- `deep`: `openai/gpt-5.5`, variant `medium`
+- `quick`: `openai/gpt-5.4-mini`
+- `ultrabrain`: `openai/gpt-5.5`, variant `xhigh`
+- `unspecified-high`: `openai/gpt-5.3-codex`, variant `medium` by default; if implementation intentionally models OmO's `isMaxPlan` path, use `openai/gpt-5.5`, variant `high`
+- `unspecified-low`: `openai/gpt-5.3-codex`, variant `medium`
+- `visual-engineering`: `openai/gpt-5.5`, variant `high`
+- `writing`: `openai/gpt-5.5`, variant `medium`
+
+Before implementation, re-check current Oh My OpenAgent source for this mapping. If upstream changed the OpenAI-only snapshot or generator, prefer the current upstream mapping over this frozen list and note the change in the implementation summary.
+
+The OpenAI variant should set OmO concurrency for provider `openai` and the selected OpenAI models. It should not reference Z.AI, Gemini, Anthropic, OpenCode Go, Copilot, Vercel, or other model providers in the OpenAI variant's committed `oh-my-openagent.jsonc`.
 
 Do not require `OPENAI_API_KEY` for the ChatGPT subscription variant. First-time auth is:
 
@@ -103,7 +128,7 @@ Do not require `OPENAI_API_KEY` for the ChatGPT subscription variant. First-time
 task opencode -- auth login --provider openai --method "ChatGPT Pro/Plus (headless)"
 ```
 
-If OpenCode changes available model IDs before implementation, prefer the newest OpenAI GPT model IDs that OpenCode's current model catalog allows for ChatGPT OAuth.
+If OpenCode's current ChatGPT OAuth model catalog does not expose one of the upstream OmO model IDs, choose the closest OpenAI GPT model in the same role family and document the substitution. For example, use the newest available high-capability GPT model for `gpt-5.5` roles, the newest fast mini GPT model for `gpt-5.4-mini-fast` roles, and the newest Codex-oriented GPT model for `gpt-5.3-codex` roles.
 
 ## Data Flow
 
@@ -140,6 +165,8 @@ Add or update Bats tests to cover:
 - `scripts/config-switch.sh openai-chatgpt` writes both runtime config files to an isolated `OPENCODE_HOME_DIR`.
 - Invalid variants fail with a useful error.
 - The OpenAI variant does not reference `zai-coding-plan` or `google/gemini`.
+- The OpenAI variant does not reference non-OpenAI model providers.
+- The OpenAI variant's agent/category model map matches the current OmO OpenAI-only generator output, or a documented current-source substitution when OpenCode no longer exposes a listed model.
 - The Z.AI variant still contains the current Z.AI provider references.
 - Compose still validates for the default Z.AI path.
 
