@@ -389,7 +389,7 @@ RUN mkdir -p /opt/opencode-defaults \
   && unzip -q /tmp/bun.zip -d /tmp \
   && mv /tmp/bun-linux-x64/bun /tmp/bun-install/bin/bun \
   && chmod +x /tmp/bun-install/bin/bun \
-  && HOME=/home/opencode BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
+  && PATH="/tmp/bun-install/bin:${PATH}" HOME=/home/opencode BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
     --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=no --copilot=no \
   && if [ -f /home/opencode/.config/opencode/opencode.json ]; then \
        mv /home/opencode/.config/opencode/opencode.json /opt/opencode-defaults/omo-generated-opencode.json; \
