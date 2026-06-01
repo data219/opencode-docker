@@ -33,7 +33,24 @@ assert_file_matches() {
 assert_file_not_matches() {
   local pattern="$1"
   local file="$2"
-  ! grep -Eq "$pattern" "$file"
+  local status
+
+  grep -Eq "$pattern" "$file"
+  status="$?"
+
+  case "$status" in
+    0)
+      echo "unexpected match for pattern '$pattern' in $file" >&2
+      return 1
+      ;;
+    1)
+      return 0
+      ;;
+    *)
+      echo "grep failed while searching $file for pattern '$pattern' (exit $status)" >&2
+      return "$status"
+      ;;
+  esac
 }
 
 @test "config variants contain required files" {
@@ -66,6 +83,13 @@ assert_file_not_matches() {
 
   assert_failure
   assert_output --partial "failed to read JSONC file: $missing_file"
+}
+
+@test "negative file match assertion fails on grep errors" {
+  run assert_file_not_matches '[' "$(variant_file openai-chatgpt opencode.json)"
+
+  assert_failure
+  assert_output --partial "grep failed while searching"
 }
 
 @test "zai-coding-plan variant mirrors current bootstrap config" {
