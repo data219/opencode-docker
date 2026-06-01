@@ -24,11 +24,102 @@ assert_jsonc_valid() {
   node -e '
     const fs = require("fs");
     const path = process.argv[1];
-    const input = fs.readFileSync(path, "utf8")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/(^|[^:])\/\/.*$/gm, "$1")
-      .replace(/,\s*([}\]])/g, "$1");
-    JSON.parse(input);
+    const input = fs.readFileSync(path, "utf8");
+
+    try {
+      const { parse } = require("jsonc-parser");
+      const errors = [];
+      parse(input, errors);
+      if (errors.length > 0) {
+        console.error(JSON.stringify(errors, null, 2));
+        process.exit(1);
+      }
+      process.exit(0);
+    } catch (error) {
+      if (error && error.code !== "MODULE_NOT_FOUND") {
+        throw error;
+      }
+    }
+
+    let output = "";
+    let inString = false;
+    let escaped = false;
+    let lineComment = false;
+    let blockComment = false;
+
+    for (let index = 0; index < input.length; index += 1) {
+      const char = input[index];
+      const next = input[index + 1];
+
+      if (lineComment) {
+        if (char === "\n") {
+          lineComment = false;
+          output += char;
+        }
+        continue;
+      }
+
+      if (blockComment) {
+        if (char === "*" && next === "/") {
+          blockComment = false;
+          index += 1;
+        }
+        continue;
+      }
+
+      if (!inString && char === "/" && next === "/") {
+        lineComment = true;
+        index += 1;
+        continue;
+      }
+
+      if (!inString && char === "/" && next === "*") {
+        blockComment = true;
+        index += 1;
+        continue;
+      }
+
+      output += char;
+
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === "\"") {
+        inString = !inString;
+      }
+    }
+
+    let withoutTrailingCommas = "";
+    inString = false;
+    escaped = false;
+
+    for (let index = 0; index < output.length; index += 1) {
+      const char = output[index];
+
+      if (!inString && char === ",") {
+        let nextIndex = index + 1;
+        while (/\s/.test(output[nextIndex] || "")) {
+          nextIndex += 1;
+        }
+
+        if (output[nextIndex] === "}" || output[nextIndex] === "]") {
+          continue;
+        }
+      }
+
+      withoutTrailingCommas += char;
+
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === "\"") {
+        inString = !inString;
+      }
+    }
+
+    JSON.parse(withoutTrailingCommas);
   ' "$file"
 }
 
