@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BOOTSTRAP_CONFIG_DIR="$REPO_ROOT/bootstrap/config"
+VARIANTS_ROOT="$BOOTSTRAP_CONFIG_DIR/variants"
+
 usage() {
   echo "Usage: scripts/config-switch.sh <variant>" >&2
   echo "Available variants:" >&2
@@ -9,10 +13,10 @@ usage() {
 
 list_variants() {
   local variant_dir
-  if [ ! -d "bootstrap/config/variants" ]; then
+  if [ ! -d "$VARIANTS_ROOT" ]; then
     return 0
   fi
-  for variant_dir in bootstrap/config/variants/*; do
+  for variant_dir in "$VARIANTS_ROOT"/*; do
     [ -d "$variant_dir" ] || continue
     printf '  %s\n' "$(basename "$variant_dir")"
   done
@@ -21,10 +25,10 @@ list_variants() {
 variant_exists() {
   local requested_variant="$1"
   local variant_dir
-  if [ ! -d "bootstrap/config/variants" ]; then
+  if [ ! -d "$VARIANTS_ROOT" ]; then
     return 1
   fi
-  for variant_dir in bootstrap/config/variants/*; do
+  for variant_dir in "$VARIANTS_ROOT"/*; do
     [ -d "$variant_dir" ] || continue
     if [ "$requested_variant" = "$(basename "$variant_dir")" ]; then
       return 0
@@ -57,7 +61,7 @@ if ! variant_exists "$VARIANT"; then
   exit 1
 fi
 
-VARIANT_DIR="bootstrap/config/variants/$VARIANT"
+VARIANT_DIR="$VARIANTS_ROOT/$VARIANT"
 
 OPENCODE_HOME_DIR="${OPENCODE_HOME_DIR:-./data/home}"
 CONFIG_DIR="$OPENCODE_HOME_DIR/.config/opencode"
@@ -67,12 +71,12 @@ mkdir -p "$CONFIG_DIR"
 copy_required_file "$VARIANT_DIR/opencode.json" "$CONFIG_DIR/opencode.json"
 copy_required_file "$VARIANT_DIR/oh-my-openagent.jsonc" "$CONFIG_DIR/oh-my-openagent.jsonc"
 
-if [ ! -f "$CONFIG_DIR/AGENTS.md" ] && [ -f "bootstrap/config/AGENTS.md" ]; then
-  cp -a -- "bootstrap/config/AGENTS.md" "$CONFIG_DIR/AGENTS.md"
+if [ ! -f "$CONFIG_DIR/AGENTS.md" ] && [ -f "$BOOTSTRAP_CONFIG_DIR/AGENTS.md" ]; then
+  cp -a -- "$BOOTSTRAP_CONFIG_DIR/AGENTS.md" "$CONFIG_DIR/AGENTS.md"
 fi
 
-if [ -f "bootstrap/config/.opencode-docker-config-version" ]; then
-  cp -a -- "bootstrap/config/.opencode-docker-config-version" "$CONFIG_DIR/.opencode-docker-config-version"
+if [ -f "$BOOTSTRAP_CONFIG_DIR/.opencode-docker-config-version" ]; then
+  cp -a -- "$BOOTSTRAP_CONFIG_DIR/.opencode-docker-config-version" "$CONFIG_DIR/.opencode-docker-config-version"
 fi
 
 echo "Switched OpenCode config variant to $VARIANT"

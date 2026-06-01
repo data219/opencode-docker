@@ -10,7 +10,14 @@ if (!file) {
   process.exit(2);
 }
 
-const input = fs.readFileSync(file, "utf8");
+let input;
+try {
+  input = fs.readFileSync(file, "utf8");
+} catch (e) {
+  console.error(`failed to read JSONC file: ${file}: ${e.message}`);
+  process.exit(1);
+}
+
 const errors = [];
 
 parse(input, errors);

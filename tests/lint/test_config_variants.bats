@@ -58,6 +58,16 @@ assert_file_not_matches() {
   done
 }
 
+@test "JSONC validator reports file read errors with filename" {
+  command -v node >/dev/null 2>&1 || skip "node is required for JSONC validation"
+  missing_file="$PWD/.missing-jsonc-file"
+
+  run node tests/jsonc/validate-jsonc.js "$missing_file"
+
+  assert_failure
+  assert_output --partial "failed to read JSONC file: $missing_file"
+}
+
 @test "zai-coding-plan variant mirrors current bootstrap config" {
   cmp -s bootstrap/config/opencode.json "$(variant_file zai-coding-plan opencode.json)"
   cmp -s bootstrap/config/oh-my-openagent.jsonc "$(variant_file zai-coding-plan oh-my-openagent.jsonc)"

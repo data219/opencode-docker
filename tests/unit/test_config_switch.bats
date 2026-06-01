@@ -2,10 +2,12 @@ load ../test_helper
 
 setup() {
   TEST_HOME_DIR="$(mktemp -d "${PWD}/.test-config-switch-home.XXXXXX")"
+  TEST_CWD_DIR="$(mktemp -d "${PWD}/.test-config-switch-cwd.XXXXXX")"
 }
 
 teardown() {
   rm -rf "$TEST_HOME_DIR"
+  rm -rf "$TEST_CWD_DIR"
 }
 
 config_dir() {
@@ -63,6 +65,14 @@ config_dir() {
   [ -f "$(config_dir)/AGENTS.md" ]
   [ -f "$(config_dir)/.opencode-docker-config-version" ]
 
+  cmp -s bootstrap/config/variants/openai-chatgpt/opencode.json "$(config_dir)/opencode.json"
+  cmp -s bootstrap/config/variants/openai-chatgpt/oh-my-openagent.jsonc "$(config_dir)/oh-my-openagent.jsonc"
+}
+
+@test "config-switch resolves repository paths from script location" {
+  run bash -c 'cd "$1" && OPENCODE_HOME_DIR="$2" "$3" openai-chatgpt' _ "$TEST_CWD_DIR" "$TEST_HOME_DIR" "$PWD/scripts/config-switch.sh"
+
+  assert_success
   cmp -s bootstrap/config/variants/openai-chatgpt/opencode.json "$(config_dir)/opencode.json"
   cmp -s bootstrap/config/variants/openai-chatgpt/oh-my-openagent.jsonc "$(config_dir)/oh-my-openagent.jsonc"
 }
