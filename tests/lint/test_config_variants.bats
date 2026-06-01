@@ -24,6 +24,18 @@ assert_jsonc_valid() {
   node tests/jsonc/validate-jsonc.js "$file"
 }
 
+assert_file_matches() {
+  local pattern="$1"
+  local file="$2"
+  grep -Eq "$pattern" "$file"
+}
+
+assert_file_not_matches() {
+  local pattern="$1"
+  local file="$2"
+  ! grep -Eq "$pattern" "$file"
+}
+
 @test "config variants contain required files" {
   for variant in zai-coding-plan openai-chatgpt; do
     assert_file_exists "$(variant_file "$variant" opencode.json)"
@@ -52,26 +64,26 @@ assert_jsonc_valid() {
 }
 
 @test "openai-chatgpt variant does not reference non-OpenAI model providers" {
-  run rg -n 'zai-coding-plan|google/|anthropic/|github-copilot/|opencode-go/|vercel/|kimi-for-coding/|moonshotai|aihubmix|ollama-cloud|firmware|venice/' "$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
-  [ "$status" -eq 1 ]
+  run assert_file_not_matches 'zai-coding-plan|google/|anthropic/|github-copilot/|opencode-go/|vercel/|kimi-for-coding/|moonshotai|aihubmix|ollama-cloud|firmware|venice/' "$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
+  assert_success
 }
 
 @test "openai-chatgpt variant uses expected OmO OpenAI-only models with documented substitution" {
   file="$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
 
-  run rg -n 'openai/gpt-5\.5' "$file"
+  run assert_file_matches 'openai/gpt-5\.5' "$file"
   assert_success
 
-  run rg -n 'openai/gpt-5\.4-mini' "$file"
+  run assert_file_matches 'openai/gpt-5\.4-mini' "$file"
   assert_success
 
-  run rg -n 'openai/gpt-5\.3-codex' "$file"
+  run assert_file_matches 'openai/gpt-5\.3-codex' "$file"
   assert_success
 
-  run rg -n '"model": "openai/gpt-5\.4-mini-fast"' "$file"
-  [ "$status" -eq 1 ]
+  run assert_file_not_matches '"model": "openai/gpt-5\.4-mini-fast"' "$file"
+  assert_success
 
-  run rg -n 'gpt-5\.4-mini-fast is substituted with openai/gpt-5\.4-mini' "$file"
+  run assert_file_matches 'gpt-5\.4-mini-fast is substituted with openai/gpt-5\.4-mini' "$file"
   assert_success
 }
 
@@ -79,6 +91,6 @@ assert_jsonc_valid() {
   run jq -e '.plugin | index("oh-my-openagent")' "$(variant_file openai-chatgpt opencode.json)"
   assert_success
 
-  run rg -n 'OPENAI_API_KEY|apiKey' "$(variant_file openai-chatgpt opencode.json)"
-  [ "$status" -eq 1 ]
+  run assert_file_not_matches 'OPENAI_API_KEY|apiKey' "$(variant_file openai-chatgpt opencode.json)"
+  assert_success
 }
