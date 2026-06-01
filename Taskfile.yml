@@ -54,6 +54,7 @@ tasks:
   test-lint:
     desc: Run the lint/structure Bats suite
     cmds:
+      - npm --prefix tests/jsonc ci
       - "{{.BATS}} {{.BATS_ARGS}} tests/lint/"
 
   test-all:
