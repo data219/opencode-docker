@@ -18,6 +18,21 @@ list_variants() {
   done
 }
 
+variant_exists() {
+  local requested_variant="$1"
+  local variant_dir
+  if [ ! -d "bootstrap/config/variants" ]; then
+    return 1
+  fi
+  for variant_dir in bootstrap/config/variants/*; do
+    [ -d "$variant_dir" ] || continue
+    if [ "$requested_variant" = "$(basename "$variant_dir")" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 copy_required_file() {
   local source="$1"
   local target="$2"
@@ -34,14 +49,15 @@ if [ "$#" -ne 1 ]; then
 fi
 
 VARIANT="$1"
-VARIANT_DIR="bootstrap/config/variants/$VARIANT"
 
-if [ ! -d "$VARIANT_DIR" ]; then
+if ! variant_exists "$VARIANT"; then
   echo "ERROR: unknown config variant: $VARIANT" >&2
   echo "Available variants:" >&2
   list_variants >&2
   exit 1
 fi
+
+VARIANT_DIR="bootstrap/config/variants/$VARIANT"
 
 OPENCODE_HOME_DIR="${OPENCODE_HOME_DIR:-./data/home}"
 CONFIG_DIR="$OPENCODE_HOME_DIR/.config/opencode"

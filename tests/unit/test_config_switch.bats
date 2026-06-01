@@ -27,6 +27,30 @@ config_dir() {
   assert_output --partial "Available variants:"
 }
 
+@test "config-switch rejects path traversal variant names" {
+  run env OPENCODE_HOME_DIR="$TEST_HOME_DIR" scripts/config-switch.sh ..
+
+  assert_failure
+  assert_output --partial "ERROR: unknown config variant: .."
+  assert_output --partial "Available variants:"
+}
+
+@test "config-switch rejects nested traversal variant names" {
+  run env OPENCODE_HOME_DIR="$TEST_HOME_DIR" scripts/config-switch.sh openai-chatgpt/../../config
+
+  assert_failure
+  assert_output --partial "ERROR: unknown config variant: openai-chatgpt/../../config"
+  assert_output --partial "Available variants:"
+}
+
+@test "config-switch rejects absolute variant names" {
+  run env OPENCODE_HOME_DIR="$TEST_HOME_DIR" scripts/config-switch.sh /absolute
+
+  assert_failure
+  assert_output --partial "ERROR: unknown config variant: /absolute"
+  assert_output --partial "Available variants:"
+}
+
 @test "config-switch writes openai-chatgpt runtime config to OPENCODE_HOME_DIR" {
   run env OPENCODE_HOME_DIR="$TEST_HOME_DIR" scripts/config-switch.sh openai-chatgpt
 
