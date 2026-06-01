@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "zai-coding-plan": {
+      "options": {
+        "baseURL": "https://api.z.ai/api/coding/paas/v4",
+        "apiKey": "{env:OCD_ZHIPU_API_KEY}"
+      },
+      "models": {
+        "glm-5.1": {
+          "name": "GLM-5.1",
+          "limit": { "context": 200000, "output": 131072 }
+        },
+        "glm-5-turbo": {
+          "name": "GLM-5 Turbo",
+          "limit": { "context": 200000, "output": 131072 }
+        },
+        "glm-4.7": {
+          "name": "GLM-4.7",
+          "limit": { "context": 200000, "output": 131072 }
+        },
+        "glm-4.5-air": {
+          "name": "GLM-4.5 Air",
+          "limit": { "context": 128000, "output": 98304 }
+        }
+      }
+    },
+    "google": {
+      "options": {
+        "apiKey": "{env:OCD_GEMINI_API_KEY}"
+      },
+      "models": {
+        "gemini-2.5-flash": {
+          "name": "Gemini 2.5 Flash",
+          "limit": { "context": 1048576, "output": 65536 }
+        }
+      }
+    }
+  },
+  "plugin": [
+    "@icaruk/zai-peak-hours",
+    "oh-my-openagent"
+  ]
+}
