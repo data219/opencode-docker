@@ -9,6 +9,13 @@
   - `docker run --rm -v "$PWD:/repo" -w /repo renovate/renovate:39 renovate-config-validator`
 - Prefer version formats that can be mapped back into download URLs without extra manual edits when Renovate proposes upgrades.
 
+## Oh-My-OpenAgent Dockerfile Upgrades
+
+- For `oh-my-opencode`/Oh-My-OpenAgent version bumps, do not assume a Renovate-only `ARG OMO_VERSION` change is safe; run a targeted image build because installer behavior can change.
+- During the OMO install step, ensure the temporary Bun binary directory is on `PATH` as well as invoking Bun by absolute path. OMO 4.6.0 can execute `bun` by command name after detecting `opencode-ai`, so `/tmp/bun-install/bin` must be visible in `PATH`.
+- Keep Bun temporary unless runtime Bun is intentionally required: expose `/tmp/bun-install/bin` only for the install command, then preserve the existing cleanup of `/tmp/bun-install`, Bun archives, and caches.
+- When debugging OMO install failures, reproduce with `opencode-ai` already installed. A standalone `bun x oh-my-opencode@... install` can pass while the real Dockerfile path fails after OpenCode detection.
+
 ## CI Integration Test Diagnostics
 
 - For Docker-based integration tests in GitHub Actions, prefer CI-safe startup and health-check timeouts over aggressive local-only values.

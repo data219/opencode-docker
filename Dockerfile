@@ -68,7 +68,7 @@ ARG RUBY_VERSION=4.0.5
 # renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
 ARG SWIFT_VERSION=6.3.2
 # renovate: datasource=npm depName=oh-my-opencode
-ARG OMO_VERSION=4.5.12
+ARG OMO_VERSION=4.6.0
 
 # --- System packages (with BuildKit cache for apt) ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -389,7 +389,7 @@ RUN mkdir -p /opt/opencode-defaults \
   && unzip -q /tmp/bun.zip -d /tmp \
   && mv /tmp/bun-linux-x64/bun /tmp/bun-install/bin/bun \
   && chmod +x /tmp/bun-install/bin/bun \
-  && HOME=/home/opencode BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
+  && PATH="/tmp/bun-install/bin:${PATH}" HOME=/home/opencode BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
     --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=no --copilot=no \
   && if [ -f /home/opencode/.config/opencode/opencode.json ]; then \
        mv /home/opencode/.config/opencode/opencode.json /opt/opencode-defaults/omo-generated-opencode.json; \
