@@ -13,8 +13,9 @@
 - Docker Engine with the Docker Compose plugin
 - [Task](https://taskfile.dev/) for the documented commands
 - Network access for image pulls and model API calls
-- A Z.AI Coding Plan API key for the GLM provider
-- A Google AI Studio API key for the Gemini vision model used by OmO visual tasks
+- A Z.AI Coding Plan API key for the default `zai-coding-plan` config variant
+- Optional: a Google AI Studio API key for the Gemini vision model used by the Z.AI variant and OmO visual tasks
+- Optional: a ChatGPT Plus/Pro subscription for the `openai-chatgpt` config variant
 
 ### Start the stack
 
@@ -23,7 +24,8 @@ git clone https://github.com/data219/opencode-docker.git
 cd opencode-docker
 
 cp .env.example .env
-# Edit .env and set OCD_ZHIPU_API_KEY and OCD_GEMINI_API_KEY.
+# Edit .env and set OCD_ZHIPU_API_KEY for the default Z.AI variant.
+# Set OCD_GEMINI_API_KEY too if you use OmO visual tasks.
 
 task build
 task up
@@ -41,12 +43,12 @@ Docker Compose mounts `${OPENCODE_HOME_DIR:-./data/home}` to `/home/opencode`, s
 
 ## Configuration
 
-`OCD_ZHIPU_API_KEY` and `OCD_GEMINI_API_KEY` are required for the documented setup. Compose only enforces `OCD_ZHIPU_API_KEY`, but OmO visual tasks need the Gemini-backed vision model.
+The default config variant is `zai-coding-plan`. It requires `OCD_ZHIPU_API_KEY`. Compose only enforces `OCD_ZHIPU_API_KEY`, but the Z.AI variant and OmO visual tasks need `OCD_GEMINI_API_KEY` when they use the Gemini-backed vision model.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `OCD_ZHIPU_API_KEY` | required | Z.AI Coding Plan API key used by the default GLM provider. |
-| `OCD_GEMINI_API_KEY` | required | Google AI Studio key for the Gemini vision model used by OmO visual tasks. |
+| `OCD_GEMINI_API_KEY` | empty | Optional Google AI Studio key for the Gemini vision model used by the Z.AI variant and OmO visual tasks. |
 | `OPENCODE_MODE` | `web` | OpenCode server mode: `web` or `serve`. |
 | `OPENCODE_PORT` | `4000` | OpenCode port inside the container and on the host. |
 | `OPENCODE_BIND_ADDRESS` | `127.0.0.1` | Host interface Docker publishes to. Use `0.0.0.0` only with auth. |
@@ -67,6 +69,33 @@ Docker Compose mounts `${OPENCODE_HOME_DIR:-./data/home}` to `/home/opencode`, s
 | `DOKPLOY_URL` / `DOKPLOY_API_KEY` | empty | Non-interactive Dokploy CLI auth. |
 
 Run `task migrate-env` after pulling changes if your `.env` still uses old names such as `ZHIPU_API_KEY` or `GEMINI_API_KEY`.
+
+### Config variants
+
+Seeded OpenCode and Oh My OpenAgent config lives in `bootstrap/config/variants/`. The default variant is `zai-coding-plan`.
+
+Switch variants with:
+
+```bash
+task config-switch -- openai-chatgpt
+task config-switch -- zai-coding-plan
+```
+
+The switch writes only these files under `${OPENCODE_HOME_DIR:-./data/home}/.config/opencode/`:
+
+- `opencode.json`
+- `oh-my-openagent.jsonc`
+- `.opencode-docker-config-version`
+
+`AGENTS.md` is seeded only when it does not already exist.
+
+For the `openai-chatgpt` variant, start the stack and run the first-time OpenAI ChatGPT login inside OpenCode:
+
+```bash
+task opencode -- auth login --provider openai --method "ChatGPT Pro/Plus (headless)"
+```
+
+This uses OpenCode's built-in OpenAI OAuth/device login for ChatGPT Plus/Pro subscriptions. It is not configured in `.env`, does not need `OPENAI_API_KEY`, and persists the login state in `OPENCODE_HOME_DIR`.
 
 ### Optional build args
 
@@ -117,14 +146,16 @@ Important boundaries:
 
 ### Model providers
 
-The seeded OpenCode config defines:
+The default `zai-coding-plan` config defines:
 
 - Z.AI Coding Plan provider via `OCD_ZHIPU_API_KEY`
 - GLM models: `glm-5.1`, `glm-5-turbo`, `glm-4.7`, and `glm-4.5-air`
 - Google provider via `OCD_GEMINI_API_KEY`
 - Gemini model: `gemini-2.5-flash`
 
-Compose can render with an empty Gemini key because the variable is not checked during Compose interpolation. Keep `OCD_GEMINI_API_KEY` set for normal use, otherwise OmO visual tasks do not have a working multimodal model.
+The `openai-chatgpt` config uses OpenCode's built-in OpenAI provider and an OmO OpenAI-only model map through ChatGPT Plus/Pro OAuth. It does not use `OPENAI_API_KEY` for subscription auth.
+
+Compose can render with an empty Gemini key because the variable is not checked during Compose interpolation. Keep `OCD_GEMINI_API_KEY` set for the default variant when using OmO visual tasks, otherwise they do not have a working multimodal model.
 
 ### Platform and language tools
 
@@ -142,6 +173,7 @@ Use `Taskfile.yml` for local work:
 | `task build` | Build the image with BuildKit. |
 | `task up` | Start the OpenCode stack in the background. |
 | `task logs` | Follow the `opencode` service logs. |
+| `task config-switch -- <variant>` | Switch persisted OpenCode config, for example `openai-chatgpt` or `zai-coding-plan`. |
 | `task shell` | Open a shell in the running container. |
 | `task opencode -- ...` | Run `opencode` in the running container. |
 | `task migrate-env` | Rename legacy `.env` keys and add missing entries from `.env.example`. |
