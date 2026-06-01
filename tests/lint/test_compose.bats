@@ -118,3 +118,12 @@ compose_config() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"docker compose -f docker-compose.yml config"* ]]
 }
+
+@test "task config-switch calls switch script with CLI args" {
+  command -v task > /dev/null 2>&1 || skip "task not available"
+
+  run task --dry config-switch -- openai-chatgpt
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"scripts/config-switch.sh openai-chatgpt"* ]]
+}

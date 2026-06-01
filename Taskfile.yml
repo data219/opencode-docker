@@ -16,6 +16,11 @@ tasks:
     cmds:
       - scripts/migrate-env.sh '{{.ENV_FILE | default ".env"}}' '{{.ENV_EXAMPLE | default ".env.example"}}'
 
+  config-switch:
+    desc: "Switch the persisted OpenCode config variant (args: zai-coding-plan or openai-chatgpt)"
+    cmds:
+      - "scripts/config-switch.sh {{.CLI_ARGS}}"
+
   build:
     desc: Build the opencode image
     cmds:
