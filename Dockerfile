@@ -44,7 +44,7 @@ ARG HELM_VERSION=4.2.0
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
 ARG GH_VERSION=2.93.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
-ARG GLAB_VERSION=1.100.0
+ARG GLAB_VERSION=1.101.0
 # renovate: datasource=github-releases depName=contabo/cntb versioning=semver
 ARG CNTB_VERSION=1.6
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
