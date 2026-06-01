@@ -43,7 +43,7 @@ Docker Compose mounts `${OPENCODE_HOME_DIR:-./data/home}` to `/home/opencode`, s
 
 ## Configuration
 
-The default config variant is `zai-coding-plan`. It requires `OCD_ZHIPU_API_KEY`. Compose only enforces `OCD_ZHIPU_API_KEY`, but the Z.AI variant and OmO visual tasks need `OCD_GEMINI_API_KEY` when they use the Gemini-backed vision model.
+The default config variant is `zai-coding-plan`. It requires `OCD_ZHIPU_API_KEY` for model calls. Compose allows the variable to be empty so the `openai-chatgpt` variant can start without a Z.AI key. The Z.AI variant and OmO visual tasks need `OCD_GEMINI_API_KEY` when they use the Gemini-backed vision model.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |

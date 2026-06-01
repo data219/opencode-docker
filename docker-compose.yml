@@ -37,7 +37,7 @@ services:
       - OPENCHAMBER_UI_PASSWORD=${OPENCHAMBER_UI_PASSWORD:-}
       - OPENCODE_DOCKER_SOCKET=${OPENCODE_DOCKER_SOCKET_BIND:+/var/run/docker.sock}
       - DOCKER_HOST=${OPENCODE_DOCKER_SOCKET_BIND:+unix:///var/run/docker.sock}
-      - OCD_ZHIPU_API_KEY=${OCD_ZHIPU_API_KEY:?OCD_ZHIPU_API_KEY is required}
+      - OCD_ZHIPU_API_KEY=${OCD_ZHIPU_API_KEY:-}
       # Optional: Google AI Studio API key for Gemini vision model (multimodal-looker agent).
       # Only needed if you want vision/multimodal features; without it the agent falls back to the default Z.AI model.
       - OCD_GEMINI_API_KEY=${OCD_GEMINI_API_KEY:-}

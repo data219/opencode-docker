@@ -28,6 +28,19 @@ compose_config() {
     GIT_COMMITTER_EMAIL= > /dev/null
 }
 
+@test "docker-compose.yml renders without Z.AI key for OpenAI-only config variant" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY= \
+    GIT_AUTHOR_NAME= \
+    GIT_AUTHOR_EMAIL= \
+    GIT_COMMITTER_NAME= \
+    GIT_COMMITTER_EMAIL=
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"OCD_ZHIPU_API_KEY: \"\""* ]]
+}
+
 @test "default docker socket mount uses project-local disabled placeholder" {
   docker compose version > /dev/null 2>&1 || skip "docker compose not available"
   run compose_config \
