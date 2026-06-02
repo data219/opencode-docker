@@ -40,7 +40,7 @@ ARG GLAB_VERSION=1.101.0
 # renovate: datasource=github-releases depName=golangci/golangci-lint
 ARG GO_LINT_VERSION=2.12.2
 # renovate: datasource=golang-version depName=go
-ARG GO_VERSION=1.26.3
+ARG GO_VERSION=1.26.4
 # renovate: datasource=go depName=golang.org/x/tools/gopls
 ARG GOPLS_VERSION=0.22.0
 # renovate: datasource=github-releases depName=tianon/gosu
