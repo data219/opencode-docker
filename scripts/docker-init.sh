@@ -174,6 +174,51 @@ if [ -f "$DEFAULTS_DIR/.gitmessage" ] && [ ! -f "$USER_HOME/.gitmessage" ]; then
   cp -a -- "$DEFAULTS_DIR/.gitmessage" "$USER_HOME/.gitmessage"
 fi
 
+is_github_https_repo() {
+  case "$1" in
+    https://github.com/*|https://www.github.com/*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+clone_dotfiles_repo() {
+  local repo_url="$1"
+  local target_dir="$2"
+  local askpass_dir="$3"
+  local github_token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+
+  if is_github_https_repo "$repo_url" && [ -n "$github_token" ]; then
+    local askpass_script
+    local clone_status=0
+    askpass_script="$(mktemp "$askpass_dir/git-askpass.XXXXXX")"
+    cat > "$askpass_script" <<'EOF'
+#!/bin/sh
+case "$1" in
+  *Username*)
+    printf '%s\n' 'x-access-token'
+    ;;
+  *)
+    printf '%s\n' "${OPENCODE_DOTFILES_GITHUB_TOKEN:-}"
+    ;;
+esac
+EOF
+    chmod 700 "$askpass_script"
+
+    OPENCODE_DOTFILES_GITHUB_TOKEN="$github_token" \
+      GIT_ASKPASS="$askpass_script" \
+      GIT_TERMINAL_PROMPT=0 \
+      git -c credential.helper= clone --depth 1 "$repo_url" "$target_dir" || clone_status=$?
+    rm -f "$askpass_script"
+    return "$clone_status"
+  fi
+
+  GIT_TERMINAL_PROMPT=0 git clone --depth 1 "$repo_url" "$target_dir"
+}
+
 install_dotfiles_repo() {
   local repo_url="${OPENCODE_DOTFILES_REPO:-}"
   [ -n "$repo_url" ] || return 0
@@ -205,7 +250,10 @@ install_dotfiles_repo() {
   mkdir -p "$dotfiles_base"
   rm -f "$legacy_dotfiles_repo_marker"
   rm -rf "$dotfiles_tmp_dir"
-  git clone --depth 1 "$repo_url" "$dotfiles_tmp_dir"
+  if ! clone_dotfiles_repo "$repo_url" "$dotfiles_tmp_dir" "$dotfiles_base"; then
+    echo "ERROR: Failed to clone OPENCODE_DOTFILES_REPO. For private GitHub HTTPS repositories, set GH_TOKEN or GITHUB_TOKEN with repository read access. SSH URLs require a key with repository access." >&2
+    exit 1
+  fi
   rm -rf "$dotfiles_repo_dir"
   mv "$dotfiles_tmp_dir" "$dotfiles_repo_dir"
 

@@ -63,7 +63,7 @@ The default config variant is `zai-coding-plan`. It requires `OCD_ZHIPU_API_KEY`
 | `OPENCHAMBER_PORT` | `4020` | OpenChamber port inside the container and on the host. |
 | `OPENCHAMBER_UI_PASSWORD` | empty | Optional OpenChamber UI password. Set this for non-local exposure. |
 | `FORCE_SKILL_SYNC` | `false` | Replaces bootstrapped skills with image defaults when set to `true`. |
-| `GH_TOKEN` / `GITHUB_TOKEN` | empty | Non-interactive GitHub CLI auth; also used as optional BuildKit secrets for GitHub-hosted CLI downloads. |
+| `GH_TOKEN` / `GITHUB_TOKEN` | empty | Non-interactive GitHub CLI auth; also used as optional BuildKit secrets for GitHub-hosted CLI downloads and private GitHub HTTPS dotfiles clones. Create a fine-grained token at <https://github.com/settings/personal-access-tokens/new>. |
 | `GLAB_TOKEN` / `GITLAB_TOKEN` | empty | Non-interactive GitLab CLI auth. |
 | `CNTB_OAUTH2_*` | empty | Contabo CLI auth. Set all four OAuth2 variables together. |
 | `ATLCLI_*` | empty | Atlassian CLI token and profile defaults. |
@@ -74,6 +74,8 @@ Run `task migrate-env` after pulling changes if your `.env` still uses old names
 ### Dotfiles
 
 Set `OPENCODE_DOTFILES_REPO` in `.env` to install a trusted dotfiles repository into the container home. The stack follows the GitHub Codespaces installer order: `install.sh`, `install`, `bootstrap.sh`, `bootstrap`, `script/bootstrap`, `setup.sh`, `setup`, then `script/setup`.
+
+For private GitHub HTTPS repositories, set `GH_TOKEN` or `GITHUB_TOKEN` with repository read access. Create a fine-grained token directly at <https://github.com/settings/personal-access-tokens/new>, select the dotfiles repository, and grant read-only repository contents access. The startup script uses a temporary Git askpass helper for the clone and does not write the token into the repo marker or Git config. SSH URLs such as `git@github.com:owner/dotfiles.git` also work when the persisted container SSH key or a deploy key has access.
 
 If no installer is present, hidden files and folders from the repo are symlinked into `/home/opencode` when the target does not already exist. Dotfiles scripts can run arbitrary commands; only configure repositories you trust.
 
