@@ -562,8 +562,9 @@ RUN mkdir -p /opt/opencode-defaults
 # --- Copy default config files ---
 # Managed files (.managed suffix) are always overwritten on version upgrade.
 # Non-managed copies serve as initial seed only (first start with empty volume).
-COPY bootstrap/config/opencode.json /opt/opencode-defaults/opencode.json.managed
-COPY bootstrap/config/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc.managed
+COPY bootstrap/config/variants/openai-chatgpt/opencode.json /opt/opencode-defaults/opencode.json.managed
+COPY bootstrap/config/variants/openai-chatgpt/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc.managed
+COPY bootstrap/config/variants /opt/opencode-defaults/variants/
 COPY bootstrap/config/AGENTS.md /opt/opencode-defaults/AGENTS.md.managed
 COPY bootstrap/config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
 COPY bootstrap/config/.gitmessage /opt/opencode-defaults/.gitmessage

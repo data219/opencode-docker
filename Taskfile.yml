@@ -59,8 +59,12 @@ tasks:
   test-lint:
     desc: Run the lint/structure Bats suite
     cmds:
-      - npm --prefix tests/jsonc ci
-      - "{{.BATS}} {{.BATS_ARGS}} tests/lint/"
+      - |
+        tmp_jsonc_dir="$(mktemp -d)"
+        cp tests/jsonc/package*.json "$tmp_jsonc_dir/"
+        trap 'rm -rf "$tmp_jsonc_dir"' EXIT
+        npm --prefix "$tmp_jsonc_dir" ci --silent
+        NODE_PATH="$tmp_jsonc_dir/node_modules" {{.BATS}} {{.BATS_ARGS}} tests/lint/
 
   test-all:
     desc: Run all Bats suites

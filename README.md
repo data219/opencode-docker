@@ -13,7 +13,7 @@
 - Docker Engine with the Docker Compose plugin
 - [Task](https://taskfile.dev/) for the documented commands
 - Network access for image pulls and model API calls
-- A Z.AI Coding Plan API key for the default `zai-coding-plan` config variant
+- A Z.AI Coding Plan API key for the `zai-coding-plan` variant (optional if you use OpenAI default)
 - Optional: a Google AI Studio API key for the Gemini vision model used by the Z.AI variant and OmO visual tasks
 - Optional: a ChatGPT Plus/Pro subscription for the `openai-chatgpt` config variant
 
@@ -24,8 +24,9 @@ git clone https://github.com/data219/opencode-docker.git
 cd opencode-docker
 
 cp .env.example .env
-# Edit .env and set OCD_ZHIPU_API_KEY for the default Z.AI variant.
-# Set OCD_GEMINI_API_KEY too if you use OmO visual tasks.
+# Edit .env to match your preferred variant (default: openai-chatgpt).
+# Optional: OPENCODE_CONFIG_VARIANT=zai-coding-plan requires OCD_ZHIPU_API_KEY.
+# Optional: set OCD_GEMINI_API_KEY for OmO visual tasks.
 
 task build
 task up
@@ -43,11 +44,14 @@ Docker Compose mounts `${OPENCODE_HOME_DIR:-./data/home}` to `/home/opencode`, s
 
 ## Configuration
 
-The default config variant is `zai-coding-plan`. It requires `OCD_ZHIPU_API_KEY` for model calls. Compose allows the variable to be empty so the `openai-chatgpt` variant can start without a Z.AI key. The Z.AI variant and OmO visual tasks need `OCD_GEMINI_API_KEY` when they use the Gemini-backed vision model.
+The default config variant is `openai-chatgpt`. It uses OpenCode's built-in OpenAI flow and does not need `OCD_ZHIPU_API_KEY` to start.
+Set `OPENCODE_CONFIG_VARIANT=zai-coding-plan` to switch to Z.AI defaults (requires a Z.AI key).
+Compose allows the variable to be empty when using `openai-chatgpt`; the Z.AI variant also needs `OCD_GEMINI_API_KEY` for vision tasks.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `OCD_ZHIPU_API_KEY` | required | Z.AI Coding Plan API key used by the default GLM provider. |
+| `OPENCODE_CONFIG_VARIANT` | `openai-chatgpt` | Selects managed config variant (`openai-chatgpt` or `zai-coding-plan`). |
+| `OCD_ZHIPU_API_KEY` | optional | Z.AI Coding Plan API key used by `zai-coding-plan`. |
 | `OCD_GEMINI_API_KEY` | empty | Optional Google AI Studio key for the Gemini vision model used by the Z.AI variant and OmO visual tasks. |
 | `OPENCODE_MODE` | `web` | OpenCode server mode: `web` or `serve`. |
 | `OPENCODE_PORT` | `4000` | OpenCode port inside the container and on the host. |
@@ -81,7 +85,7 @@ If no installer is present, hidden files and folders from the repo are symlinked
 
 ### Config variants
 
-Seeded OpenCode and Oh My OpenAgent config lives in `bootstrap/config/variants/`. The default variant is `zai-coding-plan`.
+Seeded OpenCode and Oh My OpenAgent config lives in `bootstrap/config/variants/`. The default variant is `openai-chatgpt`.
 
 Switch variants with:
 
@@ -155,16 +159,16 @@ Important boundaries:
 
 ### Model providers
 
-The default `zai-coding-plan` config defines:
+The default `openai-chatgpt` config uses OpenCode's built-in OpenAI provider and an OmO OpenAI-only model map through ChatGPT Plus/Pro OAuth. `OPENAI_API_KEY` is not used for subscription auth.
+
+Switch to `zai-coding-plan` for Z.AI/Gemini-driven defaults:
 
 - Z.AI Coding Plan provider via `OCD_ZHIPU_API_KEY`
 - GLM models: `glm-5.1`, `glm-5-turbo`, `glm-4.7`, and `glm-4.5-air`
 - Google provider via `OCD_GEMINI_API_KEY`
 - Gemini model: `gemini-2.5-flash`
 
-The `openai-chatgpt` config uses OpenCode's built-in OpenAI provider and an OmO OpenAI-only model map through ChatGPT Plus/Pro OAuth. It does not use `OPENAI_API_KEY` for subscription auth.
-
-Compose can render with an empty Gemini key because the variable is not checked during Compose interpolation. Keep `OCD_GEMINI_API_KEY` set for the default variant when using OmO visual tasks, otherwise they do not have a working multimodal model.
+Compose can render with an empty Gemini key because the variable is not checked during Compose interpolation. Keep `OCD_GEMINI_API_KEY` set when using a multimodal setup; otherwise visual tasks lack a working model.
 
 ### Platform and language tools
 

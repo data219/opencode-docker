@@ -92,11 +92,6 @@ assert_file_not_matches() {
   assert_output --partial "grep failed while searching"
 }
 
-@test "zai-coding-plan variant mirrors current bootstrap config" {
-  cmp -s bootstrap/config/opencode.json "$(variant_file zai-coding-plan opencode.json)"
-  cmp -s bootstrap/config/oh-my-openagent.jsonc "$(variant_file zai-coding-plan oh-my-openagent.jsonc)"
-}
-
 @test "openai-chatgpt variant does not reference non-OpenAI model providers" {
   run assert_file_not_matches 'zai-coding-plan|google/|anthropic/|github-copilot/|opencode-go/|vercel/|kimi-for-coding/|moonshotai|aihubmix|ollama-cloud|firmware|venice/' "$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
   assert_success
@@ -136,7 +131,9 @@ assert_file_not_matches() {
 }
 
 @test "OpenCode configs enable built-in LSPs and custom Markdown LSP" {
-  for file in bootstrap/config/opencode.json bootstrap/config/variants/openai-chatgpt/opencode.json; do
+  for file in \
+    bootstrap/config/variants/openai-chatgpt/opencode.json \
+    bootstrap/config/variants/zai-coding-plan/opencode.json; do
     run jq -e '
       (.lsp | type) == "object"
       and .lsp.markdown.command == ["marksman", "server"]
