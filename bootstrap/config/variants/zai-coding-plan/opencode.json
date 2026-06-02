@@ -1,5 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "markdown": {
+      "command": ["marksman", "server"],
+      "extensions": [".md", ".markdown"]
+    }
+  },
   "provider": {
     "zai-coding-plan": {
       "options": {

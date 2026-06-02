@@ -213,6 +213,54 @@ start_test_stack() {
   [ "$status" -eq 0 ]
 }
 
+@test "compose stack provides OpenCode LSP server commands" {
+  prepare_test_stack
+  start_test_stack
+
+  run compose_ci exec -T -u opencode opencode sh -lc '
+    for command in \
+      intelephense \
+      typescript-language-server \
+      gopls \
+      bash-language-server \
+      lua-language-server \
+      pyright-langserver \
+      terraform-ls \
+      rust-analyzer \
+      yaml-language-server \
+      marksman; do
+      command -v "$command" >/dev/null || {
+        echo "missing $command" >&2
+        exit 1
+      }
+    done
+  '
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '
+    config_dump="$(mktemp)"
+    opencode debug config > "$config_dump"
+    jq -e "
+      (.lsp | type) == \"object\"
+      and .lsp.markdown.command == [\"marksman\", \"server\"]
+      and .lsp.markdown.extensions == [\".md\", \".markdown\"]
+    " "$config_dump" >/dev/null
+  '
+  [ "$status" -eq 0 ]
+}
+
+@test "compose stack keeps Rust toolchain optional while providing Rust LSP" {
+  prepare_test_stack
+  start_test_stack
+
+  run compose_ci exec -T -u opencode opencode sh -lc '
+    command -v rust-analyzer >/dev/null &&
+    ! command -v rustc >/dev/null &&
+    ! test -d /opt/rustup/toolchains
+  '
+  [ "$status" -eq 0 ]
+}
+
 @test "compose stack renders PDFs via agent-browser" {
   prepare_test_stack
   start_test_stack

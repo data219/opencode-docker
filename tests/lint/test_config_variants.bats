@@ -128,3 +128,14 @@ assert_file_not_matches() {
   run assert_file_not_matches 'OPENAI_API_KEY|apiKey' "$(variant_file openai-chatgpt opencode.json)"
   assert_success
 }
+
+@test "OpenCode configs enable built-in LSPs and custom Markdown LSP" {
+  for file in bootstrap/config/opencode.json bootstrap/config/variants/openai-chatgpt/opencode.json; do
+    run jq -e '
+      (.lsp | type) == "object"
+      and .lsp.markdown.command == ["marksman", "server"]
+      and .lsp.markdown.extensions == [".md", ".markdown"]
+    ' "$file"
+    assert_success
+  done
+}

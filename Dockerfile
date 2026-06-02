@@ -33,6 +33,28 @@ ARG OPENCODE_VERSION=1.15.13
 ARG AGENT_BROWSER_VERSION=0.27.1
 # renovate: datasource=npm depName=@dokploy/cli
 ARG DOKPLOY_CLI_VERSION=0.29.4
+# renovate: datasource=npm depName=intelephense
+ARG INTELEPHENSE_VERSION=1.18.4
+# renovate: datasource=npm depName=typescript
+ARG TYPESCRIPT_VERSION=6.0.3
+# renovate: datasource=npm depName=typescript-language-server
+ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=5.3.0
+# renovate: datasource=npm depName=bash-language-server
+ARG BASH_LANGUAGE_SERVER_VERSION=5.6.0
+# renovate: datasource=npm depName=pyright
+ARG PYRIGHT_VERSION=1.1.410
+# renovate: datasource=npm depName=yaml-language-server
+ARG YAML_LANGUAGE_SERVER_VERSION=1.23.0
+# renovate: datasource=go depName=golang.org/x/tools/gopls
+ARG GOPLS_VERSION=0.22.0
+# renovate: datasource=github-releases depName=LuaLS/lua-language-server
+ARG LUA_LANGUAGE_SERVER_VERSION=3.18.2
+# renovate: datasource=github-releases depName=hashicorp/terraform-ls
+ARG TERRAFORM_LS_VERSION=0.38.6
+# renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
+ARG RUST_ANALYZER_VERSION=2026-06-01
+# renovate: datasource=github-releases depName=artempyanykh/marksman versioning=loose
+ARG MARKSMAN_VERSION=2026-02-08
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=4.53.2
 # renovate: datasource=github-releases depName=hashicorp/terraform
@@ -346,6 +368,56 @@ RUN curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${G
     && tar -xzf /tmp/golangci-lint.tar.gz -C /tmp \
     && mv /tmp/golangci-lint-${GO_LINT_VERSION}-linux-amd64/golangci-lint /opt/go/bin/ \
     && rm -rf /tmp/golangci-lint*
+
+# --- Install OpenCode LSP server commands ---
+RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
+    --mount=type=cache,target=/go/pkg/mod,sharing=locked \
+    set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) common_arch="amd64"; lua_arch="x64"; marksman_arch="x64"; rust_arch="x86_64" ;; \
+      arm64) common_arch="arm64"; lua_arch="arm64"; marksman_arch="arm64"; rust_arch="aarch64" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    npm install -g \
+      "intelephense@${INTELEPHENSE_VERSION}" \
+      "typescript@${TYPESCRIPT_VERSION}" \
+      "typescript-language-server@${TYPESCRIPT_LANGUAGE_SERVER_VERSION}" \
+      "bash-language-server@${BASH_LANGUAGE_SERVER_VERSION}" \
+      "pyright@${PYRIGHT_VERSION}" \
+      "yaml-language-server@${YAML_LANGUAGE_SERVER_VERSION}"; \
+    GOBIN=/opt/go/bin go install "golang.org/x/tools/gopls@v${GOPLS_VERSION}"; \
+    terraform_ls_archive="terraform-ls_${TERRAFORM_LS_VERSION}_linux_${common_arch}.zip"; \
+    curl -fsSL "https://releases.hashicorp.com/terraform-ls/${TERRAFORM_LS_VERSION}/${terraform_ls_archive}" -o /tmp/terraform-ls.zip; \
+    curl -fsSL "https://releases.hashicorp.com/terraform-ls/${TERRAFORM_LS_VERSION}/terraform-ls_${TERRAFORM_LS_VERSION}_SHA256SUMS" -o /tmp/terraform-ls.sha256sums; \
+    awk -v target="${terraform_ls_archive}" '$2 == target { print $1 "  /tmp/terraform-ls.zip" }' /tmp/terraform-ls.sha256sums > /tmp/terraform-ls.zip.sha256; \
+    sha256sum -c /tmp/terraform-ls.zip.sha256; \
+    unzip -q /tmp/terraform-ls.zip -d /tmp/terraform-ls; \
+    install -m 0755 /tmp/terraform-ls/terraform-ls /usr/local/bin/terraform-ls; \
+    lua_archive="lua-language-server-${LUA_LANGUAGE_SERVER_VERSION}-linux-${lua_arch}.tar.gz"; \
+    curl -fsSL "https://github.com/LuaLS/lua-language-server/releases/download/${LUA_LANGUAGE_SERVER_VERSION}/${lua_archive}" -o /tmp/lua-language-server.tar.gz; \
+    mkdir -p /opt/lua-language-server; \
+    tar -xzf /tmp/lua-language-server.tar.gz -C /opt/lua-language-server; \
+    ln -sf /opt/lua-language-server/bin/lua-language-server /usr/local/bin/lua-language-server; \
+    marksman_asset="marksman-linux-${marksman_arch}"; \
+    curl -fsSL "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/${marksman_asset}" -o /usr/local/bin/marksman; \
+    chmod +x /usr/local/bin/marksman; \
+    curl -fsSL "https://github.com/rust-lang/rust-analyzer/releases/download/${RUST_ANALYZER_VERSION}/rust-analyzer-${rust_arch}-unknown-linux-gnu.gz" -o /tmp/rust-analyzer.gz; \
+    gzip -dc /tmp/rust-analyzer.gz > /usr/local/bin/rust-analyzer; \
+    chmod +x /usr/local/bin/rust-analyzer; \
+    npm cache clean --force; \
+    rm -rf /root/.npm /tmp/terraform-ls /tmp/terraform-ls.zip /tmp/terraform-ls.sha256sums /tmp/terraform-ls.zip.sha256 /tmp/lua-language-server.tar.gz /tmp/rust-analyzer.gz; \
+    command -v intelephense; \
+    typescript-language-server --version; \
+    gopls version; \
+    bash-language-server --version; \
+    lua-language-server --version; \
+    command -v pyright-langserver; \
+    pyright --version; \
+    terraform-ls version; \
+    rust-analyzer --version; \
+    yaml-language-server --version; \
+    marksman --version
 
 # --- Optional: Java (Temurin JDK 21) ---
 RUN if [ "$INSTALL_JAVA" = "true" ]; then \
