@@ -56,6 +56,7 @@ The Docker Compose stack includes these command-line tools:
 - `rg`: ripgrep CLI for fast recursive text search.
 - `shellcheck`: Static analyzer for shell scripts.
 - `git`: Version control CLI for repository history, branches, diffs, and commits.
+- `zsh`: Interactive shell for user dotfiles and shell customization.
 - `curl`: HTTP client for API calls, downloads, and network checks.
 - `wget`: HTTP client for file downloads and simple network checks.
 

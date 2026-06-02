@@ -174,6 +174,94 @@ if [ -f "$DEFAULTS_DIR/.gitmessage" ] && [ ! -f "$USER_HOME/.gitmessage" ]; then
   cp -a -- "$DEFAULTS_DIR/.gitmessage" "$USER_HOME/.gitmessage"
 fi
 
+install_dotfiles_repo() {
+  local repo_url="${OPENCODE_DOTFILES_REPO:-}"
+  [ -n "$repo_url" ] || return 0
+
+  local dotfiles_base="$USER_HOME/.opencode-dotfiles"
+  local dotfiles_repo_dir="$dotfiles_base/repo"
+  local dotfiles_repo_marker="$dotfiles_base/repo-url"
+  local dotfiles_tmp_dir="$dotfiles_base/repo.tmp"
+  local current_repo_url=""
+
+  if [ -f "$dotfiles_repo_marker" ]; then
+    current_repo_url="$(cat "$dotfiles_repo_marker" 2>/dev/null || true)"
+  fi
+  if [ "$current_repo_url" = "$repo_url" ] && [ -d "$dotfiles_repo_dir" ]; then
+    echo "Dotfiles repo already installed; skipping."
+    return 0
+  fi
+
+  if ! command -v git >/dev/null 2>&1; then
+    echo "ERROR: OPENCODE_DOTFILES_REPO is set but git is not installed." >&2
+    exit 1
+  fi
+
+  echo "Installing dotfiles repo..."
+  mkdir -p "$dotfiles_base"
+  rm -rf "$dotfiles_tmp_dir"
+  git clone --depth 1 "$repo_url" "$dotfiles_tmp_dir"
+  rm -rf "$dotfiles_repo_dir"
+  mv "$dotfiles_tmp_dir" "$dotfiles_repo_dir"
+
+  if [ "$(id -u)" = "0" ]; then
+    if [ "$(stat -c %U "$USER_HOME" 2>/dev/null)" = "root" ]; then
+      chown opencode:opencode "$USER_HOME" 2>/dev/null || true
+    fi
+    chown -R opencode:opencode "$dotfiles_base" 2>/dev/null || true
+  fi
+
+  local installer=""
+  local candidate
+  for candidate in \
+    install.sh \
+    install \
+    bootstrap.sh \
+    bootstrap \
+    script/bootstrap \
+    setup.sh \
+    setup \
+    script/setup; do
+    if [ -f "$dotfiles_repo_dir/$candidate" ]; then
+      installer="$candidate"
+      break
+    fi
+  done
+
+  if [ -n "$installer" ]; then
+    chmod +x "$dotfiles_repo_dir/$installer" 2>/dev/null || true
+    if [ "$(id -u)" = "0" ] && command -v gosu >/dev/null 2>&1; then
+      gosu opencode env HOME="$USER_HOME" USER_HOME="$USER_HOME" bash -lc "cd \"\$1\" && exec \"./\$2\"" bash "$dotfiles_repo_dir" "$installer"
+    elif [ "$(id -u)" = "0" ] && command -v runuser >/dev/null 2>&1; then
+      runuser -u opencode -- env HOME="$USER_HOME" USER_HOME="$USER_HOME" bash -lc "cd \"\$1\" && exec \"./\$2\"" bash "$dotfiles_repo_dir" "$installer"
+    else
+      (cd "$dotfiles_repo_dir" && env HOME="$USER_HOME" USER_HOME="$USER_HOME" "./$installer")
+    fi
+  else
+    mkdir -p "$USER_HOME/.config"
+    shopt -s dotglob nullglob
+    for candidate in "$dotfiles_repo_dir"/.[!.]* "$dotfiles_repo_dir"/..?*; do
+      [ -e "$candidate" ] || continue
+      [ "$(basename "$candidate")" = ".git" ] && continue
+      local target
+      target="$USER_HOME/$(basename "$candidate")"
+      if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+        ln -s "$candidate" "$target"
+      fi
+    done
+    shopt -u dotglob nullglob
+  fi
+
+  printf '%s\n' "$repo_url" > "$dotfiles_repo_marker"
+  if [ "$(id -u)" = "0" ]; then
+    chown -R opencode:opencode "$dotfiles_base" 2>/dev/null || true
+    chown -h opencode:opencode "$USER_HOME"/.[!.]* "$USER_HOME"/..?* 2>/dev/null || true
+  fi
+  echo "Dotfiles install complete."
+}
+
+install_dotfiles_repo
+
 # Configure git identity from env vars with safe defaults.
 # Prefer OPENCODE_GIT_* inputs so reserved GIT_* override vars stay optional.
 GIT_AUTHOR_NAME_OVERRIDE="${OPENCODE_GIT_AUTHOR_NAME:-${GIT_AUTHOR_NAME:-}}"

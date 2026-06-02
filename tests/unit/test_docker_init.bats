@@ -9,6 +9,7 @@ setup_init_test_env() {
   export GIT_CONFIG_GLOBAL="$USER_HOME/.gitconfig"
   unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
   unset CNTB_OAUTH2_CLIENT_ID CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
+  unset OPENCODE_DOTFILES_REPO
   mkdir -p "$DEFAULTS_DIR" "$OMO_DEFAULTS_DIR" "$CONFIG_DIR"
   mkdir -p "$USER_HOME"
   # If running as root, ensure opencode user exists for chown block
@@ -21,6 +22,63 @@ setup_init_test_env() {
 teardown_init_test_env() {
   unset DEFAULTS_DIR OMO_DEFAULTS_DIR CONFIG_DIR USER_HOME HOME GIT_CONFIG_GLOBAL
   rm -rf "$INIT_TEST_TMPDIR"
+}
+
+@test "docker-init.sh installs dotfiles repo using Codespaces installer order" {
+  setup_init_test_env
+
+  local dotfiles_repo="$INIT_TEST_TMPDIR/dotfiles-repo"
+  mkdir -p "$dotfiles_repo"
+  (
+    cd "$dotfiles_repo"
+    git init -q
+    cat > install.sh <<'EOF'
+#!/bin/sh
+printf 'install-sh\n' > "$HOME/.dotfiles-installed"
+EOF
+    cat > setup <<'EOF'
+#!/bin/sh
+printf 'setup\n' > "$HOME/.dotfiles-installed"
+EOF
+    chmod +x install.sh setup
+    git add install.sh setup
+    git -c user.name=test -c user.email=test@example.com commit -q -m init
+  )
+
+  export OPENCODE_DOTFILES_REPO="$dotfiles_repo"
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -f "$USER_HOME/.dotfiles-installed" ]
+  [ "$(cat "$USER_HOME/.dotfiles-installed")" = "install-sh" ]
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh symlinks hidden dotfiles when repo has no installer" {
+  setup_init_test_env
+
+  local dotfiles_repo="$INIT_TEST_TMPDIR/dotfiles-repo"
+  mkdir -p "$dotfiles_repo/.config/example"
+  (
+    cd "$dotfiles_repo"
+    git init -q
+    echo "zshrc" > .zshrc
+    echo "config" > .config/example/config.txt
+    echo "not-hidden" > README.md
+    git add .zshrc .config README.md
+    git -c user.name=test -c user.email=test@example.com commit -q -m init
+  )
+
+  export OPENCODE_DOTFILES_REPO="$dotfiles_repo"
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ -L "$USER_HOME/.zshrc" ]
+  [ "$(readlink "$USER_HOME/.zshrc")" = "$USER_HOME/.opencode-dotfiles/repo/.zshrc" ]
+  [ -d "$USER_HOME/.config" ]
+  [ ! -e "$USER_HOME/.config/example/config.txt" ]
+  [ ! -e "$USER_HOME/README.md" ]
+
+  teardown_init_test_env
 }
 
 @test "docker-init.sh seeds ~/.gitmessage only once" {
