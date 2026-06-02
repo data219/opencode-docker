@@ -99,7 +99,7 @@ This uses OpenCode's built-in OpenAI OAuth/device login for ChatGPT Plus/Pro sub
 
 ### Optional build args
 
-The default image includes Python, Node.js, Go, PHP 8.4, Docker CLI, Docker Compose, and the platform CLIs. Extra runtimes are build-time choices:
+The default image includes Python, Node.js, Go, PHP 8.4, Docker CLI, Docker Compose, platform CLIs, and OpenCode LSP server commands. Extra runtimes are build-time choices:
 
 ```bash
 INSTALL_JAVA=true INSTALL_RUBY=true INSTALL_SWIFT=true INSTALL_ELIXIR=true INSTALL_RUST=true task build
@@ -161,7 +161,11 @@ Compose can render with an empty Gemini key because the variable is not checked 
 
 Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `rg`, `shellcheck`, `git`, `curl`, and `wget`.
 
-Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. Java, Ruby, Swift, Elixir/Erlang, nvm-managed Node.js, and Rust are optional build-time installs.
+Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. OpenCode LSP support is enabled in the seeded config for built-in PHP, JavaScript/TypeScript, Go, Bash, Lua, Python, Terraform, Rust, and YAML servers. Markdown uses a custom `marksman` server entry.
+
+The image installs the LSP server commands `intelephense`, `typescript-language-server`, `gopls`, `bash-language-server`, `lua-language-server`, `pyright-langserver`, `terraform-ls`, `rust-analyzer`, `yaml-language-server`, and `marksman`. The full Rust toolchain remains optional through `INSTALL_RUST=true`; the default image includes `rust-analyzer` for Rust LSP support but not `rustc` or Cargo.
+
+Java, Ruby, Swift, Elixir/Erlang, nvm-managed Node.js, and the full Rust toolchain are optional build-time installs.
 
 ## Development workflow
 
@@ -253,7 +257,7 @@ task test-integration
 task test
 ```
 
-The integration suite boots the real Compose stack, waits for the OpenCode health endpoint, checks the active OpenCode config path, verifies OmO plugin loading, and confirms bundled CLIs such as `agent-browser`, `gh`, `glab`, `cntb`, `atlcli`, and `cloudflared`.
+The integration suite boots the real Compose stack, waits for the OpenCode health endpoint, checks the active OpenCode config path, verifies OmO plugin loading, and confirms bundled CLIs such as `agent-browser`, `gh`, `glab`, `cntb`, `atlcli`, and `cloudflared`. It also checks that the default OpenCode LSP server commands are available in the running container.
 
 For a quick docs/config check:
 
