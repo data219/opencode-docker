@@ -30,7 +30,7 @@ ARG GOSU_VERSION=1.19
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.15.13
 # renovate: datasource=npm depName=agent-browser
-ARG AGENT_BROWSER_VERSION=0.27.0
+ARG AGENT_BROWSER_VERSION=0.27.1
 # renovate: datasource=npm depName=@dokploy/cli
 ARG DOKPLOY_CLI_VERSION=0.29.4
 # renovate: datasource=github-releases depName=mikefarah/yq
