@@ -371,8 +371,49 @@ RUN curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${G
 
 # --- Install OpenCode LSP server commands ---
 RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
-    --mount=type=cache,target=/go/pkg/mod,sharing=locked \
+    --mount=type=cache,target=/home/opencode/go/pkg/mod,sharing=locked \
+    --mount=type=secret,id=github_token,required=false \
+    --mount=type=secret,id=github_token_alt,required=false \
     set -eux; \
+    github_curl() { \
+      url="$1"; \
+      output="$2"; \
+      token_file=""; \
+      if [ -s /run/secrets/github_token ]; then token_file=/run/secrets/github_token; \
+      elif [ -s /run/secrets/github_token_alt ]; then token_file=/run/secrets/github_token_alt; \
+      fi; \
+      if [ -n "${token_file}" ]; then \
+        set +x; \
+        github_token="$(tr -d '\r\n' < "${token_file}")"; \
+        if [ -n "${github_token}" ]; then \
+          set +e; \
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 -H "Authorization: Bearer ${github_token}" "${url}" -o "${output}"; \
+          curl_status="$?"; \
+          set -e; \
+          github_token=""; \
+          set -x; \
+          if [ "${curl_status}" -eq 0 ]; then return 0; fi; \
+        fi; \
+        set -x; \
+      fi; \
+      curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "${url}" -o "${output}"; \
+    }; \
+    verify_github_asset_digest() { \
+      repo="$1"; \
+      tag="$2"; \
+      asset="$3"; \
+      file="$4"; \
+      metadata="$(mktemp)"; \
+      github_curl "https://api.github.com/repos/${repo}/releases/tags/${tag}" "${metadata}"; \
+      digest="$(jq -r --arg asset "${asset}" '.assets[] | select(.name == $asset) | .digest // empty' "${metadata}")"; \
+      rm -f "${metadata}"; \
+      case "${digest}" in \
+        sha256:*) ;; \
+        *) echo "sha256 digest not found for ${repo}@${tag}/${asset}" >&2; exit 1 ;; \
+      esac; \
+      printf '%s  %s\n' "${digest#sha256:}" "${file}" > "${file}.sha256"; \
+      sha256sum -c "${file}.sha256"; \
+    }; \
     arch="$(dpkg --print-architecture)"; \
     case "${arch}" in \
       amd64) common_arch="amd64"; lua_arch="x64"; marksman_arch="x64"; rust_arch="x86_64" ;; \
@@ -396,17 +437,21 @@ RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
     install -m 0755 /tmp/terraform-ls/terraform-ls /usr/local/bin/terraform-ls; \
     lua_archive="lua-language-server-${LUA_LANGUAGE_SERVER_VERSION}-linux-${lua_arch}.tar.gz"; \
     curl -fsSL "https://github.com/LuaLS/lua-language-server/releases/download/${LUA_LANGUAGE_SERVER_VERSION}/${lua_archive}" -o /tmp/lua-language-server.tar.gz; \
+    verify_github_asset_digest "LuaLS/lua-language-server" "${LUA_LANGUAGE_SERVER_VERSION}" "${lua_archive}" /tmp/lua-language-server.tar.gz; \
     mkdir -p /opt/lua-language-server; \
     tar -xzf /tmp/lua-language-server.tar.gz -C /opt/lua-language-server; \
     ln -sf /opt/lua-language-server/bin/lua-language-server /usr/local/bin/lua-language-server; \
     marksman_asset="marksman-linux-${marksman_arch}"; \
-    curl -fsSL "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/${marksman_asset}" -o /usr/local/bin/marksman; \
+    curl -fsSL "https://github.com/artempyanykh/marksman/releases/download/${MARKSMAN_VERSION}/${marksman_asset}" -o /tmp/marksman; \
+    verify_github_asset_digest "artempyanykh/marksman" "${MARKSMAN_VERSION}" "${marksman_asset}" /tmp/marksman; \
+    install -m 0755 /tmp/marksman /usr/local/bin/marksman; \
     chmod +x /usr/local/bin/marksman; \
     curl -fsSL "https://github.com/rust-lang/rust-analyzer/releases/download/${RUST_ANALYZER_VERSION}/rust-analyzer-${rust_arch}-unknown-linux-gnu.gz" -o /tmp/rust-analyzer.gz; \
+    verify_github_asset_digest "rust-lang/rust-analyzer" "${RUST_ANALYZER_VERSION}" "rust-analyzer-${rust_arch}-unknown-linux-gnu.gz" /tmp/rust-analyzer.gz; \
     gzip -dc /tmp/rust-analyzer.gz > /usr/local/bin/rust-analyzer; \
     chmod +x /usr/local/bin/rust-analyzer; \
     npm cache clean --force; \
-    rm -rf /root/.npm /tmp/terraform-ls /tmp/terraform-ls.zip /tmp/terraform-ls.sha256sums /tmp/terraform-ls.zip.sha256 /tmp/lua-language-server.tar.gz /tmp/rust-analyzer.gz; \
+    rm -rf /root/.npm /tmp/terraform-ls /tmp/terraform-ls.zip /tmp/terraform-ls.sha256sums /tmp/terraform-ls.zip.sha256 /tmp/lua-language-server.tar.gz /tmp/lua-language-server.tar.gz.sha256 /tmp/marksman /tmp/marksman.sha256 /tmp/rust-analyzer.gz /tmp/rust-analyzer.gz.sha256; \
     command -v intelephense; \
     typescript-language-server --version; \
     gopls version; \
