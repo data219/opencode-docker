@@ -24,7 +24,7 @@
 - For one-off GitHub Actions integration-test timeouts, rerun the same run once before code changes to classify flake vs deterministic regression.
 - When the rerun succeeds and local reproduction is stable, prefer a minimal CI timeout hardening (workflow env) over behavioral entrypoint/service changes.
 - For timeout diagnostics, collect `docker compose ps`, service logs, and health status context before proposing fixes.
-- When a managed config file changes, bump both `bootstrap/config/.opencode-docker-config-version` and `data/config/.opencode-docker-config-version` so existing volumes get the updated managed seed.
+- When a managed config file changes, bump only `bootstrap/config/.opencode-docker-config-version` so existing volumes get the updated managed seed.
 - Docker-backed integration tests should avoid a single fixed host port; derive a per-run port or allow env override to prevent local port collisions.
 - For image-level browser automation changes, verify both the installed binary and the final seeded runtime config inside the booted container.
 - For browser-runtime fixes, verify both the required shared libraries and the effective browser executable path inside the running container; missing `.so` files and bind-mounted home directories can fail independently.
@@ -40,6 +40,11 @@
 - Do not patch repository scripts inside tests with `sed`, copied temp variants, or similar text rewrites just to redirect collaborators; prefer explicit env-driven test seams such as overrideable script paths.
 - Keep project tests focused on observable behavior, exit codes, ownership, health, command output, and file existence. Do not keep helper assertions whose primary purpose is checking file contents.
 - When mocking command execution in Bats, assert only the relevant invoked arguments or side effects; do not couple tests to the current host/container username unless that identity is the behavior under test.
+
+## Runtime Data
+
+- Treat `data/` as ignored runtime state created by the Docker stack.
+- Do not add, commit, or require changes under `data/`; make persistent seed changes in tracked bootstrap sources such as `bootstrap/config/`.
 
 ## Dockerfile Ownership Performance
 

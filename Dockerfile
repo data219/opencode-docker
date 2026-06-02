@@ -75,7 +75,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update \
     && apt-get install -y --no-install-recommends \
-       curl git vim nano jq findutils openssh-client bind9-dnsutils \
+       curl git vim nano jq findutils ripgrep openssh-client bind9-dnsutils \
        python3 python3-pip python3-venv python-is-python3 \
        build-essential make pkg-config autoconf bison re2c \
        unzip xz-utils ca-certificates gnupg ghostscript \

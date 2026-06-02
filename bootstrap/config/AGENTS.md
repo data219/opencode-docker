@@ -53,6 +53,7 @@ The Docker Compose stack includes these command-line tools:
 - `helm`: Kubernetes package manager for chart rendering, installs, and upgrades.
 - `jq`: JSON processor for filtering, transforming, and validating JSON data.
 - `yq`: YAML, JSON, and XML processor for config inspection and edits.
+- `rg`: ripgrep CLI for fast recursive text search.
 - `shellcheck`: Static analyzer for shell scripts.
 - `git`: Version control CLI for repository history, branches, diffs, and commits.
 - `curl`: HTTP client for API calls, downloads, and network checks.

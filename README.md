@@ -159,7 +159,7 @@ Compose can render with an empty Gemini key because the variable is not checked 
 
 ### Platform and language tools
 
-Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `shellcheck`, `git`, `curl`, and `wget`.
+Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `rg`, `shellcheck`, `git`, `curl`, and `wget`.
 
 Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. Java, Ruby, Swift, Elixir/Erlang, nvm-managed Node.js, and Rust are optional build-time installs.
 
