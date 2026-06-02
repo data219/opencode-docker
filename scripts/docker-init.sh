@@ -205,10 +205,9 @@ if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
       target_name="${base%.managed}"
       target="$CONFIG_DIR/$target_name"
       source_file="$item"
-      if [ "$target_name" = "opencode.json" ]; then
-        source_file="$CONFIG_VARIANT_DIR/opencode.json"
-      elif [ "$target_name" = "oh-my-openagent.jsonc" ]; then
-        source_file="$CONFIG_VARIANT_DIR/oh-my-openagent.jsonc"
+      variant_source_file="$CONFIG_VARIANT_DIR/$target_name"
+      if [ -f "$variant_source_file" ]; then
+        source_file="$variant_source_file"
       fi
       cp -a -- "$source_file" "$target"
     else
