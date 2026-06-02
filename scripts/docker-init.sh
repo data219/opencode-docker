@@ -7,8 +7,52 @@ DEFAULTS_DIR="${DEFAULTS_DIR:-/opt/opencode-defaults}"
 OMO_DEFAULTS_DIR="${OMO_DEFAULTS_DIR:-/opt/omo-defaults}"
 CONFIG_DIR="${CONFIG_DIR:-/home/opencode/.config/opencode}"
 USER_HOME="${USER_HOME:-/home/opencode}"
+VARIANTS_DIR="${DEFAULTS_DIR}/variants"
+CONFIG_VARIANT="${OPENCODE_CONFIG_VARIANT:-openai-chatgpt}"
+CONFIG_VARIANT_DIR=""
+CONFIG_VARIANT_FILE="$CONFIG_DIR/.opencode-docker-config-variant"
 CONFIG_VERSION_FILE="$CONFIG_DIR/.opencode-docker-config-version"
 IMAGE_VERSION_FILE="$DEFAULTS_DIR/.opencode-docker-config-version"
+
+if [ -z "$CONFIG_VARIANT" ]; then
+  CONFIG_VARIANT="openai-chatgpt"
+fi
+
+list_config_variants() {
+  local variant_dir
+  if [ ! -d "$VARIANTS_DIR" ]; then
+    return 1
+  fi
+  for variant_dir in "$VARIANTS_DIR"/*; do
+    [ -d "$variant_dir" ] || continue
+    printf '  %s\n' "$(basename "$variant_dir")"
+  done
+}
+
+resolve_config_variant() {
+  local requested_variant="$CONFIG_VARIANT"
+  local variant_dir
+
+  if [ ! -d "$VARIANTS_DIR" ]; then
+    CONFIG_VARIANT_DIR="$DEFAULTS_DIR"
+    return
+  fi
+
+  for variant_dir in "$VARIANTS_DIR"/*; do
+    [ -d "$variant_dir" ] || continue
+    if [ "$requested_variant" = "$(basename "$variant_dir")" ]; then
+      CONFIG_VARIANT_DIR="$variant_dir"
+      return
+    fi
+  done
+
+  echo "ERROR: unknown config variant: $requested_variant" >&2
+  echo "Available variants:" >&2
+  list_config_variants >&2
+  exit 1
+}
+
+resolve_config_variant
 
 # Fix ownership of the persisted home tree BEFORE seeding.
 # Docker creates bind mount targets as root when they don't exist on host.
@@ -139,6 +183,11 @@ elif [ -f "$IMAGE_VERSION_FILE" ]; then
   fi
 fi
 
+if [ -f "$CONFIG_VARIANT_FILE" ] && [ "$(cat "$CONFIG_VARIANT_FILE" 2>/dev/null || true)" != "$CONFIG_VARIANT" ]; then
+  echo "Config variant changed: $(cat "$CONFIG_VARIANT_FILE" 2>/dev/null || echo "<none>") → $CONFIG_VARIANT. Re-seeding selected files..."
+  NEED_SEED=true
+fi
+
 if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
   # Re-seed managed configs (version-tracked), but preserve user customizations.
   # Files with ".managed" suffix are always overwritten from image defaults.
@@ -148,11 +197,20 @@ if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
   for item in "$DEFAULTS_DIR"/*; do
     [ -e "$item" ] || continue
     base="$(basename "$item")"
+    if [ "$base" = "variants" ]; then
+      continue
+    fi
     if [[ "$base" == *.managed ]]; then
       # Strip .managed suffix for the target filename
       target_name="${base%.managed}"
       target="$CONFIG_DIR/$target_name"
-      cp -a -- "$item" "$target"
+      source_file="$item"
+      if [ "$target_name" = "opencode.json" ]; then
+        source_file="$CONFIG_VARIANT_DIR/opencode.json"
+      elif [ "$target_name" = "oh-my-openagent.jsonc" ]; then
+        source_file="$CONFIG_VARIANT_DIR/oh-my-openagent.jsonc"
+      fi
+      cp -a -- "$source_file" "$target"
     else
       # Seed non-managed files only if they don't exist yet (first start)
       target="$CONFIG_DIR/$base"
@@ -167,6 +225,7 @@ if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
   if [ -f "$IMAGE_VERSION_FILE" ]; then
     cp -a -- "$IMAGE_VERSION_FILE" "$CONFIG_VERSION_FILE"
   fi
+  echo "$CONFIG_VARIANT" > "$CONFIG_VARIANT_FILE"
 fi
 
 # Seed ~/.gitmessage only if it is missing.

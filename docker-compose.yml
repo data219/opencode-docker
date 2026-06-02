@@ -25,6 +25,7 @@ services:
       # WARNING: Container binds 0.0.0.0 internally (required for port forwarding).
       # Set OPENCODE_BIND_ADDRESS (host-level) and OPENCODE_SERVER_PASSWORD to restrict access.
       - OPENCODE_MODE=${OPENCODE_MODE:-web}
+      - OPENCODE_CONFIG_VARIANT=${OPENCODE_CONFIG_VARIANT:-openai-chatgpt}
       - OPENCODE_PORT=${OPENCODE_PORT:-4000}
       - OPENCODE_SERVER_USERNAME=${OPENCODE_SERVER_USERNAME:-}
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD:-}
