@@ -4,93 +4,98 @@
 
 FROM debian:13.5-slim
 
-# --- Optional language build args ---
-ARG INSTALL_JAVA=false
-ARG INSTALL_RUBY=false
-ARG INSTALL_SWIFT=false
+# --- Optional language build flags ---
 ARG INSTALL_ELIXIR=false
+ARG INSTALL_JAVA=false
 ARG INSTALL_NVM=false
-# renovate: datasource=node-version depName=node versioning=node
-ARG NODE_VERSION=24.16.0
-# renovate: datasource=github-releases depName=composer/composer
-ARG COMPOSER_VERSION=2.10.0
-# renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG PYENV_VERSION=v2.6.32
-# renovate: datasource=github-releases depName=rust-lang/rustup
-ARG RUSTUP_VERSION=1.29.0
-# renovate: datasource=github-releases depName=rust-lang/rust
-ARG RUST_TOOLCHAIN_VERSION=1.96.0
-# renovate: datasource=git-refs depName=moovweb/gvm packageName=https://github.com/moovweb/gvm
-ARG GVM_REF=master
-ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
-# renovate: datasource=github-releases depName=oven-sh/bun
-ARG BUN_VERSION=1.3.12
-# renovate: datasource=github-releases depName=tianon/gosu
-ARG GOSU_VERSION=1.19
-# renovate: datasource=npm depName=opencode-ai
-ARG OPENCODE_VERSION=1.15.13
+ARG INSTALL_RUBY=false
+ARG INSTALL_RUST=false
+ARG INSTALL_SWIFT=false
+
+# --- Software package versions ---
 # renovate: datasource=npm depName=agent-browser
 ARG AGENT_BROWSER_VERSION=0.27.1
-# renovate: datasource=npm depName=@dokploy/cli
-ARG DOKPLOY_CLI_VERSION=0.29.4
-# renovate: datasource=npm depName=intelephense
-ARG INTELEPHENSE_VERSION=1.18.4
-# renovate: datasource=npm depName=typescript
-ARG TYPESCRIPT_VERSION=6.0.3
-# renovate: datasource=npm depName=typescript-language-server
-ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=5.3.0
+# renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
+ARG ATLCLI_VERSION=0.17.0
 # renovate: datasource=npm depName=bash-language-server
 ARG BASH_LANGUAGE_SERVER_VERSION=5.6.0
-# renovate: datasource=npm depName=pyright
-ARG PYRIGHT_VERSION=1.1.410
-# renovate: datasource=npm depName=yaml-language-server
-ARG YAML_LANGUAGE_SERVER_VERSION=1.23.0
-# renovate: datasource=go depName=golang.org/x/tools/gopls
-ARG GOPLS_VERSION=0.22.0
-# renovate: datasource=github-releases depName=LuaLS/lua-language-server
-ARG LUA_LANGUAGE_SERVER_VERSION=3.18.2
-# renovate: datasource=github-releases depName=hashicorp/terraform-ls
-ARG TERRAFORM_LS_VERSION=0.38.6
-# renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
-ARG RUST_ANALYZER_VERSION=2026-06-01
-# renovate: datasource=github-releases depName=artempyanykh/marksman versioning=loose
-ARG MARKSMAN_VERSION=2026-02-08
-# renovate: datasource=github-releases depName=mikefarah/yq
-ARG YQ_VERSION=4.53.2
-# renovate: datasource=github-releases depName=hashicorp/terraform
-ARG TERRAFORM_VERSION=1.15.5
-# renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG KUBECTL_VERSION=1.36.1
-# renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG HELM_VERSION=4.2.0
-# renovate: datasource=github-releases depName=cli/cli versioning=semver
-ARG GH_VERSION=2.93.0
-# renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
-ARG GLAB_VERSION=1.101.0
-# renovate: datasource=github-releases depName=contabo/cntb versioning=semver
-ARG CNTB_VERSION=1.6
+# renovate: datasource=github-releases depName=oven-sh/bun
+ARG BUN_VERSION=1.3.12
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
 ARG CLOUDFLARED_VERSION=2026.5.2
+# renovate: datasource=github-releases depName=contabo/cntb versioning=semver
+ARG CNTB_VERSION=1.6
+# renovate: datasource=github-releases depName=composer/composer
+ARG COMPOSER_VERSION=2.10.0
+# renovate: datasource=npm depName=@dokploy/cli
+ARG DOKPLOY_CLI_VERSION=0.29.4
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
 ARG DOCKER_CLI_VERSION=29.4.1
 # renovate: datasource=github-releases depName=docker/compose versioning=semver
 ARG DOCKER_COMPOSE_VERSION=5.1.4
-# renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
-ARG ATLCLI_VERSION=0.17.0
-# renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG NVM_VERSION=v0.40.4
-# renovate: datasource=golang-version depName=go
-ARG GO_VERSION=1.26.3
+# renovate: datasource=github-releases depName=cli/cli versioning=semver
+ARG GH_VERSION=2.93.0
+# renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
+ARG GLAB_VERSION=1.101.0
 # renovate: datasource=github-releases depName=golangci/golangci-lint
 ARG GO_LINT_VERSION=2.12.2
+# renovate: datasource=golang-version depName=go
+ARG GO_VERSION=1.26.3
+# renovate: datasource=go depName=golang.org/x/tools/gopls
+ARG GOPLS_VERSION=0.22.0
+# renovate: datasource=github-releases depName=tianon/gosu
+ARG GOSU_VERSION=1.19
+# renovate: datasource=git-refs depName=moovweb/gvm packageName=https://github.com/moovweb/gvm
+ARG GVM_REF=master
+ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
+# renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG HELM_VERSION=4.2.0
+# renovate: datasource=npm depName=intelephense
+ARG INTELEPHENSE_VERSION=1.18.4
 # renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
 ARG JAVA_VERSION=21.0.11+10
-# renovate: datasource=ruby-version depName=ruby versioning=ruby
-ARG RUBY_VERSION=4.0.5
-# renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
-ARG SWIFT_VERSION=6.3.2
+# renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG KUBECTL_VERSION=1.36.1
+# renovate: datasource=github-releases depName=LuaLS/lua-language-server
+ARG LUA_LANGUAGE_SERVER_VERSION=3.18.2
+# renovate: datasource=github-releases depName=artempyanykh/marksman versioning=loose
+ARG MARKSMAN_VERSION=2026-02-08
+# renovate: datasource=node-version depName=node versioning=node
+ARG NODE_VERSION=24.16.0
+# renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG NVM_VERSION=v0.40.4
 # renovate: datasource=npm depName=oh-my-opencode
 ARG OMO_VERSION=4.6.0
+# renovate: datasource=npm depName=@openchamber/web
+ARG OPENCHAMBER_VERSION=1.11.7
+# renovate: datasource=npm depName=opencode-ai
+ARG OPENCODE_VERSION=1.15.13
+# renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
+ARG PYENV_VERSION=v2.6.32
+# renovate: datasource=npm depName=pyright
+ARG PYRIGHT_VERSION=1.1.410
+# renovate: datasource=ruby-version depName=ruby versioning=ruby
+ARG RUBY_VERSION=4.0.5
+# renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
+ARG RUST_ANALYZER_VERSION=2026-06-01
+# renovate: datasource=github-releases depName=rust-lang/rust
+ARG RUST_TOOLCHAIN_VERSION=1.96.0
+# renovate: datasource=github-releases depName=rust-lang/rustup
+ARG RUSTUP_VERSION=1.29.0
+# renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
+ARG SWIFT_VERSION=6.3.2
+# renovate: datasource=github-releases depName=hashicorp/terraform-ls
+ARG TERRAFORM_LS_VERSION=0.38.6
+# renovate: datasource=github-releases depName=hashicorp/terraform
+ARG TERRAFORM_VERSION=1.15.5
+# renovate: datasource=npm depName=typescript-language-server
+ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=5.3.0
+# renovate: datasource=npm depName=typescript
+ARG TYPESCRIPT_VERSION=6.0.3
+# renovate: datasource=npm depName=yaml-language-server
+ARG YAML_LANGUAGE_SERVER_VERSION=1.23.0
+# renovate: datasource=github-releases depName=mikefarah/yq
+ARG YQ_VERSION=4.53.2
 
 # --- System packages (with BuildKit cache for apt) ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -182,9 +187,6 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
 RUN npm install -g opencode-ai@${OPENCODE_VERSION} \
     && npm cache clean --force \
     && rm -rf /root/.npm
-
-# renovate: datasource=npm depName=@openchamber/web
-ARG OPENCHAMBER_VERSION=1.11.7
 
 # --- Install OpenChamber (alternative Web GUI for OpenCode) ---
 RUN npm install -g @openchamber/web@${OPENCHAMBER_VERSION} \
@@ -530,7 +532,6 @@ RUN mkdir -p /opt/opencode-defaults \
     /root/.cache
 
 # --- Optional: Rust via rustup ---
-ARG INSTALL_RUST=false
 RUN install -d -o opencode -g opencode "$RUSTUP_HOME" "$CARGO_HOME" \
     && if [ "$INSTALL_RUST" = "true" ]; then \
          curl --proto '=https' --tlsv1.2 -sSf "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
