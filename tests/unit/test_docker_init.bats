@@ -50,6 +50,9 @@ EOF
   [ "$status" -eq 0 ]
   [ -f "$USER_HOME/.dotfiles-installed" ]
   [ "$(cat "$USER_HOME/.dotfiles-installed")" = "install-sh" ]
+  [ -f "$USER_HOME/.opencode-dotfiles/repo-id" ]
+  [ "$(wc -c < "$USER_HOME/.opencode-dotfiles/repo-id")" -eq 65 ]
+  ! grep -F "$dotfiles_repo" "$USER_HOME/.opencode-dotfiles/repo-id"
 
   teardown_init_test_env
 }
@@ -75,8 +78,34 @@ EOF
   [ -L "$USER_HOME/.zshrc" ]
   [ "$(readlink "$USER_HOME/.zshrc")" = "$USER_HOME/.opencode-dotfiles/repo/.zshrc" ]
   [ -d "$USER_HOME/.config" ]
-  [ ! -e "$USER_HOME/.config/example/config.txt" ]
+  [ -L "$USER_HOME/.config/example" ]
+  [ "$(readlink "$USER_HOME/.config/example")" = "$USER_HOME/.opencode-dotfiles/repo/.config/example" ]
   [ ! -e "$USER_HOME/README.md" ]
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh removes legacy plain dotfiles repo marker" {
+  setup_init_test_env
+
+  local dotfiles_repo="$INIT_TEST_TMPDIR/dotfiles-repo"
+  mkdir -p "$dotfiles_repo"
+  (
+    cd "$dotfiles_repo"
+    git init -q
+    echo "zshrc" > .zshrc
+    git add .zshrc
+    git -c user.name=test -c user.email=test@example.com commit -q -m init
+  )
+  mkdir -p "$USER_HOME/.opencode-dotfiles"
+  echo "https://user:secret@example.test/owner/dotfiles.git" > "$USER_HOME/.opencode-dotfiles/repo-url"
+
+  export OPENCODE_DOTFILES_REPO="$dotfiles_repo"
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ ! -e "$USER_HOME/.opencode-dotfiles/repo-url" ]
+  [ -f "$USER_HOME/.opencode-dotfiles/repo-id" ]
+  ! grep -F "secret" "$USER_HOME/.opencode-dotfiles/repo-id"
 
   teardown_init_test_env
 }

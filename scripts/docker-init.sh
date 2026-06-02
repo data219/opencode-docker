@@ -180,14 +180,18 @@ install_dotfiles_repo() {
 
   local dotfiles_base="$USER_HOME/.opencode-dotfiles"
   local dotfiles_repo_dir="$dotfiles_base/repo"
-  local dotfiles_repo_marker="$dotfiles_base/repo-url"
+  local dotfiles_repo_marker="$dotfiles_base/repo-id"
+  local legacy_dotfiles_repo_marker="$dotfiles_base/repo-url"
   local dotfiles_tmp_dir="$dotfiles_base/repo.tmp"
-  local current_repo_url=""
+  local repo_identifier
+  local current_repo_identifier=""
+
+  repo_identifier="$(printf '%s' "$repo_url" | sha256sum | awk '{print $1}')"
 
   if [ -f "$dotfiles_repo_marker" ]; then
-    current_repo_url="$(cat "$dotfiles_repo_marker" 2>/dev/null || true)"
+    current_repo_identifier="$(cat "$dotfiles_repo_marker" 2>/dev/null || true)"
   fi
-  if [ "$current_repo_url" = "$repo_url" ] && [ -d "$dotfiles_repo_dir" ]; then
+  if [ "$current_repo_identifier" = "$repo_identifier" ] && [ -d "$dotfiles_repo_dir" ]; then
     echo "Dotfiles repo already installed; skipping."
     return 0
   fi
@@ -199,6 +203,7 @@ install_dotfiles_repo() {
 
   echo "Installing dotfiles repo..."
   mkdir -p "$dotfiles_base"
+  rm -f "$legacy_dotfiles_repo_marker"
   rm -rf "$dotfiles_tmp_dir"
   git clone --depth 1 "$repo_url" "$dotfiles_tmp_dir"
   rm -rf "$dotfiles_repo_dir"
@@ -242,17 +247,29 @@ install_dotfiles_repo() {
     shopt -s dotglob nullglob
     for candidate in "$dotfiles_repo_dir"/.[!.]* "$dotfiles_repo_dir"/..?*; do
       [ -e "$candidate" ] || continue
-      [ "$(basename "$candidate")" = ".git" ] && continue
+      local candidate_base
+      candidate_base="$(basename "$candidate")"
+      [ "$candidate_base" = ".git" ] && continue
       local target
-      target="$USER_HOME/$(basename "$candidate")"
-      if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+      target="$USER_HOME/$candidate_base"
+      if [ "$candidate_base" = ".config" ] && [ -d "$candidate" ] && [ -d "$target" ]; then
+        local config_entry
+        for config_entry in "$candidate"/* "$candidate"/.[!.]* "$candidate"/..?*; do
+          [ -e "$config_entry" ] || continue
+          local config_target
+          config_target="$target/$(basename "$config_entry")"
+          if [ ! -e "$config_target" ] && [ ! -L "$config_target" ]; then
+            ln -s "$config_entry" "$config_target"
+          fi
+        done
+      elif [ ! -e "$target" ] && [ ! -L "$target" ]; then
         ln -s "$candidate" "$target"
       fi
     done
     shopt -u dotglob nullglob
   fi
 
-  printf '%s\n' "$repo_url" > "$dotfiles_repo_marker"
+  printf '%s\n' "$repo_identifier" > "$dotfiles_repo_marker"
   if [ "$(id -u)" = "0" ]; then
     chown -R opencode:opencode "$dotfiles_base" 2>/dev/null || true
     chown -h opencode:opencode "$USER_HOME"/.[!.]* "$USER_HOME"/..?* 2>/dev/null || true
