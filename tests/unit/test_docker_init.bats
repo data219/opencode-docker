@@ -1,6 +1,7 @@
 # Helper: create opencode user for tests running as root
 setup_init_test_env() {
   INIT_TEST_TMPDIR="$(mktemp -d)"
+  chmod 755 "$INIT_TEST_TMPDIR"
   export DEFAULTS_DIR="$INIT_TEST_TMPDIR/defaults"
   export OMO_DEFAULTS_DIR="$INIT_TEST_TMPDIR/omo-defaults"
   export CONFIG_DIR="$INIT_TEST_TMPDIR/config"
@@ -9,7 +10,7 @@ setup_init_test_env() {
   export GIT_CONFIG_GLOBAL="$USER_HOME/.gitconfig"
   unset OPENCODE_GIT_AUTHOR_NAME OPENCODE_GIT_AUTHOR_EMAIL OPENCODE_GIT_COMMITTER_NAME OPENCODE_GIT_COMMITTER_EMAIL
   unset CNTB_OAUTH2_CLIENT_ID CNTB_OAUTH2_CLIENT_SECRET CNTB_OAUTH2_USER CNTB_OAUTH2_PASSWORD
-  unset OPENCODE_DOTFILES_REPO
+  unset OPENCODE_DOTFILES_REPO GH_TOKEN GITHUB_TOKEN
   mkdir -p "$DEFAULTS_DIR" "$OMO_DEFAULTS_DIR" "$CONFIG_DIR"
   mkdir -p "$USER_HOME"
   # If running as root, ensure opencode user exists for chown block
@@ -106,6 +107,76 @@ EOF
   [ ! -e "$USER_HOME/.opencode-dotfiles/repo-url" ]
   [ -f "$USER_HOME/.opencode-dotfiles/repo-id" ]
   ! grep -F "secret" "$USER_HOME/.opencode-dotfiles/repo-id"
+
+  teardown_init_test_env
+}
+
+@test "docker-init.sh uses GitHub token for private HTTPS dotfiles repo clone" {
+  setup_init_test_env
+
+  local real_git
+  real_git="$(command -v git)"
+  local mock_bin="$INIT_TEST_TMPDIR/bin"
+  local git_log="$INIT_TEST_TMPDIR/git-clone.log"
+  mkdir -p "$mock_bin"
+  cat > "$mock_bin/git" <<'EOF'
+#!/bin/bash
+is_clone=false
+for arg in "$@"; do
+  if [ "$arg" = "clone" ]; then
+    is_clone=true
+    break
+  fi
+done
+
+if [ "$is_clone" != "true" ]; then
+  exec "$REAL_GIT" "$@"
+fi
+
+printf '%s\n' "$*" > "$GIT_LOG"
+case " $* " in
+  *" -c credential.helper= clone "*)
+    ;;
+  *)
+    echo "credential helper was not disabled" >&2
+    exit 41
+    ;;
+esac
+if [ -z "${GIT_ASKPASS:-}" ] || [ ! -x "$GIT_ASKPASS" ]; then
+  echo "missing GitHub askpass helper" >&2
+  exit 42
+fi
+if [ "$("$GIT_ASKPASS" "Username for https://github.com")" != "x-access-token" ]; then
+  echo "missing GitHub token username" >&2
+  exit 43
+fi
+if [ "$("$GIT_ASKPASS" "Password for https://github.com")" != "$GH_TOKEN" ]; then
+  echo "missing GitHub token password" >&2
+  exit 44
+fi
+
+dest="${@: -1}"
+mkdir -p "$dest"
+cat > "$dest/install.sh" <<'INSTALL'
+#!/bin/sh
+printf 'private-dotfiles\n' > "$HOME/.dotfiles-installed"
+INSTALL
+chmod +x "$dest/install.sh"
+EOF
+  chmod +x "$mock_bin/git"
+
+  export PATH="$mock_bin:$PATH"
+  export REAL_GIT="$real_git"
+  export GIT_LOG="$git_log"
+  export GH_TOKEN="ghp_private_dotfiles_test"
+  export OPENCODE_DOTFILES_REPO="https://github.com/acme/private-dotfiles.git"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(cat "$USER_HOME/.dotfiles-installed")" = "private-dotfiles" ]
+  grep -F "https://github.com/acme/private-dotfiles.git" "$git_log"
+  ! grep -F "$GH_TOKEN" "$git_log"
+  ! grep -F "$GH_TOKEN" "$USER_HOME/.opencode-dotfiles/repo-id"
 
   teardown_init_test_env
 }
