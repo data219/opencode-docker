@@ -58,6 +58,7 @@ The default config variant is `zai-coding-plan`. It requires `OCD_ZHIPU_API_KEY`
 | `OPENCODE_PRINT_LOGS` | `false` | Streams OpenCode logs to container stderr. |
 | `OPENCODE_LOG_LEVEL` | empty | Optional `DEBUG`, `INFO`, `WARN`, or `ERROR`. |
 | `OPENCODE_HOME_DIR` | `./data/home` | Host path mounted as `/home/opencode`. |
+| `OPENCODE_DOTFILES_REPO` | empty | Optional trusted Git dotfiles repo installed into the persisted home on first startup or when the repo value changes. |
 | `OPENCHAMBER_ENABLED` | `false` | Starts OpenChamber alongside OpenCode. |
 | `OPENCHAMBER_PORT` | `4020` | OpenChamber port inside the container and on the host. |
 | `OPENCHAMBER_UI_PASSWORD` | empty | Optional OpenChamber UI password. Set this for non-local exposure. |
@@ -69,6 +70,12 @@ The default config variant is `zai-coding-plan`. It requires `OCD_ZHIPU_API_KEY`
 | `DOKPLOY_URL` / `DOKPLOY_API_KEY` | empty | Non-interactive Dokploy CLI auth. |
 
 Run `task migrate-env` after pulling changes if your `.env` still uses old names such as `ZHIPU_API_KEY` or `GEMINI_API_KEY`.
+
+### Dotfiles
+
+Set `OPENCODE_DOTFILES_REPO` in `.env` to install a trusted dotfiles repository into the container home. The stack follows the GitHub Codespaces installer order: `install.sh`, `install`, `bootstrap.sh`, `bootstrap`, `script/bootstrap`, `setup.sh`, `setup`, then `script/setup`.
+
+If no installer is present, hidden files and folders from the repo are symlinked into `/home/opencode` when the target does not already exist. Dotfiles scripts can run arbitrary commands; only configure repositories you trust.
 
 ### Config variants
 
@@ -159,7 +166,7 @@ Compose can render with an empty Gemini key because the variable is not checked 
 
 ### Platform and language tools
 
-Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `rg`, `shellcheck`, `git`, `curl`, and `wget`.
+Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `rg`, `shellcheck`, `git`, `zsh`, `curl`, and `wget`.
 
 Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. OpenCode LSP support is enabled in the seeded config for built-in PHP, JavaScript/TypeScript, Go, Bash, Lua, Python, Terraform, Rust, and YAML servers. Markdown uses a custom `marksman` server entry.
 

@@ -194,6 +194,8 @@ start_test_stack() {
     node --version >/dev/null &&
     command -v npm >/dev/null &&
     npm --version >/dev/null &&
+    command -v zsh >/dev/null &&
+    zsh --version >/dev/null &&
     command -v python >/dev/null &&
     command -v python3 >/dev/null &&
     python --version >/dev/null &&
