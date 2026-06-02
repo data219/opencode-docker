@@ -102,7 +102,7 @@ assert_file_not_matches() {
   assert_success
 }
 
-@test "openai-chatgpt variant uses expected OmO OpenAI-only models with documented substitution" {
+@test "openai-chatgpt variant uses expected OmO OpenAI-only models with documented substitutions" {
   file="$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
 
   run assert_file_matches 'openai/gpt-5\.5' "$file"
@@ -111,13 +111,19 @@ assert_file_not_matches() {
   run assert_file_matches 'openai/gpt-5\.4-mini' "$file"
   assert_success
 
-  run assert_file_matches 'openai/gpt-5\.3-codex' "$file"
+  run assert_file_matches 'openai/gpt-5\.4' "$file"
+  assert_success
+
+  run assert_file_not_matches 'openai/gpt-5\.3-codex' "$file"
   assert_success
 
   run assert_file_not_matches '"model": "openai/gpt-5\.4-mini-fast"' "$file"
   assert_success
 
   run assert_file_matches 'gpt-5\.4-mini-fast is substituted with openai/gpt-5\.4-mini' "$file"
+  assert_success
+
+  run assert_file_matches 'gpt-5\.3-codex.*use openai/gpt-5\.4' "$file"
   assert_success
 }
 
