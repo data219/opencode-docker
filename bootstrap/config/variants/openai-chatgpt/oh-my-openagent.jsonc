@@ -5,92 +5,182 @@
 // OmO upstream currently emits openai/gpt-5.4-mini-fast for explore/librarian, but the current
 // OpenCode/models.dev catalog does not expose that model id, so gpt-5.4-mini-fast is substituted with openai/gpt-5.4-mini.
 // Codex with a ChatGPT account rejects gpt-5.3-codex, so those category mappings use openai/gpt-5.4.
+// GPT-5.3-Codex-Spark is available as a separate-rate-limit, low-latency coding model in ChatGPT/CLI preview.
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
     "sisyphus": {
       "model": "openai/gpt-5.5",
-      "variant": "medium"
+      "variant": "medium",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "hephaestus": {
       "model": "openai/gpt-5.5",
       "variant": "medium",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ],
       "prompt_append": "Follow established plans precisely. Ask for clarification when plans are ambiguous. Prefer small, testable changes. Use LSP and AST-grep aggressively."
     },
     "prometheus": {
       "model": "openai/gpt-5.5",
       "variant": "high",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ],
       "prompt_append": "Always interview first. Validate scope before planning. Build exhaustive plans with milestones, risks, and contingencies. Max 2 parallel background tasks."
     },
     "metis": {
       "model": "openai/gpt-5.5",
       "variant": "high",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ],
       "prompt_append": "Critically evaluate plans. Identify gaps, risks, and improvements. Be thorough."
     },
     "oracle": {
       "model": "openai/gpt-5.5",
-      "variant": "high"
+      "variant": "high",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "momus": {
       "model": "openai/gpt-5.5",
       "variant": "xhigh",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ],
       "prompt_append": "Challenge all assumptions in plans. Look for edge cases, failure modes, and overlooked requirements."
     },
     "atlas": {
       "model": "openai/gpt-5.5",
-      "variant": "medium"
+      "variant": "medium",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "sisyphus-junior": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.3-codex-spark",
+      "fallback_models": [
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.4"
+      ],
       "variant": "medium"
     },
     "explore": {
       "model": "openai/gpt-5.4-mini",
+      "fallback_models": [
+        "openai/gpt-5.3-codex-spark",
+        "openai/gpt-5.5",
+        "openai/gpt-5.4"
+      ],
       "prompt_append": "Prefer searching official documentation and library sources over general web search."
     },
     "librarian": {
       "model": "openai/gpt-5.4-mini",
+      "fallback_models": [
+        "openai/gpt-5.3-codex-spark",
+        "openai/gpt-5.4",
+        "openai/gpt-5.5"
+      ],
       "prompt_append": "Focus on finding authoritative sources. Cross-reference results when possible. Keep research brief and decision-oriented: return only the facts needed for the current task, cite sources, and avoid exhaustive result dumps or broad background unless explicitly requested. Prefer a short answer with 3-5 high-signal bullets over long summaries."
     },
     "multimodal-looker": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.4",
       "variant": "medium",
       "fallback_models": [
-        "openai/gpt-5-nano"
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark",
+        "openai/gpt-5.5"
       ]
     }
   },
   "categories": {
     "ultrabrain": {
       "model": "openai/gpt-5.5",
-      "variant": "xhigh"
+      "variant": "xhigh",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "visual-engineering": {
       "model": "openai/gpt-5.5",
-      "variant": "high"
+      "variant": "high",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "unspecified-high": {
-      "model": "openai/gpt-5.4",
-      "variant": "medium"
+      "model": "openai/gpt-5.5",
+      "variant": "high",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "deep": {
       "model": "openai/gpt-5.5",
-      "variant": "medium"
+      "variant": "medium",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "writing": {
       "model": "openai/gpt-5.5",
-      "variant": "medium"
+      "variant": "medium",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     },
     "quick": {
-      "model": "openai/gpt-5.4-mini"
+      "model": "openai/gpt-5.3-codex-spark",
+      "fallback_models": [
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.4"
+      ]
     },
     "unspecified-low": {
-      "model": "openai/gpt-5.4",
-      "variant": "low"
+      "model": "openai/gpt-5.4-mini",
+      "variant": "low",
+      "fallback_models": [
+        "openai/gpt-5.3-codex-spark",
+        "openai/gpt-5.4"
+      ]
     },
     "artistry": {
       "model": "openai/gpt-5.5",
-      "variant": "xhigh"
+      "variant": "xhigh",
+      "fallback_models": [
+        "openai/gpt-5.4",
+        "openai/gpt-5.4-mini",
+        "openai/gpt-5.3-codex-spark"
+      ]
     }
   },
   "runtime_fallback": {
@@ -119,7 +209,7 @@
       "openai/gpt-5.5": 2,
       "openai/gpt-5.4": 2,
       "openai/gpt-5.4-mini": 2,
-      "openai/gpt-5-nano": 2
+      "openai/gpt-5.3-codex-spark": 3
     }
   },
   "team_mode": {
