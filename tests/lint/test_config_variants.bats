@@ -109,7 +109,10 @@ assert_file_not_matches() {
   run assert_file_matches 'openai/gpt-5\.4' "$file"
   assert_success
 
-  run assert_file_not_matches 'openai/gpt-5\.3-codex' "$file"
+  run assert_file_not_matches '"model": "openai/gpt-5\.3-codex"' "$file"
+  assert_success
+
+  run assert_file_matches 'openai/gpt-5\.3-codex-spark' "$file"
   assert_success
 
   run assert_file_not_matches '"model": "openai/gpt-5\.4-mini-fast"' "$file"
