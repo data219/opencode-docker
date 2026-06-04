@@ -71,7 +71,7 @@ ARG OPENCHAMBER_VERSION=1.12.0
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.15.13
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG PYENV_VERSION=v2.6.32
+ARG PYENV_VERSION=v2.7.1
 # renovate: datasource=npm depName=pyright
 ARG PYRIGHT_VERSION=1.1.410
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
