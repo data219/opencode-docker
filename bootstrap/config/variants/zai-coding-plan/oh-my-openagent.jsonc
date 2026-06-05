@@ -11,7 +11,8 @@
       "fallback_models": [
         "zai-coding-plan/glm-5-turbo",
         "zai-coding-plan/glm-4.7"
-      ]
+      ],
+      "prompt_append": "Avoid long silent polling. Do not run sleeps longer than 30 seconds or multi-minute wait loops. For external review/CI waits, use bounded short polling with narrow JSON/JQ fields, persist pending state with the next exact poll command, and stop cleanly instead of calling it a harness interruption."
     },
     "hephaestus": {
       "model": "zai-coding-plan/glm-5-turbo",

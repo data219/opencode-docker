@@ -16,7 +16,8 @@
         "openai/gpt-5.4",
         "openai/gpt-5.4-mini",
         "openai/gpt-5.3-codex-spark"
-      ]
+      ],
+      "prompt_append": "Avoid long silent polling. Do not run sleeps longer than 30 seconds or multi-minute wait loops. For external review/CI waits, use bounded short polling with narrow JSON/JQ fields, persist pending state with the next exact poll command, and stop cleanly instead of calling it a harness interruption."
     },
     "hephaestus": {
       "model": "openai/gpt-5.5",

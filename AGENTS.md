@@ -35,6 +35,13 @@
 - When a bind-mounted home is created by Docker as `root`, ensure startup init logic recreates and re-owns writable runtime directories such as `.config` and `.cache` before validating browser or app startup behavior.
 - For OpenCode runtime/plugin assertions, verify the active config path first with `opencode debug paths`; do not treat seeded file existence alone as proof that runtime config was loaded.
 
+## GitHub Review-Agent Polling
+
+- Avoid long silent polling in agent workflows. Do not use sleeps longer than 30 seconds or multi-minute wait loops; use bounded short polling and persist the exact next poll command when external reviewers or CI are still pending.
+- Avoid broad `gh pr view --json comments,reviews`, `gh pr view --json latestReviews,comments,reviews`, or equivalent all-body pulls in review-agent loops because CodeRabbit can emit very large internal-state payloads.
+- For current PR state, query only narrow fields such as `number,url,headRefName,headRefOid,mergeStateStatus,statusCheckRollup` with `--jq`.
+- For review threads and inline findings, prefer GraphQL `reviewThreads` or focused REST endpoints, and request only fields needed for classification before fetching full comment bodies.
+
 ## Behavior-Only Test Guardrails
 
 - Do not patch repository scripts inside tests with `sed`, copied temp variants, or similar text rewrites just to redirect collaborators; prefer explicit env-driven test seams such as overrideable script paths.
