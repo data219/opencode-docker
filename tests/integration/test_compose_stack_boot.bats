@@ -235,6 +235,7 @@ start_test_stack() {
       typescript-language-server \
       gopls \
       bash-language-server \
+      vue-language-server \
       lua-language-server \
       pyright-langserver \
       terraform-ls \

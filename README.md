@@ -176,7 +176,7 @@ Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloud
 
 Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. OpenCode LSP support is enabled in the seeded config for built-in PHP, JavaScript/TypeScript, Go, Bash, Lua, Python, Terraform, Rust, and YAML servers. Markdown uses a custom `marksman` server entry.
 
-The image installs the LSP server commands `intelephense`, `typescript-language-server`, `gopls`, `bash-language-server`, `lua-language-server`, `pyright-langserver`, `terraform-ls`, `rust-analyzer`, `yaml-language-server`, and `marksman`. The full Rust toolchain remains optional through `INSTALL_RUST=true`; the default image includes `rust-analyzer` for Rust LSP support but not `rustc` or Cargo.
+The image installs the LSP server commands `intelephense`, `typescript-language-server`, `gopls`, `bash-language-server`, `vue-language-server`, `lua-language-server`, `pyright-langserver`, `terraform-ls`, `rust-analyzer`, `yaml-language-server`, and `marksman`. The full Rust toolchain remains optional through `INSTALL_RUST=true`; the default image includes `rust-analyzer` for Rust LSP support but not `rustc` or Cargo.
 
 Java, Ruby, Swift, Elixir/Erlang, nvm-managed Node.js, and the full Rust toolchain are optional build-time installs.
 

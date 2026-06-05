@@ -152,3 +152,11 @@ assert_file_not_matches() {
     assert_success
   done
 }
+
+@test "openai-chatgpt variant enables vue-language-server" {
+  run jq -e '
+    .lsp.vue.command == ["vue-language-server", "--stdio"]
+    and .lsp.vue.extensions == [".vue"]
+  ' bootstrap/config/variants/openai-chatgpt/opencode.json
+  assert_success
+}

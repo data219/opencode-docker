@@ -4,6 +4,10 @@
     "markdown": {
       "command": ["marksman", "server"],
       "extensions": [".md", ".markdown"]
+    },
+    "vue": {
+      "command": ["vue-language-server", "--stdio"],
+      "extensions": [".vue"]
     }
   },
   "plugin": [

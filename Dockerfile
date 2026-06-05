@@ -96,6 +96,8 @@ ARG TERRAFORM_VERSION=1.15.5
 ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=5.3.0
 # renovate: datasource=npm depName=typescript
 ARG TYPESCRIPT_VERSION=6.0.3
+# renovate: datasource=npm depName=@vue/language-server
+ARG VUE_LANGUAGE_SERVER_VERSION=3.3.3
 # renovate: datasource=npm depName=yaml-language-server
 ARG YAML_LANGUAGE_SERVER_VERSION=1.23.0
 # renovate: datasource=github-releases depName=mikefarah/yq
@@ -432,6 +434,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
       "typescript@${TYPESCRIPT_VERSION}" \
       "typescript-language-server@${TYPESCRIPT_LANGUAGE_SERVER_VERSION}" \
       "bash-language-server@${BASH_LANGUAGE_SERVER_VERSION}" \
+      "@vue/language-server@${VUE_LANGUAGE_SERVER_VERSION}" \
       "pyright@${PYRIGHT_VERSION}" \
       "basedpyright@${BASEDPYRIGHT_VERSION}" \
       "yaml-language-server@${YAML_LANGUAGE_SERVER_VERSION}"; \
@@ -464,6 +467,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
     typescript-language-server --version; \
     gopls version; \
     bash-language-server --version; \
+    vue-language-server --version; \
     lua-language-server --version; \
     command -v pyright-langserver; \
     pyright --version; \
