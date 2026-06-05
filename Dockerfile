@@ -61,7 +61,7 @@ ARG LUA_LANGUAGE_SERVER_VERSION=3.18.2
 # renovate: datasource=github-releases depName=artempyanykh/marksman versioning=loose
 ARG MARKSMAN_VERSION=2026-02-08
 # renovate: datasource=github-releases depName=go-task/task
-ARG TASK_VERSION=3.42.1
+ARG TASK_VERSION=3.51.1
 # renovate: datasource=node-version depName=node versioning=node
 ARG NODE_VERSION=24.16.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
