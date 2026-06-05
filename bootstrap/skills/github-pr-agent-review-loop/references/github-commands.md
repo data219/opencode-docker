@@ -35,9 +35,19 @@ Use REST when issue comments or review summaries are needed. Filter by bot login
 OWNER=$(gh repo view --json owner --jq '.owner.login')
 REPO=$(gh repo view --json name --jq '.name')
 PR=$(gh pr view --json number --jq '.number')
-gh api "repos/$OWNER/$REPO/pulls/$PR/reviews" --paginate
-gh api "repos/$OWNER/$REPO/pulls/$PR/comments" --paginate
-gh api "repos/$OWNER/$REPO/issues/$PR/comments" --paginate
+HEAD_SHA=$(gh pr view --json headRefOid --jq '.headRefOid')
+BOT_LOGIN="codex-bot"  # or other bot login
+REVIEW_ROUND="R1"      # current review round
+REVIEW_ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")  # set at start of review round
+
+# Filter reviews by bot login and timestamp before inspecting bodies
+gh api "repos/$OWNER/$REPO/pulls/$PR/reviews" --paginate --jq ".[] | select(.user.login == \"$BOT_LOGIN\" and (.body | contains(\"$REVIEW_ROUND\")) and .submitted_at > \"$REVIEW_ROUND_START\")"
+
+# Filter inline comments by bot login, commit SHA, and review round
+gh api "repos/$OWNER/$REPO/pulls/$PR/comments" --paginate --jq ".[] | select(.user.login == \"$BOT_LOGIN\" and .commit_id == \"$HEAD_SHA\" and (.body | contains(\"$REVIEW_ROUND\")))"
+
+# Filter issue comments by bot login, timestamp, and review round
+gh api "repos/$OWNER/$REPO/issues/$PR/comments" --paginate --jq ".[] | select(.user.login == \"$BOT_LOGIN\" and (.body | contains(\"$REVIEW_ROUND\")) and (.created_at > \"$REVIEW_ROUND_START\"))"
 ```
 
 ## Codex Review Thread Query

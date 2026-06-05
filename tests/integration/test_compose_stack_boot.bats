@@ -9,6 +9,14 @@ setup() {
   TEST_HOME_ROOT=""
 }
 
+emit_test_diag() {
+  local output
+
+  output="$("$@" 2>&1 || true)"
+  [ -n "$output" ] && printf "%s\n" "$output" >&3
+  [ -n "$output" ] && printf "%s\n" "$output" >&2
+}
+
 prepare_test_stack() {
   TEST_OPENCODE_PORT="${1:-$TEST_OPENCODE_PORT}"
   TEST_HOME_ROOT="$(mktemp -d "${PWD}/.test-home.XXXXXX")"
@@ -72,6 +80,7 @@ wait_for_http_health() {
     fi
     if [ "$elapsed" -ge "$next_progress" ]; then
       echo "  [wait_for_http_health] ${elapsed}/${timeout}s waiting for $url" >&3
+      echo "  [wait_for_http_health] ${elapsed}/${timeout}s waiting for $url" >&2
       next_progress=$((next_progress + 30))
     fi
     sleep "$interval"
@@ -79,15 +88,15 @@ wait_for_http_health() {
 }
 
 print_stack_diagnostics() {
-  compose_ci ps >&3 || true
-  compose_ci logs --tail=200 opencode >&3 || true
-  docker inspect \
+  emit_test_diag compose_ci ps
+  emit_test_diag compose_ci logs --tail=200 opencode
+  emit_test_diag docker inspect \
     --format 'health={{json .State.Health}}' \
-    "$TEST_CONTAINER_NAME" >&3 2>&1 || true
-  compose_ci exec -T opencode sh -lc '
+    "$TEST_CONTAINER_NAME"
+  emit_test_diag compose_ci exec -T opencode sh -lc '
     echo "container-health-probe:"
     curl -sv --max-time 5 "http://127.0.0.1:${OPENCODE_PORT}/health"
-  ' >&3 2>&1 || true
+  ' || true
 }
 
 start_test_stack() {
@@ -103,6 +112,7 @@ start_test_stack() {
     print_stack_diagnostics
     if [ "$attempt" -lt "$TEST_STACK_START_ATTEMPTS" ]; then
       echo "  [start_test_stack] health check timed out; restarting stack attempt $((attempt + 1))/${TEST_STACK_START_ATTEMPTS}" >&3
+      echo "  [start_test_stack] health check timed out; restarting stack attempt $((attempt + 1))/${TEST_STACK_START_ATTEMPTS}" >&2
       compose_ci restart opencode >&3 || true
     fi
     attempt=$((attempt + 1))

@@ -22,6 +22,10 @@ If tests or checks cannot run, say so clearly and explain why.
 
 Do not claim a fix is complete unless the relevant output was checked.
 
+## Background Tasks
+
+Default `background_output` reads are cursor-based and return only new output since the last default read for that task. If you need to re-read a completed task, call `background_output` with `full_session=true`; use `since_message_id` only when you intentionally want explicit incremental reads.
+
 ## Docker-First Workflow
 
 When a project has Docker or Docker Compose setup, run tests and project commands inside containers.
