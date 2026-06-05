@@ -4,8 +4,15 @@
 
 ```bash
 gh auth status
-gh pr view --json number,url,title,state,headRefName,baseRefName,headRefOid,mergeStateStatus,statusCheckRollup
+gh pr view --json number,url,title,state,headRefName,baseRefName,headRefOid,mergeStateStatus,statusCheckRollup --jq '{number,url,title,state,headRefName,baseRefName,headRefOid,mergeStateStatus,checks:[.statusCheckRollup[]? | {name,status:(.status // .state),conclusion:(.conclusion // ""),detailsUrl:(.detailsUrl // .link // "")}]}'
 ```
+
+## Polling And Payload Guardrails
+
+- Do not run sleeps longer than 30 seconds or multi-minute silent polling loops. For external reviewer or CI waits, poll with visible short checks and stop after the timing window with the exact next command to run.
+- Do not use `gh pr view --json comments,reviews`, `gh pr view --json latestReviews,comments,reviews`, or other all-body pulls as the default review-loop state source.
+- Prefer narrow `gh --json --jq` fields for PR and CI state, GraphQL `reviewThreads` for inline Codex threads, and focused REST endpoints for issue/review comments.
+- Fetch full comment bodies only after narrowing to the current active-agent signals and matching the current `headRefOid`.
 
 ## CI State
 
@@ -21,6 +28,8 @@ gh run view "$RUN_ID" --log
 ```
 
 ## REST Sources
+
+Use REST when issue comments or review summaries are needed. Filter by bot login, timestamp, and current review round before inspecting large bodies.
 
 ```bash
 OWNER=$(gh repo view --json owner --jq '.owner.login')
@@ -48,7 +57,7 @@ query($owner: String!, $repo: String!, $number: Int!) {
           path
           line
           diffSide
-          comments(first: 100) {
+          comments(first: 20) {
             nodes {
               id
               author { login }

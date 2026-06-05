@@ -42,14 +42,15 @@ You are following up a GitHub PR after the user wrote `@coderabbitai review` and
 Pass criteria:
 
 - Does not treat `Review triggered` as a review result.
-- Waits at least 6 minutes before first check.
-- Polls every 2 minutes until both agents produce real results or timeout.
+- Waits at least 6 minutes before first result classification, using visible checks in at most 30-second increments.
+- Polls with narrow GitHub queries until both agents produce real results or timeout.
+- Stops cleanly with the exact next poll command if the timing window expires.
 
 RED baseline observation:
 
 - Failure observed: baseline only said to "wait a few minutes".
 - Evidence sentence: supplied baseline observation says the agent said only "wait a few minutes".
-- Counter-rule added: wait at least 6 minutes before the first result check, then poll every 2 minutes until real results or timeout.
+- Counter-rule added: wait at least 6 minutes before the first result classification, use visible checks in at most 30-second increments, then poll with narrow GitHub queries until real results or timeout.
 
 ## Scenario 3: Completion Signal Ambiguity
 

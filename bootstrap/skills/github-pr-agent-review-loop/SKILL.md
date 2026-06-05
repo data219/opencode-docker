@@ -35,6 +35,8 @@ Re-read `headRefOid` before pushing, replying, resolving, and triggering re-revi
 
 Classify review-agent activation before triggering; use only active agents. Check CI every round against current `headRefOid`; fix current-change failures before re-review and classify external, transient, unrelated, or unclear failures without guessing.
 
+Avoid broad `gh pr view --json comments,reviews` or `latestReviews,comments,reviews` calls for evidence gathering. Use narrow PR fields plus GraphQL `reviewThreads` or focused REST endpoints, and fetch full comment bodies only after narrowing to current active-agent signals.
+
 ## Loop
 
 1. Inspect live PR state.
@@ -49,7 +51,7 @@ Classify review-agent activation before triggering; use only active agents. Chec
 10. Resolve Codex threads after replying.
 11. Do not manually resolve CodeRabbit threads.
 12. Trigger re-reviews only for active agents, in separate PR comments.
-13. Wait at least 6 minutes, then poll every 2 minutes until active agents return real results or 15 minutes passes.
+13. Wait at least 6 minutes, using visible checks in at most 30-second increments; then poll with narrow GitHub queries until active agents return real results or 15 minutes passes. If still pending, stop cleanly with the exact next poll command instead of running a long silent wait.
 14. Repeat until active agents report no findings and current-head CI is classified.
 
 ## Completion Signals
