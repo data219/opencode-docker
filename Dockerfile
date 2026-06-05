@@ -60,6 +60,8 @@ ARG KUBECTL_VERSION=1.36.1
 ARG LUA_LANGUAGE_SERVER_VERSION=3.18.2
 # renovate: datasource=github-releases depName=artempyanykh/marksman versioning=loose
 ARG MARKSMAN_VERSION=2026-02-08
+# renovate: datasource=github-releases depName=go-task/task
+ARG TASK_VERSION=3.42.1
 # renovate: datasource=node-version depName=node versioning=node
 ARG NODE_VERSION=24.16.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
@@ -74,6 +76,8 @@ ARG OPENCODE_VERSION=1.16.0
 ARG PYENV_VERSION=v2.7.1
 # renovate: datasource=npm depName=pyright
 ARG PYRIGHT_VERSION=1.1.410
+# renovate: datasource=npm depName=basedpyright
+ARG BASEDPYRIGHT_VERSION=1.39.6
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
 ARG RUBY_VERSION=4.0.5
 # renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
@@ -115,7 +119,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
        libssl-dev libcurl4-openssl-dev libxml2-dev \
        libpq-dev libsqlite3-dev libffi-dev libzip-dev \
        libicu-dev libonig-dev sqlite3 zip \
-       ansible-core shellcheck rsync \
+       ansible-core ansible-lint shellcheck rsync \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/debconf/* \
     && rm -rf /usr/lib/python3.13/test \
@@ -428,6 +432,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
       "typescript-language-server@${TYPESCRIPT_LANGUAGE_SERVER_VERSION}" \
       "bash-language-server@${BASH_LANGUAGE_SERVER_VERSION}" \
       "pyright@${PYRIGHT_VERSION}" \
+      "basedpyright@${BASEDPYRIGHT_VERSION}" \
       "yaml-language-server@${YAML_LANGUAGE_SERVER_VERSION}"; \
     GOBIN=/opt/go/bin go install "golang.org/x/tools/gopls@v${GOPLS_VERSION}"; \
     terraform_ls_archive="terraform-ls_${TERRAFORM_LS_VERSION}_linux_${common_arch}.zip"; \
@@ -464,7 +469,25 @@ RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
     terraform-ls version; \
     rust-analyzer --version; \
     yaml-language-server --version; \
+    basedpyright --version; \
     marksman --version
+
+# --- Install Taskfile CLI ---
+RUN arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) task_archive="task_linux_amd64.tar.gz" ;; \
+      arm64) task_archive="task_linux_arm64.tar.gz" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    tmpdir="$(mktemp -d)"; \
+    curl -fsSL "https://github.com/go-task/task/releases/download/v${TASK_VERSION}/${task_archive}" -o "${tmpdir}/task.tgz"; \
+    curl -fsSL "https://github.com/go-task/task/releases/download/v${TASK_VERSION}/task_checksums.txt" -o "${tmpdir}/task_checksums.txt"; \
+    awk -v target="${task_archive}" -v task_file="${tmpdir}/task.tgz" '$2 == target { print $1 "  " task_file }' "${tmpdir}/task_checksums.txt" > "${tmpdir}/task.tgz.sha256"; \
+    sha256sum -c "${tmpdir}/task.tgz.sha256"; \
+    tar -xzf "${tmpdir}/task.tgz" -C "${tmpdir}"; \
+    install -m 0755 "${tmpdir}/task" /usr/local/bin/task; \
+    task --version; \
+    rm -rf "${tmpdir}"
 
 # --- Optional: Java (Temurin JDK 21) ---
 RUN if [ "$INSTALL_JAVA" = "true" ]; then \
