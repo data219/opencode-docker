@@ -14,6 +14,8 @@ Post a PR issue comment:
 
 The `Review triggered` comment is only an acknowledgement. It is not a review result and never means the loop is complete.
 
+When checking for CodeRabbit state, avoid `gh pr view --json comments,reviews` and other broad all-body pulls. Use focused issue-comment, review, and review-comment queries filtered to `coderabbitai[bot]`, then fetch full bodies only for the latest current-round signals.
+
 ## Findings
 
 CodeRabbit has findings when:

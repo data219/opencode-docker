@@ -32,6 +32,7 @@ Signals:
 ## Trigger Rules
 
 - Trigger re-review only for `active` agents.
-- Poll `unknown/pending` agents until a real result, unavailable signal, or timeout.
+- Poll `unknown/pending` agents until a real result, unavailable signal, or timeout, using visible checks in at most 30-second increments.
+- If the timing window expires, report `pending-timeout` with the exact next narrow GitHub poll command instead of keeping a long-running wait alive.
 - If one agent is active and the other is inactive or unavailable, run the loop with the active agent only.
 - Include inactive, pending-timeout, and unavailable states in the final report.
