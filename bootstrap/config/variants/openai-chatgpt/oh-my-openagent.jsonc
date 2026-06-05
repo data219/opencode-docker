@@ -224,8 +224,7 @@
   },
   "git_master": {
     "commit_footer": true,
-    "include_co_authored_by": true,
-    "git_env_prefix": "GIT_MASTER=1"
+    "include_co_authored_by": true
   },
   "sisyphus_agent": {
     "planner_enabled": true,
