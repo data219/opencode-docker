@@ -63,7 +63,7 @@ ARG MARKSMAN_VERSION=2026-02-08
 # renovate: datasource=node-version depName=node versioning=node
 ARG NODE_VERSION=24.16.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG NVM_VERSION=v0.40.4
+ARG NVM_VERSION=v0.40.5
 # renovate: datasource=npm depName=oh-my-opencode
 ARG OMO_VERSION=4.7.5
 # renovate: datasource=npm depName=@openchamber/web
