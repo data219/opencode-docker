@@ -38,6 +38,7 @@ PR=$(gh pr view --json number --jq '.number')
 HEAD_SHA=$(gh pr view --json headRefOid --jq '.headRefOid')
 BOT_LOGIN="codex-bot"  # or other bot login
 REVIEW_ROUND="R1"      # current review round
+REVIEW_ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")  # set at start of review round
 
 # Filter reviews by bot login and timestamp before inspecting bodies
 gh api "repos/$OWNER/$REPO/pulls/$PR/reviews" --paginate --jq ".[] | select(.user.login == \"$BOT_LOGIN\" and (.body | contains(\"$REVIEW_ROUND\")))"
@@ -46,7 +47,7 @@ gh api "repos/$OWNER/$REPO/pulls/$PR/reviews" --paginate --jq ".[] | select(.use
 gh api "repos/$OWNER/$REPO/pulls/$PR/comments" --paginate --jq ".[] | select(.user.login == \"$BOT_LOGIN\" and .commit_id == \"$HEAD_SHA\" and (.body | contains(\"$REVIEW_ROUND\")))"
 
 # Filter issue comments by bot login, timestamp, and review round
-gh api "repos/$OWNER/$REPO/issues/$PR/comments" --paginate --jq ".[] | select(.user.login == \"$BOT_LOGIN\" and (.body | contains(\"$REVIEW_ROUND\")) and (.created_at > \"2026-01-01T00:00:00Z\"))"
+gh api "repos/$OWNER/$REPO/issues/$PR/comments" --paginate --jq ".[] | select(.user.login == \"$BOT_LOGIN\" and (.body | contains(\"$REVIEW_ROUND\")) and (.created_at > \"$REVIEW_ROUND_START\"))"
 ```
 
 ## Codex Review Thread Query
