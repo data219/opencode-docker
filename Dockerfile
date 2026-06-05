@@ -108,6 +108,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get install -y --no-install-recommends \
        curl git vim nano zsh jq findutils ripgrep openssh-client bind9-dnsutils \
        python3 python3-pip python3-venv python-is-python3 \
+       python3-pytest \
        build-essential make pkg-config autoconf bison re2c \
        unzip xz-utils ca-certificates gnupg ghostscript \
        fonts-liberation wget xdg-utils \
@@ -470,6 +471,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
     rust-analyzer --version; \
     yaml-language-server --version; \
     basedpyright --version; \
+    python -m pytest --version; \
     marksman --version
 
 # --- Install Taskfile CLI ---
