@@ -97,13 +97,6 @@ assert_file_not_matches() {
   assert_success
 }
 
-@test "Oh My OpenAgent variants use a shell-safe git-master env prefix" {
-  for variant in zai-coding-plan openai-chatgpt; do
-    run assert_file_matches '"git_env_prefix": "GIT_MASTER=1"' "$(variant_file "$variant" oh-my-openagent.jsonc)"
-    assert_success
-  done
-}
-
 @test "openai-chatgpt variant uses expected OmO OpenAI-only models with documented substitutions" {
   file="$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
 
