@@ -77,7 +77,7 @@ ARG PYENV_VERSION=v2.7.1
 # renovate: datasource=npm depName=pyright
 ARG PYRIGHT_VERSION=1.1.410
 # renovate: datasource=npm depName=basedpyright
-ARG BASEDPYRIGHT_VERSION=1.39.6
+ARG BASEDPYRIGHT_VERSION=1.39.7
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
 ARG RUBY_VERSION=4.0.5
 # renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
