@@ -81,7 +81,7 @@ ARG BASEDPYRIGHT_VERSION=1.39.7
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
 ARG RUBY_VERSION=4.0.5
 # renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
-ARG RUST_ANALYZER_VERSION=2026-06-01
+ARG RUST_ANALYZER_VERSION=2026-06-08
 # renovate: datasource=github-releases depName=rust-lang/rust
 ARG RUST_TOOLCHAIN_VERSION=1.96.0
 # renovate: datasource=github-releases depName=rust-lang/rustup
