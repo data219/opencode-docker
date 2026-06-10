@@ -71,7 +71,7 @@ ARG OMO_VERSION=4.8.1
 # renovate: datasource=npm depName=@openchamber/web
 ARG OPENCHAMBER_VERSION=1.12.3
 # renovate: datasource=npm depName=opencode-ai
-ARG OPENCODE_VERSION=1.16.2
+ARG OPENCODE_VERSION=1.17.1
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG PYENV_VERSION=v2.7.1
 # renovate: datasource=npm depName=pyright
