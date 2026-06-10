@@ -91,7 +91,7 @@ ARG SWIFT_VERSION=6.3.2
 # renovate: datasource=github-releases depName=hashicorp/terraform-ls
 ARG TERRAFORM_LS_VERSION=0.38.7
 # renovate: datasource=github-releases depName=hashicorp/terraform
-ARG TERRAFORM_VERSION=1.15.5
+ARG TERRAFORM_VERSION=1.15.6
 # renovate: datasource=npm depName=typescript-language-server
 ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=5.3.0
 # renovate: datasource=npm depName=typescript
