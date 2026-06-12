@@ -154,8 +154,17 @@ Important boundaries:
 - [Oh My OpenAgent](https://github.com/code-yeongyu/oh-my-openagent), installed during the image build and seeded into OpenCode config
 - OpenChamber as an optional web UI
 - `agent-browser` with an image-local browser runtime
+- OpenSpec CLI for spec-driven development with OpenCode command generation
 - OpenCode skills from `bootstrap/skills/`
 - OmO teams from `bootstrap/omo/teams/`
+
+To enable OpenSpec in a project mounted into the stack, run:
+
+```bash
+openspec init --tools opencode
+```
+
+OpenSpec writes project-local `.opencode/skills/` and `.opencode/commands/opsx-*.md` files. After that, use commands such as `/opsx:propose` from OpenCode in that project.
 
 ### Model providers
 
@@ -172,7 +181,7 @@ Compose can render with an empty Gemini key because the variable is not checked 
 
 ### Platform and language tools
 
-Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `rg`, `shellcheck`, `git`, `zsh`, `curl`, and `wget`.
+Bundled platform tools include `gh`, `glab`, `cntb`, `atlcli`, `dokploy`, `cloudflared`, `openspec`, `docker`, `docker compose`, `ansible`, `terraform`, `kubectl`, `helm`, `jq`, `yq`, `rg`, `shellcheck`, `git`, `zsh`, `curl`, and `wget`.
 
 Default language/runtime support includes Node.js, Python/pyenv, Go, PHP 8.4, Composer, and shell tooling. OpenCode LSP support is enabled in the seeded config for built-in PHP, JavaScript/TypeScript, Go, Bash, Lua, Python, Terraform, Rust, and YAML servers. Markdown uses a custom `marksman` server entry.
 
@@ -270,7 +279,7 @@ task test-integration
 task test
 ```
 
-The integration suite boots the real Compose stack, waits for the OpenCode health endpoint, checks the active OpenCode config path, verifies OmO plugin loading, and confirms bundled CLIs such as `agent-browser`, `gh`, `glab`, `cntb`, `atlcli`, and `cloudflared`. It also checks that the default OpenCode LSP server commands are available in the running container.
+The integration suite boots the real Compose stack, waits for the OpenCode health endpoint, checks the active OpenCode config path, verifies OmO plugin loading, and confirms bundled CLIs such as `agent-browser`, `gh`, `glab`, `cntb`, `atlcli`, `openspec`, and `cloudflared`. It also checks that the default OpenCode LSP server commands are available in the running container.
 
 For a quick docs/config check:
 

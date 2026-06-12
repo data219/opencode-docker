@@ -48,6 +48,7 @@ The Docker Compose stack includes these command-line tools:
 - `atlcli`: Atlassian CLI for Jira and Confluence workflows.
 - `dokploy`: Dokploy CLI for remote Dokploy server management.
 - `cloudflared`: Cloudflare tunnel CLI for exposing local services when configured.
+- `openspec`: OpenSpec CLI for spec-driven development; run `openspec init --tools opencode` inside a project to generate OpenCode `/opsx:*` commands.
 - `docker`: Docker client for image, container, network, and volume operations.
 - `docker compose`: Compose plugin for managing multi-container local stacks.
 - `make`: Build automation tool for Makefile-driven project tasks.

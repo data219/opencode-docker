@@ -72,6 +72,8 @@ ARG OMO_VERSION=4.9.2
 ARG OPENCHAMBER_VERSION=1.12.4
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.17.4
+# renovate: datasource=npm depName=@fission-ai/openspec
+ARG OPENSPEC_VERSION=1.4.1
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG PYENV_VERSION=v2.7.2
 # renovate: datasource=npm depName=pyright
@@ -197,6 +199,11 @@ RUN npm install -g opencode-ai@${OPENCODE_VERSION} \
 
 # --- Install OpenChamber (alternative Web GUI for OpenCode) ---
 RUN npm install -g @openchamber/web@${OPENCHAMBER_VERSION} \
+    && npm cache clean --force \
+    && rm -rf /root/.npm
+
+# --- Install OpenSpec CLI for spec-driven OpenCode workflows ---
+RUN npm install -g @fission-ai/openspec@${OPENSPEC_VERSION} \
     && npm cache clean --force \
     && rm -rf /root/.npm
 

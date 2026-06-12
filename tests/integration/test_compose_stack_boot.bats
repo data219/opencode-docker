@@ -198,6 +198,18 @@ start_test_stack() {
   [ "$status" -eq 0 ]
 
   run compose_ci exec -T -u opencode opencode sh -lc '
+    command -v openspec >/dev/null &&
+    openspec --version >/dev/null &&
+    project_dir="$(mktemp -d)" &&
+    cd "$project_dir" &&
+    git init >/dev/null &&
+    openspec init --tools opencode >/tmp/openspec-init.log 2>&1 &&
+    test -d .opencode/skills &&
+    find .opencode/commands -type f -name "opsx-*.md" | grep -q .
+  '
+  [ "$status" -eq 0 ]
+
+  run compose_ci exec -T -u opencode opencode sh -lc '
     command -v php >/dev/null &&
     php --version >/dev/null &&
     command -v node >/dev/null &&
