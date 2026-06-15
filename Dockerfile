@@ -186,11 +186,18 @@ ENV GOPATH=/home/opencode/go
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/opt/agent-browser/chrome/chrome
 
 # --- Install Node.js for OpenCode ---
-RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
-       -o /tmp/node.tar.xz \
-    && tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 \
-    && rm -f /tmp/node.tar.xz \
-    && rm -rf /usr/local/lib/node_modules/npm/docs /usr/local/lib/node_modules/npm/man
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) node_arch="x64" ;; \
+      arm64) node_arch="arm64" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${node_arch}.tar.xz" \
+      -o /tmp/node.tar.xz; \
+    tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1; \
+    rm -f /tmp/node.tar.xz; \
+    rm -rf /usr/local/lib/node_modules/npm/docs /usr/local/lib/node_modules/npm/man
 
 # --- Install OpenCode ---
 RUN npm install -g opencode-ai@${OPENCODE_VERSION} \
@@ -365,12 +372,19 @@ RUN git clone --branch "${PYENV_VERSION}" --depth 1 https://github.com/pyenv/pye
     && rm -rf /home/opencode/.pyenv/.git /home/opencode/.pyenv/test /home/opencode/.pyenv/plugins/python-build/test
 
 # --- Install Go directly from go.dev ---
-RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" \
-       -o /tmp/go.tar.gz \
-    && mkdir -p /opt/go \
-    && tar -xzf /tmp/go.tar.gz -C /opt/go --strip-components=1 \
-    && rm -f /tmp/go.tar.gz \
-    && rm -rf /opt/go/test
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) go_arch="amd64" ;; \
+      arm64) go_arch="arm64" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${go_arch}.tar.gz" \
+      -o /tmp/go.tar.gz; \
+    mkdir -p /opt/go; \
+    tar -xzf /tmp/go.tar.gz -C /opt/go --strip-components=1; \
+    rm -f /tmp/go.tar.gz; \
+    rm -rf /opt/go/test
 ENV GOROOT=/opt/go
 ENV PATH="${GOROOT}/bin:${PATH}"
 
@@ -379,11 +393,19 @@ RUN mkdir -p /home/opencode/.gvm /home/opencode/go \
     && bash -c "curl -fsSL https://raw.githubusercontent.com/moovweb/gvm/${GVM_COMMIT}/binscripts/gvm-installer | bash" || true
 
 # --- Install golangci-lint ---
-RUN curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${GO_LINT_VERSION}/golangci-lint-${GO_LINT_VERSION}-linux-amd64.tar.gz" \
-       -o /tmp/golangci-lint.tar.gz \
-    && tar -xzf /tmp/golangci-lint.tar.gz -C /tmp \
-    && mv /tmp/golangci-lint-${GO_LINT_VERSION}-linux-amd64/golangci-lint /opt/go/bin/ \
-    && rm -rf /tmp/golangci-lint*
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) common_arch="amd64" ;; \
+      arm64) common_arch="arm64" ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    golangci_lint_archive="golangci-lint-${GO_LINT_VERSION}-linux-${common_arch}.tar.gz"; \
+    curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/v${GO_LINT_VERSION}/${golangci_lint_archive}" \
+      -o /tmp/golangci-lint.tar.gz; \
+    tar -xzf /tmp/golangci-lint.tar.gz -C /tmp; \
+    mv "/tmp/golangci-lint-${GO_LINT_VERSION}-linux-${common_arch}/golangci-lint" /opt/go/bin/; \
+    rm -rf /tmp/golangci-lint*
 
 # --- Install OpenCode LSP server commands ---
 RUN --mount=type=cache,target=/root/.cache/go-build,sharing=locked \
@@ -503,13 +525,20 @@ RUN arch="$(dpkg --print-architecture)"; \
     rm -rf "${tmpdir}"
 
 # --- Optional: Java (Temurin JDK 21) ---
-RUN if [ "$INSTALL_JAVA" = "true" ]; then \
-      JAVA_VERSION_TAG="jdk-${JAVA_VERSION}" \
-      && JAVA_ARCHIVE_VERSION="${JAVA_VERSION/+/_}" \
-      && curl -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/${JAVA_VERSION_TAG}/OpenJDK21U-jdk_x64_linux_hotspot_${JAVA_ARCHIVE_VERSION}.tar.gz" -o /tmp/openjdk.tar.gz \
-      && mkdir -p /home/opencode/.local/java \
-      && tar -xzf /tmp/openjdk.tar.gz -C /home/opencode/.local/java --strip-components=1 \
-      && rm -f /tmp/openjdk.tar.gz; \
+RUN set -eux; \
+    if [ "$INSTALL_JAVA" = "true" ]; then \
+      arch="$(dpkg --print-architecture)"; \
+      case "${arch}" in \
+        amd64) java_arch="x64" ;; \
+        arm64) java_arch="aarch64" ;; \
+        *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+      esac; \
+      JAVA_VERSION_TAG="jdk-${JAVA_VERSION}"; \
+      JAVA_ARCHIVE_VERSION="${JAVA_VERSION/+/_}"; \
+      curl -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/${JAVA_VERSION_TAG}/OpenJDK21U-jdk_${java_arch}_linux_hotspot_${JAVA_ARCHIVE_VERSION}.tar.gz" -o /tmp/openjdk.tar.gz; \
+      mkdir -p /home/opencode/.local/java; \
+      tar -xzf /tmp/openjdk.tar.gz -C /home/opencode/.local/java --strip-components=1; \
+      rm -f /tmp/openjdk.tar.gz; \
     fi
 
 # --- Optional: Ruby 3.3 ---
@@ -536,13 +565,20 @@ RUN if [ "$INSTALL_SWIFT" = "true" ]; then \
 #       This does NOT affect the opencode runtime — both WebUI and TUI work at runtime.
 # NOTE: We install OmO normally to /home/opencode. After install, we rename the
 #       auto-generated config so our custom bootstrap config (placed later by COPY) takes priority.
-RUN mkdir -p /opt/opencode-defaults \
+RUN set -eux; \
+  arch="$(dpkg --print-architecture)"; \
+  case "${arch}" in \
+    amd64) bun_arch="x64" ;; \
+    arm64) bun_arch="aarch64" ;; \
+    *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+  esac; \
+  mkdir -p /opt/opencode-defaults \
   && mkdir -p /home/opencode/.config/opencode \
   && mkdir -p /tmp/bun-install/bin \
-  && curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64.zip" \
+  && curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-${bun_arch}.zip" \
     -o /tmp/bun.zip \
   && unzip -q /tmp/bun.zip -d /tmp \
-  && mv /tmp/bun-linux-x64/bun /tmp/bun-install/bin/bun \
+  && mv "/tmp/bun-linux-${bun_arch}/bun" /tmp/bun-install/bin/bun \
   && chmod +x /tmp/bun-install/bin/bun \
   && PATH="/tmp/bun-install/bin:${PATH}" HOME=/home/opencode BUN_INSTALL=/tmp/bun-install /tmp/bun-install/bin/bun x oh-my-opencode@${OMO_VERSION} install \
     --no-tui --zai-coding-plan=yes --claude=no --openai=no --gemini=no --copilot=no \
@@ -561,21 +597,28 @@ RUN mkdir -p /opt/opencode-defaults \
   && rm -rf \
     /tmp/bun-install \
     /tmp/bun.zip \
-    /tmp/bun-linux-x64 \
+    /tmp/bun-linux-${bun_arch} \
     /tmp/bunx-* \
     /tmp/node-compile-cache \
     /root/.bun \
     /root/.cache
 
 # --- Optional: Rust via rustup ---
-RUN install -d -o opencode -g opencode "$RUSTUP_HOME" "$CARGO_HOME" \
-    && if [ "$INSTALL_RUST" = "true" ]; then \
-         curl --proto '=https' --tlsv1.2 -sSf "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init" \
-           -o /tmp/rustup-init \
-         && chmod +x /tmp/rustup-init \
-         && HOME=/home/opencode gosu opencode /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN_VERSION}" --no-modify-path \
-         && rm -f /tmp/rustup-init; \
-       fi
+RUN set -eux; \
+    install -d -o opencode -g opencode "$RUSTUP_HOME" "$CARGO_HOME"; \
+    if [ "$INSTALL_RUST" = "true" ]; then \
+      arch="$(dpkg --print-architecture)"; \
+      case "${arch}" in \
+        amd64) rustup_host="x86_64-unknown-linux-gnu" ;; \
+        arm64) rustup_host="aarch64-unknown-linux-gnu" ;; \
+        *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+      esac; \
+      curl --proto '=https' --tlsv1.2 -sSf "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${rustup_host}/rustup-init" \
+        -o /tmp/rustup-init; \
+      chmod +x /tmp/rustup-init; \
+      HOME=/home/opencode gosu opencode /tmp/rustup-init -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN_VERSION}" --no-modify-path; \
+      rm -f /tmp/rustup-init; \
+    fi
 
 # --- Build PATH ---
 ENV PATH="/opt/cargo/bin:/opt/nvm/versions/node/v${NODE_VERSION}/bin:/home/opencode/.pyenv/shims:/home/opencode/.pyenv/bin:/opt/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
