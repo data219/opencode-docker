@@ -534,7 +534,7 @@ RUN set -eux; \
         *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
       esac; \
       JAVA_VERSION_TAG="jdk-${JAVA_VERSION}"; \
-      JAVA_ARCHIVE_VERSION="${JAVA_VERSION/+/_}"; \
+      JAVA_ARCHIVE_VERSION="$(echo "$JAVA_VERSION" | tr '+' '_')"; \
       curl -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/${JAVA_VERSION_TAG}/OpenJDK21U-jdk_${java_arch}_linux_hotspot_${JAVA_ARCHIVE_VERSION}.tar.gz" -o /tmp/openjdk.tar.gz; \
       mkdir -p /home/opencode/.local/java; \
       tar -xzf /tmp/openjdk.tar.gz -C /home/opencode/.local/java --strip-components=1; \
