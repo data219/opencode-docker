@@ -66,6 +66,7 @@ Compose allows the variable to be empty when using `openai-chatgpt`; the Z.AI va
 | `OPENCHAMBER_ENABLED` | `false` | Starts OpenChamber alongside OpenCode. |
 | `OPENCHAMBER_PORT` | `4020` | OpenChamber port inside the container and on the host. |
 | `OPENCHAMBER_UI_PASSWORD` | empty | Optional OpenChamber UI password. Set this for non-local exposure. |
+| `OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN` | `true` | Allows OpenChamber to bind `0.0.0.0` without UI auth. Keep host binding local unless you accept unauthenticated LAN access. |
 | `FORCE_SKILL_SYNC` | `false` | Replaces bootstrapped skills with image defaults when set to `true`. |
 | `GH_TOKEN` / `GITHUB_TOKEN` | empty | Non-interactive GitHub CLI auth; also used as optional BuildKit secrets for GitHub-hosted CLI downloads and private GitHub HTTPS dotfiles clones. Create a fine-grained token at <https://github.com/settings/personal-access-tokens/new>. |
 | `GLAB_TOKEN` / `GITLAB_TOKEN` | empty | Non-interactive GitLab CLI auth. |
@@ -234,6 +235,7 @@ OpenChamber can run next to the default OpenCode web UI:
 ```bash
 OPENCHAMBER_ENABLED=true
 OPENCHAMBER_PORT=4020
+OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN=true
 OPENCHAMBER_UI_PASSWORD=change-me
 task up
 open http://localhost:4020

@@ -10,6 +10,7 @@ compose_config() {
     -u CF_TUNNEL_TARGET_HOST \
     -u CF_TUNNEL_TARGET_PORT \
     -u OPENCODE_PORT \
+    -u OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN \
     "$@" \
     docker compose --env-file /dev/null -f docker-compose.yml config
 }
@@ -58,6 +59,15 @@ compose_config() {
   compose_config \
     OCD_ZHIPU_API_KEY=test \
     COMPOSE_PROFILES=tunnel-quick > /dev/null
+}
+
+@test "OpenChamber unauthenticated LAN flag defaults to true" {
+  docker compose version > /dev/null 2>&1 || skip "docker compose not available"
+  run compose_config \
+    OCD_ZHIPU_API_KEY=test
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN: \"true\""* ]]
 }
 
 @test "docker-compose.yml validates managed tunnel profile" {

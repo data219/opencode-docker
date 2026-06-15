@@ -19,6 +19,7 @@ setup() {
   # Mock openchamber binary
   echo '#!/bin/bash' > "$MOCK_BIN_DIR/openchamber"
   echo 'echo "mock-openchamber: $@"' >> "$MOCK_BIN_DIR/openchamber"
+  echo 'echo "mock-openchamber-allow-unauthenticated-lan: ${OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN:-}"' >> "$MOCK_BIN_DIR/openchamber"
   chmod +x "$MOCK_BIN_DIR/openchamber"
   
   PATH="$MOCK_BIN_DIR:$PATH"
@@ -57,6 +58,7 @@ run_entrypoint() {
     -u OPENCHAMBER_ENABLED
     -u OPENCHAMBER_PORT
     -u OPENCHAMBER_UI_PASSWORD
+    -u OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN
     -u OPENCHAMBER_DATA_DIR
     -u USER_HOME
     -u CONFIG_DIR
@@ -370,6 +372,18 @@ MOCK
   [ "$status" -eq 0 ]
   assert_output --partial "mock-openchamber: serve --port 4020 --host 0.0.0.0 --foreground"
   assert_output --partial "mock-opencode: web --hostname 0.0.0.0 --port 4000"
+}
+
+@test "entrypoint forwards OpenChamber unauthenticated LAN flag" {
+  run_entrypoint \
+    OPENCODE_MODE=web \
+    OPENCODE_PORT=4000 \
+    OPENCHAMBER_ENABLED=true \
+    OPENCHAMBER_PORT=4020 \
+    OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN=true
+
+  [ "$status" -eq 0 ]
+  assert_output --partial "mock-openchamber-allow-unauthenticated-lan: true"
 }
 
 @test "entrypoint keeps OpenChamber pid file for running OpenChamber process" {
