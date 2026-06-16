@@ -215,13 +215,30 @@ RUN npm install -g @fission-ai/openspec@${OPENSPEC_VERSION} \
     && rm -rf /root/.npm
 
 # --- Install agent-browser CLI and browser runtime ---
-RUN npm install -g agent-browser@${AGENT_BROWSER_VERSION} \
-    && mkdir -p /opt/opencode-browser-home/.cache /opt/agent-browser \
-    && HOME=/opt/opencode-browser-home XDG_CACHE_HOME=/opt/opencode-browser-home/.cache agent-browser install \
-    && browser_dir="$(find /opt/opencode-browser-home/.agent-browser/browsers -mindepth 1 -maxdepth 1 -type d | head -n 1)" \
-    && mv "$browser_dir" /opt/agent-browser/chrome \
-    && npm cache clean --force \
-    && rm -rf /opt/opencode-browser-home /root/.npm
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux; \
+    npm install -g agent-browser@${AGENT_BROWSER_VERSION}; \
+    mkdir -p /opt/opencode-browser-home/.cache /opt/agent-browser; \
+    arch="$(dpkg --print-architecture)"; \
+    case "${arch}" in \
+      amd64) \
+        HOME=/opt/opencode-browser-home XDG_CACHE_HOME=/opt/opencode-browser-home/.cache agent-browser install; \
+        browser_dir="$(find /opt/opencode-browser-home/.agent-browser/browsers -mindepth 1 -maxdepth 1 -type d | head -n 1)"; \
+        test -n "$browser_dir"; \
+        mv "$browser_dir" /opt/agent-browser/chrome; \
+        ;; \
+      arm64) \
+        apt-get update; \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends chromium; \
+        mkdir -p /opt/agent-browser/chrome; \
+        printf '%s\n' '#!/bin/sh' 'exec /usr/bin/chromium --no-sandbox "$@"' > /opt/agent-browser/chrome/chrome; \
+        chmod 0755 /opt/agent-browser/chrome/chrome; \
+        ;; \
+      *) echo "unsupported architecture: ${arch}" >&2; exit 1 ;; \
+    esac; \
+    npm cache clean --force; \
+    rm -rf /opt/opencode-browser-home /root/.npm /var/lib/apt/lists/*
 
 # --- Install Dokploy CLI ---
 RUN npm install -g @dokploy/cli@${DOKPLOY_CLI_VERSION} \
