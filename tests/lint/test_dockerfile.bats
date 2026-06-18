@@ -48,6 +48,14 @@ omo_install_block() {
   ' Dockerfile
 }
 
+agent_browser_install_block() {
+  awk '
+    /^# --- Install agent-browser CLI and browser runtime ---$/ { in_block = 1 }
+    in_block { print }
+    in_block && /^$/ { exit }
+  ' Dockerfile
+}
+
 @test "Dockerfile does not contain known hardcoded architecture download paths" {
   run grep -En 'node-v\$\{NODE_VERSION\}-linux-x64|go\$\{GO_VERSION\}\.linux-amd64|golangci-lint-\$\{GO_LINT_VERSION\}-linux-amd64|OpenJDK21U-jdk_x64_linux_hotspot|rustup/archive/\$\{RUSTUP_VERSION\}/x86_64-unknown-linux-gnu/rustup-init|bun-linux-x64' Dockerfile
 
@@ -115,4 +123,17 @@ omo_install_block() {
   assert_output --partial 'arm64) bun_arch="aarch64"'
   assert_output --partial 'bun-linux-${bun_arch}.zip'
   assert_output --partial '/tmp/bun-linux-${bun_arch}/bun'
+}
+
+@test "agent-browser install uses Chromium fallback on Linux ARM64" {
+  run agent_browser_install_block
+  assert_success
+  assert_output --partial 'arch="$(dpkg --print-architecture)"'
+  assert_output --partial 'amd64)'
+  assert_output --partial 'agent-browser install'
+  assert_output --partial 'arm64)'
+  assert_output --partial 'apt-get install -y --no-install-recommends chromium'
+  assert_output --partial 'exec /usr/bin/chromium --no-sandbox "$@"'
+  assert_output --partial 'chmod 0755 /opt/agent-browser/chrome/chrome'
+  refute_output --partial 'chromium-browser'
 }
