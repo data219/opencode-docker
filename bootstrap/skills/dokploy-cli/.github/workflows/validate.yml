@@ -1,0 +1,22 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run repository validation
+        run: |
+          bash scripts/validate-structure.sh
+          bash scripts/validate-safety-policy.sh
+          bash scripts/validate-readonly-cli.sh --offline-ok
+          bash scripts/validate-scenarios.sh
