@@ -63,7 +63,7 @@ ARG MARKSMAN_VERSION=2026-02-08
 # renovate: datasource=github-releases depName=go-task/task
 ARG TASK_VERSION=3.51.1
 # renovate: datasource=node-version depName=node versioning=node
-ARG NODE_VERSION=24.16.0
+ARG NODE_VERSION=24.17.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG NVM_VERSION=v0.40.5
 # renovate: datasource=npm depName=oh-my-opencode
