@@ -286,11 +286,17 @@ start_test_stack() {
   [ "$status" -eq 0 ]
 }
 
-@test "compose stack renders PDFs via agent-browser" {
+@test "compose stack validates agent-browser runtime and renders PDFs" {
   prepare_test_stack
   start_test_stack
 
   run compose_ci exec -T -u opencode opencode sh -lc '
+    test "$AGENT_BROWSER_EXECUTABLE_PATH" = "/opt/agent-browser/chrome/chrome" &&
+    test -x "$AGENT_BROWSER_EXECUTABLE_PATH" &&
+    if [ "$(dpkg --print-architecture)" = "arm64" ]; then
+      test -x /usr/bin/chromium
+    fi &&
+    "$AGENT_BROWSER_EXECUTABLE_PATH" --version >/tmp/agent-browser-version.log 2>&1 &&
     agent-browser open "http://127.0.0.1:${OPENCODE_PORT}/health" >/tmp/agent-browser-open.log 2>&1 &&
     agent-browser pdf /tmp/example.pdf >/tmp/agent-browser-pdf.log 2>&1 &&
     test -s /tmp/example.pdf
