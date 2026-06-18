@@ -27,6 +27,50 @@ dokploy application --help
 
 Do not use live data-returning read commands as default validation. For example, `dokploy project all --json` is read-oriented but potentially sensitive because it can expose live server names, IDs, URLs, deployment state, or other operational data. Mention or run live data-returning read commands only when optional, with explicit user approval, and only when their output is needed for the task.
 
+## Operational CLI notes
+
+These notes preserve useful command-shape details for troubleshooting and
+automation. They do not override `SKILL.md`, especially its approval gates,
+credential handling, or direct API fallback policy.
+
+### Auth precedence
+
+The CLI may load authentication from several places. Prefer explicit,
+ephemeral environment variables for automation, but do not print their values
+or inspect local auth files just to discover configuration.
+
+Observed precedence in the generated CLI implementation:
+
+1. `.env` in the current working directory, without replacing already-set
+   process environment values.
+2. `DOKPLOY_API_KEY or DOKPLOY_AUTH_TOKEN`.
+3. `DOKPLOY_URL`.
+4. Local CLI config written by `dokploy auth`.
+
+Requests are sent to the configured Dokploy URL under the API route and use an
+API-key header internally. Keep those implementation details out of examples
+unless they are needed for troubleshooting and safe to describe without
+secrets.
+
+### Generated command pattern
+
+Most operational commands follow this shape:
+
+```sh
+dokploy <group> <action> [options]
+dokploy <group> <action> --json
+```
+
+Use `--json` when output feeds automation, but only request live JSON data when
+the user asked for that data and it is needed for the task. Generated commands
+usually mark required API inputs as required CLI options; check action-level
+help before assuming option names.
+
+The generated implementation can hint at command intent: read-style commands
+often map to read helpers, while write/action commands often map to write
+helpers. Treat this as a clue only. Command wording, output sensitivity, and
+side effects still determine whether approval is required.
+
 ## Safety categories
 
 Classify commands by likely side effect before running them. When uncertain, use `dokploy <group> --help`, inspect command wording, and apply the stricter category.
@@ -65,3 +109,7 @@ Use this refresh procedure when the upstream Dokploy CLI changes, when validatio
 5. Re-run the repository validation that checks required safety phrases and prevents accidental exhaustive command lists.
 
 Keep this appendix concise. The correct way to learn a specific command is local discovery with help output, followed by the safety policy in `SKILL.md`.
+
+The CLI has no global dry-run or plan mode in observed help output. If a
+specific command offers a preview, dry-run, or diff flag, verify it in local
+action help before relying on it.
