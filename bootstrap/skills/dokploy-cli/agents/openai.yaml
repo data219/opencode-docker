@@ -1,0 +1,8 @@
+name: dokploy-cli-openai
+version: 1
+display_name: Dokploy CLI Skill
+instruction_source: SKILL.md
+default_prompt: >-
+  Before Dokploy work, read SKILL.md as the source of truth.
+  Prefer the dokploy CLI over direct API calls when available.
+  Redact secrets, and ask for explicit approval before mutating operations.
