@@ -34,7 +34,7 @@ ARG DOCKER_CLI_VERSION=29.4.1
 # renovate: datasource=github-releases depName=docker/compose versioning=semver
 ARG DOCKER_COMPOSE_VERSION=5.1.4
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
-ARG GH_VERSION=2.94.0
+ARG GH_VERSION=2.95.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
 ARG GLAB_VERSION=1.103.0
 # renovate: datasource=github-releases depName=golangci/golangci-lint
