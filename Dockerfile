@@ -51,7 +51,7 @@ ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
 # renovate: datasource=github-releases depName=helm/helm extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG HELM_VERSION=4.2.2
 # renovate: datasource=npm depName=intelephense
-ARG INTELEPHENSE_VERSION=1.18.4
+ARG INTELEPHENSE_VERSION=1.18.5
 # renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
 ARG JAVA_VERSION=21.0.11+10
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
