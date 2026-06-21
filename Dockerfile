@@ -71,7 +71,7 @@ ARG OMO_VERSION=4.12.1
 # renovate: datasource=npm depName=@openchamber/web
 ARG OPENCHAMBER_VERSION=1.13.2
 # renovate: datasource=npm depName=opencode-ai
-ARG OPENCODE_VERSION=1.17.8
+ARG OPENCODE_VERSION=1.17.9
 # renovate: datasource=npm depName=@fission-ai/openspec
 ARG OPENSPEC_VERSION=1.4.1
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
