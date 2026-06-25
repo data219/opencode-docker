@@ -77,7 +77,7 @@ ARG OPENSPEC_VERSION=1.4.1
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG PYENV_VERSION=v2.7.3
 # renovate: datasource=npm depName=pyright
-ARG PYRIGHT_VERSION=1.1.410
+ARG PYRIGHT_VERSION=1.1.411
 # renovate: datasource=npm depName=basedpyright
 ARG BASEDPYRIGHT_VERSION=1.39.8
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
