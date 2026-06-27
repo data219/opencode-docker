@@ -14,7 +14,7 @@ ARG INSTALL_SWIFT=false
 
 # --- Software package versions ---
 # renovate: datasource=npm depName=agent-browser
-ARG AGENT_BROWSER_VERSION=0.31.0
+ARG AGENT_BROWSER_VERSION=0.31.1
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
 ARG ATLCLI_VERSION=0.17.0
 # renovate: datasource=npm depName=bash-language-server
