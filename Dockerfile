@@ -73,7 +73,7 @@ ARG OPENCHAMBER_VERSION=1.13.7
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.17.11
 # renovate: datasource=npm depName=@fission-ai/openspec
-ARG OPENSPEC_VERSION=1.4.1
+ARG OPENSPEC_VERSION=1.5.0
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG PYENV_VERSION=v2.7.3
 # renovate: datasource=npm depName=pyright
