@@ -89,7 +89,7 @@ ARG RUST_TOOLCHAIN_VERSION=1.96.0
 # renovate: datasource=github-releases depName=rust-lang/rustup
 ARG RUSTUP_VERSION=1.29.0
 # renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
-ARG SWIFT_VERSION=6.3.2
+ARG SWIFT_VERSION=6.3.3
 # renovate: datasource=github-releases depName=hashicorp/terraform-ls
 ARG TERRAFORM_LS_VERSION=0.38.7
 # renovate: datasource=github-releases depName=hashicorp/terraform
