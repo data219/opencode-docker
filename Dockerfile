@@ -85,7 +85,7 @@ ARG RUBY_VERSION=4.0.5
 # renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
 ARG RUST_ANALYZER_VERSION=2026-06-29
 # renovate: datasource=github-releases depName=rust-lang/rust
-ARG RUST_TOOLCHAIN_VERSION=1.96.0
+ARG RUST_TOOLCHAIN_VERSION=1.96.1
 # renovate: datasource=github-releases depName=rust-lang/rustup
 ARG RUSTUP_VERSION=1.29.0
 # renovate: datasource=github-tags depName=swiftlang/swift versioning=semver-coerced extractVersion=^swift-(?<version>.+)-RELEASE$
