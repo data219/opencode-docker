@@ -69,7 +69,7 @@ ARG NVM_VERSION=v0.40.5
 # renovate: datasource=npm depName=oh-my-opencode
 ARG OMO_VERSION=4.15.1
 # renovate: datasource=npm depName=@openchamber/web
-ARG OPENCHAMBER_VERSION=1.14.0
+ARG OPENCHAMBER_VERSION=1.14.1
 # renovate: datasource=npm depName=opencode-ai
 ARG OPENCODE_VERSION=1.17.14
 # renovate: datasource=npm depName=@fission-ai/openspec
