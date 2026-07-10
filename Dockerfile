@@ -16,7 +16,7 @@ ARG INSTALL_SWIFT=false
 # renovate: datasource=npm depName=agent-browser
 ARG AGENT_BROWSER_VERSION=0.31.1
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
-ARG ATLCLI_VERSION=0.17.0
+ARG ATLCLI_VERSION=0.17.2
 # renovate: datasource=npm depName=bash-language-server
 ARG BASH_LANGUAGE_SERVER_VERSION=5.6.0
 # renovate: datasource=github-releases depName=oven-sh/bun
