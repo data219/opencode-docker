@@ -42,7 +42,7 @@ ARG GO_LINT_VERSION=2.12.2
 # renovate: datasource=golang-version depName=go
 ARG GO_VERSION=1.26.5
 # renovate: datasource=go depName=golang.org/x/tools/gopls
-ARG GOPLS_VERSION=0.22.0
+ARG GOPLS_VERSION=0.23.0
 # renovate: datasource=github-releases depName=tianon/gosu
 ARG GOSU_VERSION=1.19
 # renovate: datasource=git-refs depName=moovweb/gvm packageName=https://github.com/moovweb/gvm
