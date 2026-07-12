@@ -1,7 +1,8 @@
 // opencode-docker-config:1
 // OpenAI ChatGPT subscription variant.
 // Auth is handled by OpenCode's built-in OpenAI OAuth/device-login flow, not by OPENAI_API_KEY.
-// This model map follows Oh My OpenAgent's OpenAI-only generator output.
+// This OpenAI-only model map uses GPT-5.6 Sol for complex orchestration and quality-critical work,
+// Terra for balanced execution, and Luna for economical research fallbacks.
 // OmO upstream currently emits openai/gpt-5.4-mini-fast for explore/librarian, but the current
 // OpenCode/models.dev catalog does not expose that model id, so gpt-5.4-mini-fast is substituted with openai/gpt-5.4-mini.
 // Codex with a ChatGPT account rejects gpt-5.3-codex, so those category mappings use openai/gpt-5.4.
@@ -10,7 +11,7 @@
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json",
   "agents": {
     "sisyphus": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "medium",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -20,7 +21,7 @@
       "prompt_append": "Avoid long silent polling. Do not run sleeps longer than 30 seconds or multi-minute wait loops. For external review/CI waits, use bounded short polling with narrow JSON/JQ fields, persist pending state with the next exact poll command, and stop cleanly instead of calling it a harness interruption."
     },
     "hephaestus": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "medium",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -30,7 +31,7 @@
       "prompt_append": "Follow established plans precisely. Ask for clarification when plans are ambiguous. Prefer small, testable changes. Use LSP and AST-grep aggressively."
     },
     "prometheus": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "high",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -40,7 +41,7 @@
       "prompt_append": "Always interview first. Validate scope before planning. Build exhaustive plans with milestones, risks, and contingencies. Max 2 parallel background tasks."
     },
     "metis": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "high",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -50,7 +51,7 @@
       "prompt_append": "Critically evaluate plans. Identify gaps, risks, and improvements. Be thorough."
     },
     "oracle": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "high",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -59,7 +60,7 @@
       ]
     },
     "momus": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "xhigh",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -69,7 +70,7 @@
       "prompt_append": "Challenge all assumptions in plans. Look for edge cases, failure modes, and overlooked requirements."
     },
     "atlas": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "medium",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -89,7 +90,7 @@
       "model": "openai/gpt-5.4-mini",
       "fallback_models": [
         "openai/gpt-5.3-codex-spark",
-        "openai/gpt-5.5",
+        "openai/gpt-5.6-luna",
         "openai/gpt-5.4"
       ],
       "prompt_append": "Prefer searching official documentation and library sources over general web search."
@@ -99,7 +100,7 @@
       "fallback_models": [
         "openai/gpt-5.3-codex-spark",
         "openai/gpt-5.4",
-        "openai/gpt-5.5"
+        "openai/gpt-5.6-luna"
       ],
       "prompt_append": "Focus on finding authoritative sources. Cross-reference results when possible. Keep research brief and decision-oriented: return only the facts needed for the current task, cite sources, and avoid exhaustive result dumps or broad background unless explicitly requested. Prefer a short answer with 3-5 high-signal bullets over long summaries."
     },
@@ -109,13 +110,13 @@
       "fallback_models": [
         "openai/gpt-5.4-mini",
         "openai/gpt-5.3-codex-spark",
-        "openai/gpt-5.5"
+        "openai/gpt-5.6-sol"
       ]
     }
   },
   "categories": {
     "ultrabrain": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "xhigh",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -124,7 +125,7 @@
       ]
     },
     "visual-engineering": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "high",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -133,7 +134,7 @@
       ]
     },
     "unspecified-high": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "high",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -142,8 +143,8 @@
       ]
     },
     "deep": {
-      "model": "openai/gpt-5.5",
-      "variant": "medium",
+      "model": "openai/gpt-5.6-terra",
+      "variant": "xhigh",
       "fallback_models": [
         "openai/gpt-5.4",
         "openai/gpt-5.4-mini",
@@ -151,7 +152,7 @@
       ]
     },
     "writing": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-terra",
       "variant": "medium",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -175,7 +176,7 @@
       ]
     },
     "artistry": {
-      "model": "openai/gpt-5.5",
+      "model": "openai/gpt-5.6-sol",
       "variant": "xhigh",
       "fallback_models": [
         "openai/gpt-5.4",
@@ -207,7 +208,9 @@
       "openai": 3
     },
     "modelConcurrency": {
-      "openai/gpt-5.5": 2,
+      "openai/gpt-5.6-sol": 2,
+      "openai/gpt-5.6-terra": 2,
+      "openai/gpt-5.6-luna": 2,
       "openai/gpt-5.4": 2,
       "openai/gpt-5.4-mini": 2,
       "openai/gpt-5.3-codex-spark": 3
