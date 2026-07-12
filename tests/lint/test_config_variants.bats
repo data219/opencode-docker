@@ -97,11 +97,16 @@ assert_file_not_matches() {
   assert_success
 }
 
-@test "openai-chatgpt variant uses expected OmO OpenAI-only models with documented substitutions" {
+@test "openai-chatgpt variant maps every GPT-5.5 role to GPT-5.6" {
   file="$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
 
-  run assert_file_matches 'openai/gpt-5\.5' "$file"
+  command -v node >/dev/null 2>&1 || skip "node is required for JSONC validation"
+  run node tests/jsonc/assert-openai-gpt-5-6-map.js "$file"
   assert_success
+}
+
+@test "openai-chatgpt variant keeps expected OpenAI fallback models and documented substitutions" {
+  file="$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
 
   run assert_file_matches 'openai/gpt-5\.4-mini' "$file"
   assert_success
