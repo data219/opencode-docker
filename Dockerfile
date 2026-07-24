@@ -53,7 +53,7 @@ ARG HELM_VERSION=4.2.3
 # renovate: datasource=npm depName=intelephense
 ARG INTELEPHENSE_VERSION=1.18.5
 # renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
-ARG JAVA_VERSION=21.0.11+10
+ARG JAVA_VERSION=21.0.12+8
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG KUBECTL_VERSION=1.36.3
 # renovate: datasource=github-releases depName=LuaLS/lua-language-server
