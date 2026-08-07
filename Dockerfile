@@ -57,7 +57,7 @@ ARG JAVA_VERSION=21.0.12+8
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG KUBECTL_VERSION=1.36.3
 # renovate: datasource=github-releases depName=LuaLS/lua-language-server
-ARG LUA_LANGUAGE_SERVER_VERSION=3.18.2
+ARG LUA_LANGUAGE_SERVER_VERSION=3.19.0
 # renovate: datasource=github-releases depName=artempyanykh/marksman versioning=loose
 ARG MARKSMAN_VERSION=2026-02-08
 # renovate: datasource=github-releases depName=go-task/task
