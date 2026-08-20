@@ -55,7 +55,7 @@ ARG INTELEPHENSE_VERSION=1.18.5
 # renovate: datasource=github-releases depName=adoptium/temurin21-binaries versioning=semver extractVersion=^jdk-(?<version>.+)$
 ARG JAVA_VERSION=21.0.12+8
 # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG KUBECTL_VERSION=1.36.3
+ARG KUBECTL_VERSION=1.36.4
 # renovate: datasource=github-releases depName=LuaLS/lua-language-server
 ARG LUA_LANGUAGE_SERVER_VERSION=3.19.1
 # renovate: datasource=github-releases depName=artempyanykh/marksman versioning=loose
