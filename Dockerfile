@@ -611,6 +611,9 @@ RUN set -eux; \
   && if [ -f /home/opencode/.config/opencode/oh-my-openagent.jsonc ]; then \
        mv /home/opencode/.config/opencode/oh-my-openagent.jsonc /opt/opencode-defaults/omo-generated-oh-my-openagent.jsonc; \
      fi \
+  && if [ -f /home/opencode/.omo/omo.jsonc ]; then \
+       mv /home/opencode/.omo/omo.jsonc /opt/opencode-defaults/omo-generated-omo.jsonc; \
+     fi \
   && rm -rf \
     /tmp/bun-install \
     /tmp/bun.zip \
