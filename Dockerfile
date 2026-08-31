@@ -95,7 +95,7 @@ ARG TERRAFORM_LS_VERSION=0.39.0
 # renovate: datasource=github-releases depName=hashicorp/terraform
 ARG TERRAFORM_VERSION=1.16.0
 # renovate: datasource=npm depName=typescript-language-server
-ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=5.3.0
+ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=6.0.0
 # renovate: datasource=npm depName=typescript
 ARG TYPESCRIPT_VERSION=7.0.2
 # renovate: datasource=npm depName=@vue/language-server
