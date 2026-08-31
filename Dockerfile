@@ -28,7 +28,7 @@ ARG CNTB_VERSION=1.6
 # renovate: datasource=github-releases depName=composer/composer
 ARG COMPOSER_VERSION=2.10.3
 # renovate: datasource=npm depName=@dokploy/cli
-ARG DOKPLOY_CLI_VERSION=0.30.2
+ARG DOKPLOY_CLI_VERSION=0.30.3
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
 ARG DOCKER_CLI_VERSION=29.4.1
 # renovate: datasource=github-releases depName=docker/compose versioning=semver
