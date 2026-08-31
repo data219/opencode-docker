@@ -67,7 +67,7 @@ ARG NODE_VERSION=24.20.0
 # renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
 ARG NVM_VERSION=v0.40.7
 # renovate: datasource=npm depName=oh-my-opencode
-ARG OMO_VERSION=4.19.2
+ARG OMO_VERSION=4.19.4
 # renovate: datasource=npm depName=@openchamber/web
 ARG OPENCHAMBER_VERSION=1.22.0
 # renovate: datasource=npm depName=opencode-ai
@@ -610,6 +610,9 @@ RUN set -eux; \
      fi \
   && if [ -f /home/opencode/.config/opencode/oh-my-openagent.jsonc ]; then \
        mv /home/opencode/.config/opencode/oh-my-openagent.jsonc /opt/opencode-defaults/omo-generated-oh-my-openagent.jsonc; \
+     fi \
+  && if [ -f /home/opencode/.omo/omo.jsonc ]; then \
+       mv /home/opencode/.omo/omo.jsonc /opt/opencode-defaults/omo-generated-omo.jsonc; \
      fi \
   && rm -rf \
     /tmp/bun-install \
