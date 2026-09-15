@@ -81,7 +81,7 @@ ARG PYRIGHT_VERSION=1.1.414
 # renovate: datasource=npm depName=basedpyright
 ARG BASEDPYRIGHT_VERSION=1.40.1
 # renovate: datasource=ruby-version depName=ruby versioning=ruby
-ARG RUBY_VERSION=4.0.6
+ARG RUBY_VERSION=4.0.7
 # renovate: datasource=github-releases depName=rust-lang/rust-analyzer versioning=loose
 ARG RUST_ANALYZER_VERSION=2026-09-14
 # renovate: datasource=github-releases depName=rust-lang/rust
