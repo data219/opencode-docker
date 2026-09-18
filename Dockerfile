@@ -18,7 +18,7 @@ ARG AGENT_BROWSER_VERSION=0.38.1
 # renovate: datasource=github-releases depName=BjoernSchotte/atlcli versioning=semver
 ARG ATLCLI_VERSION=0.17.2
 # renovate: datasource=npm depName=bash-language-server
-ARG BASH_LANGUAGE_SERVER_VERSION=5.6.0
+ARG BASH_LANGUAGE_SERVER_VERSION=5.8.0
 # renovate: datasource=github-releases depName=oven-sh/bun
 ARG BUN_VERSION=1.3.12
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
