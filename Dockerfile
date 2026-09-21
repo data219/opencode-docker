@@ -2,7 +2,7 @@
 # Single-stage build with BuildKit cache mounts
 # Requires: DOCKER_BUILDKIT=1
 
-FROM debian:13.6-slim
+FROM debian:13.7-slim
 
 # --- Optional language build flags ---
 ARG INSTALL_ELIXIR=false
