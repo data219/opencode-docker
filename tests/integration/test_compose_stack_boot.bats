@@ -228,6 +228,27 @@ start_test_stack() {
   [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
 }
 
+@test "compose stack preserves effective reasoning for Prometheus and Junior" {
+  export OPENCODE_CONFIG_VARIANT="openai-chatgpt"
+  prepare_test_stack
+  start_test_stack
+
+  run compose_ci exec -T -u opencode -e OPENAI_API_KEY=catalog-test-placeholder opencode sh -c '
+    for spec in "Prometheus - Plan Builder|high" "Sisyphus-Junior|medium"; do
+      name="${spec%%|*}"
+      effort="${spec#*|}"
+      agent_dump="$(mktemp)"
+      opencode debug agent "$name" > "$agent_dump"
+      jq -e --arg effort "$effort" '\''
+        .model.providerID == "openai"
+        and .model.modelID == "gpt-6-sol"
+        and .variant == $effort
+      '\'' "$agent_dump" || { cat "$agent_dump"; exit 1; }
+    done
+  '
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
+}
+
 @test "compose stack exposes GPT-6 standard models and reasoning efforts" {
   export OPENCODE_CONFIG_VARIANT="openai-chatgpt"
   prepare_test_stack

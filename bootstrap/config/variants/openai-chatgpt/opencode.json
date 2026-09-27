@@ -11,6 +11,7 @@
     }
   },
   "plugin": [
-    "oh-my-openagent"
+    "oh-my-openagent",
+    "file:///opt/opencode-plugins/omo-reasoning-compat.mjs"
   ]
 }

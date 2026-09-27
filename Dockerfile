@@ -663,6 +663,7 @@ RUN mkdir -p /opt/opencode-defaults
 # Non-managed copies serve as initial seed only (first start with empty volume).
 COPY bootstrap/config/variants/openai-chatgpt/opencode.json /opt/opencode-defaults/opencode.json.managed
 COPY bootstrap/config/variants/openai-chatgpt/omo.jsonc /opt/opencode-defaults/omo.jsonc.managed
+COPY bootstrap/config/omo-reasoning-compat.mjs /opt/opencode-plugins/omo-reasoning-compat.mjs
 COPY bootstrap/config/variants /opt/opencode-defaults/variants/
 COPY bootstrap/config/AGENTS.md /opt/opencode-defaults/AGENTS.md.managed
 COPY bootstrap/config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
