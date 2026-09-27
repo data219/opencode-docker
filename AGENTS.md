@@ -34,6 +34,7 @@
 - For runtime checks that depend on user-scoped config or `$HOME`, run `docker compose exec -T -u <user> <service> ...` with the intended runtime user instead of root.
 - When a bind-mounted home is created by Docker as `root`, ensure startup init logic recreates and re-owns writable runtime directories such as `.config` and `.cache` before validating browser or app startup behavior.
 - For OpenCode runtime/plugin assertions, verify the active config path first with `opencode debug paths`; do not treat seeded file existence alone as proof that runtime config was loaded.
+- For OmO agent model or reasoning changes, inspect the effective registered agent as the `opencode` runtime user with `opencode debug agent "<display name>"`; assert its `model` and `variant`. OmO Doctor shows configured overrides but can miss agent-specific reasoning that was not applied.
 
 ## GitHub Review-Agent Polling
 
