@@ -226,6 +226,31 @@ start_test_stack() {
     '\'' "$doctor_dump" || { cat "$doctor_dump"; exit 1; }
   '
   [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
+
+  # Check the ordered fallback ladders exposed in OpenCode's effective agent config.
+  run compose_ci exec -T -u opencode -e OPENAI_API_KEY=catalog-test-placeholder opencode sh -c '
+    config_dump="$(mktemp)"
+    opencode debug config > "$config_dump"
+    jq -e '\''
+      (.agent | with_entries(select(.value.fallback_models != null) | .value = .value.fallback_models)) == {
+        "Sisyphus - ultraworker": ["openai/gpt-6-luna"],
+        "Hephaestus - Deep Agent": ["openai/gpt-6-luna"],
+        "Prometheus - Plan Builder": ["openai/gpt-6-luna"],
+        "Atlas - Plan Executor": ["openai/gpt-6-luna"],
+        "explore": ["openai/gpt-6-sol"],
+        "librarian": ["openai/gpt-6-sol"],
+        "Metis - Plan Consultant": ["openai/gpt-6-luna"],
+        "Momus - Plan Critic": ["openai/gpt-6-sol", "openai/gpt-6-luna"],
+        "multimodal-looker": ["openai/gpt-6-luna"],
+        "oracle": ["openai/gpt-6-sol", "openai/gpt-6-luna"],
+        "plan": ["openai/gpt-6-luna"]
+      }
+    '\'' "$config_dump" >/dev/null || {
+      jq -c '\'' .agent | with_entries(select(.value.fallback_models != null) | .value = .value.fallback_models) '\'' "$config_dump"
+      exit 1
+    }
+  '
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
 }
 
 @test "compose stack preserves effective reasoning for Prometheus and Junior" {
