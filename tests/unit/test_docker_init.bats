@@ -664,25 +664,29 @@ EOF
 @test "docker-init.sh restores Sol models with a newer backout version" {
   setup_init_test_env
   mkdir -p "$USER_HOME/.omo"
-  printf '%s\n' '{"[opencode]":{"agents":{"oracle":{"model":"openai/gpt-6-astra","variant":"high"}},"categories":{"ultrabrain":{"model":"openai/gpt-6-astra","variant":"high"}}}}' > "$USER_HOME/.omo/omo.jsonc"
-  printf '%s\n' '{"[opencode]":{"agents":{"oracle":{"model":"openai/gpt-5.6-sol","variant":"high"}},"categories":{"ultrabrain":{"model":"openai/gpt-5.6-sol","variant":"xhigh"}}}}' > "$DEFAULTS_DIR/omo.jsonc.managed"
+  printf '%s\n' '{"[opencode]":{"agents":{"oracle":{"model":"openai/gpt-6-astra","variant":"high"},"momus":{"model":"openai/gpt-6-astra","variant":"xhigh"}},"categories":{"ultrabrain":{"model":"openai/gpt-6-astra","variant":"max"},"deep-high":{"model":"openai/gpt-6-astra","variant":"xhigh"}}}}' > "$USER_HOME/.omo/omo.jsonc"
+  printf '%s\n' '{"[opencode]":{"agents":{"oracle":{"model":"openai/gpt-6-sol","variant":"high"},"momus":{"model":"openai/gpt-6-sol","variant":"xhigh"}},"categories":{"ultrabrain":{"model":"openai/gpt-6-sol","variant":"xhigh"},"deep-high":{"model":"openai/gpt-6-sol","variant":"high"}}}}' > "$DEFAULTS_DIR/omo.jsonc.managed"
   printf '%s\n' 'user file' > "$USER_HOME/.omo/custom.txt"
-  printf '%s\n' '28' > "$CONFIG_DIR/.opencode-docker-config-version"
-  printf '%s\n' '27' > "$DEFAULTS_DIR/.opencode-docker-config-version"
+  printf '%s\n' '29' > "$CONFIG_DIR/.opencode-docker-config-version"
+  printf '%s\n' '28' > "$DEFAULTS_DIR/.opencode-docker-config-version"
 
   run bash scripts/docker-init.sh
   [ "$status" -eq 0 ]
   [ "$(jq -r '.["[opencode]"].agents.oracle.model' "$USER_HOME/.omo/omo.jsonc")" = 'openai/gpt-6-astra' ]
 
-  printf '%s\n' '29' > "$DEFAULTS_DIR/.opencode-docker-config-version"
+  printf '%s\n' '30' > "$DEFAULTS_DIR/.opencode-docker-config-version"
   run bash scripts/docker-init.sh
 
   [ "$status" -eq 0 ]
-  [ "$(jq -r '.["[opencode]"].agents.oracle.model' "$USER_HOME/.omo/omo.jsonc")" = 'openai/gpt-5.6-sol' ]
+  [ "$(jq -r '.["[opencode]"].agents.oracle.model' "$USER_HOME/.omo/omo.jsonc")" = 'openai/gpt-6-sol' ]
   [ "$(jq -r '.["[opencode]"].agents.oracle.variant' "$USER_HOME/.omo/omo.jsonc")" = 'high' ]
-  [ "$(jq -r '.["[opencode]"].categories.ultrabrain.model' "$USER_HOME/.omo/omo.jsonc")" = 'openai/gpt-5.6-sol' ]
+  [ "$(jq -r '.["[opencode]"].categories.ultrabrain.model' "$USER_HOME/.omo/omo.jsonc")" = 'openai/gpt-6-sol' ]
   [ "$(jq -r '.["[opencode]"].categories.ultrabrain.variant' "$USER_HOME/.omo/omo.jsonc")" = 'xhigh' ]
-  [ "$(cat "$CONFIG_DIR/.opencode-docker-config-version")" = '29' ]
+  [ "$(jq -r '.["[opencode]"].agents.momus.model' "$USER_HOME/.omo/omo.jsonc")" = 'openai/gpt-6-sol' ]
+  [ "$(jq -r '.["[opencode]"].agents.momus.variant' "$USER_HOME/.omo/omo.jsonc")" = 'xhigh' ]
+  [ "$(jq -r '.["[opencode]"].categories["deep-high"].model' "$USER_HOME/.omo/omo.jsonc")" = 'openai/gpt-6-sol' ]
+  [ "$(jq -r '.["[opencode]"].categories["deep-high"].variant' "$USER_HOME/.omo/omo.jsonc")" = 'high' ]
+  [ "$(cat "$CONFIG_DIR/.opencode-docker-config-version")" = '30' ]
   [ "$(cat "$USER_HOME/.omo/custom.txt")" = 'user file' ]
   teardown_init_test_env
 }
