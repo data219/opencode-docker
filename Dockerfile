@@ -662,7 +662,7 @@ RUN mkdir -p /opt/opencode-defaults
 # Managed files (.managed suffix) are always overwritten on version upgrade.
 # Non-managed copies serve as initial seed only (first start with empty volume).
 COPY bootstrap/config/variants/openai-chatgpt/opencode.json /opt/opencode-defaults/opencode.json.managed
-COPY bootstrap/config/variants/openai-chatgpt/oh-my-openagent.jsonc /opt/opencode-defaults/oh-my-openagent.jsonc.managed
+COPY bootstrap/config/variants/openai-chatgpt/omo.jsonc /opt/opencode-defaults/omo.jsonc.managed
 COPY bootstrap/config/variants /opt/opencode-defaults/variants/
 COPY bootstrap/config/AGENTS.md /opt/opencode-defaults/AGENTS.md.managed
 COPY bootstrap/config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
@@ -685,7 +685,7 @@ RUN mkdir -p /home/opencode/.config/opencode \
     /home/opencode/workspace \
     /home/opencode/.config/opencode/skills
 RUN cp -a /opt/opencode-defaults/opencode.json.managed /home/opencode/.config/opencode/opencode.json \
-  && cp -a /opt/opencode-defaults/oh-my-openagent.jsonc.managed /home/opencode/.config/opencode/oh-my-openagent.jsonc \
+  && cp -a /opt/opencode-defaults/omo.jsonc.managed /home/opencode/.omo/omo.jsonc \
   && cp -a /opt/opencode-defaults/AGENTS.md.managed /home/opencode/.config/opencode/AGENTS.md \
   && cp -a /opt/opencode-defaults/.opencode-docker-config-version /home/opencode/.config/opencode/.opencode-docker-config-version \
   && cp -a /opt/opencode-defaults/.gitmessage /home/opencode/.gitmessage \

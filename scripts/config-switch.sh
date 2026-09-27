@@ -65,11 +65,12 @@ VARIANT_DIR="$VARIANTS_ROOT/$VARIANT"
 
 OPENCODE_HOME_DIR="${OPENCODE_HOME_DIR:-./data/home}"
 CONFIG_DIR="$OPENCODE_HOME_DIR/.config/opencode"
+OMO_CONFIG_DIR="$OPENCODE_HOME_DIR/.omo"
 
-mkdir -p "$CONFIG_DIR"
+mkdir -p "$CONFIG_DIR" "$OMO_CONFIG_DIR"
 
 copy_required_file "$VARIANT_DIR/opencode.json" "$CONFIG_DIR/opencode.json"
-copy_required_file "$VARIANT_DIR/oh-my-openagent.jsonc" "$CONFIG_DIR/oh-my-openagent.jsonc"
+copy_required_file "$VARIANT_DIR/omo.jsonc" "$OMO_CONFIG_DIR/omo.jsonc"
 
 if [ ! -f "$CONFIG_DIR/AGENTS.md" ] && [ -f "$BOOTSTRAP_CONFIG_DIR/AGENTS.md" ]; then
   cp -a -- "$BOOTSTRAP_CONFIG_DIR/AGENTS.md" "$CONFIG_DIR/AGENTS.md"
@@ -81,6 +82,7 @@ fi
 
 echo "Switched OpenCode config variant to $VARIANT"
 echo "Runtime config: $CONFIG_DIR"
+echo "OmO config: $OMO_CONFIG_DIR/omo.jsonc"
 
 case "$VARIANT" in
   openai-chatgpt)

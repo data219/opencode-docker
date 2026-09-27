@@ -35,6 +35,8 @@ prepare_test_stack() {
   export OPENCODE_BIND_ADDRESS="127.0.0.1"
   export OPENCODE_CONTAINER_NAME="${TEST_CONTAINER_NAME}"
   export OPENCODE_HOME_DIR="${TEST_HOME_ROOT}"
+  # Keep ambient tunnel profiles from starting real external services in tests.
+  export COMPOSE_PROFILES=""
 
   chmod 0777 "${TEST_HOME_ROOT}"
 }
@@ -133,9 +135,9 @@ start_test_stack() {
   prepare_test_stack
   start_test_stack
 
-  run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/oh-my-openagent.jsonc
+  run compose_ci exec -T opencode test -f /home/opencode/.omo/omo.jsonc
   [ "$status" -eq 0 ]
-  [ -f "${TEST_HOME_ROOT}/.config/opencode/oh-my-openagent.jsonc" ]
+  [ -f "${TEST_HOME_ROOT}/.omo/omo.jsonc" ]
 
   run compose_ci exec -T opencode test -f /home/opencode/.config/opencode/AGENTS.md
   [ "$status" -eq 0 ]
@@ -165,6 +167,41 @@ start_test_stack() {
         and .scope == \"global\"
       )
     " "$config_dump" >/dev/null
+  '
+  [ "$status" -eq 0 ]
+}
+
+@test "compose stack preserves configured OmO models in the active harness" {
+  export OPENCODE_CONFIG_VARIANT="openai-chatgpt"
+  prepare_test_stack
+  start_test_stack
+
+  local omo_version
+  omo_version="$(awk -F= '$1 == "ARG OMO_VERSION" {print $2}' Dockerfile)"
+  [ -n "$omo_version" ]
+
+  run compose_ci exec -T -u opencode -e OMO_TEST_VERSION="$omo_version" opencode sh -c '
+    doctor_dump="$(mktemp)"
+    npx --yes "oh-my-opencode@${OMO_TEST_VERSION}" doctor --platform opencode --json > "$doctor_dump" || true
+    jq -e '\''
+      .target == "opencode"
+      and .systemInfo.configValid == true
+      and .systemInfo.pluginVersion == env.OMO_TEST_VERSION
+      and .systemInfo.loadedVersion == env.OMO_TEST_VERSION
+      and any(.results[];
+        .name == "Configuration"
+        and .status == "pass"
+        and .message == "Configuration is valid"
+      )
+      and any(.results[];
+        .name == "Models"
+        and .message == "11 agents, 9 categories, 20 overrides"
+        and any(.details[]; contains("oracle: openai/gpt-5.6-sol (high)"))
+        and any(.details[]; contains("ultrabrain: openai/gpt-5.6-sol (xhigh)"))
+        and any(.details[]; contains("deep-low: openai/gpt-5.6-terra (xhigh)"))
+        and any(.details[]; contains("deep-high: openai/gpt-5.6-terra (xhigh)"))
+      )
+    '\'' "$doctor_dump" || { cat "$doctor_dump"; exit 1; }
   '
   [ "$status" -eq 0 ]
 }

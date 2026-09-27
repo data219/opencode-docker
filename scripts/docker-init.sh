@@ -204,12 +204,19 @@ if [ "$NEED_SEED" = "true" ] && [ -d "$DEFAULTS_DIR" ]; then
       # Strip .managed suffix for the target filename
       target_name="${base%.managed}"
       target="$CONFIG_DIR/$target_name"
+      if [ "$target_name" = "omo.jsonc" ]; then
+        target="$USER_HOME/.omo/omo.jsonc"
+        mkdir -p "$USER_HOME/.omo"
+      fi
       source_file="$item"
       variant_source_file="$CONFIG_VARIANT_DIR/$target_name"
       if [ -f "$variant_source_file" ]; then
         source_file="$variant_source_file"
       fi
       cp -a -- "$source_file" "$target"
+      if [ "$target_name" = "omo.jsonc" ] && [ "$(id -u)" = "0" ]; then
+        chown opencode:opencode "$target"
+      fi
     else
       # Seed non-managed files only if they don't exist yet (first start)
       target="$CONFIG_DIR/$base"

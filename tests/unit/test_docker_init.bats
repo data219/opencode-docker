@@ -626,6 +626,65 @@ EOF
   teardown_init_test_env
 }
 
+@test "docker-init.sh upgrades managed OmO config at its canonical home path" {
+  setup_init_test_env
+  mkdir -p "$USER_HOME/.omo"
+  printf '%s\n' '{"old":true}' > "$USER_HOME/.omo/omo.jsonc"
+  printf '%s\n' 'legacy backup' > "$CONFIG_DIR/oh-my-openagent.jsonc"
+  printf '%s\n' 'user file' > "$USER_HOME/.omo/custom.txt"
+  printf '%s\n' '{"[opencode]":{"hashline_edit":true}}' > "$DEFAULTS_DIR/omo.jsonc.managed"
+  printf '%s\n' '26' > "$CONFIG_DIR/.opencode-docker-config-version"
+  printf '%s\n' '27' > "$DEFAULTS_DIR/.opencode-docker-config-version"
+
+  run bash scripts/docker-init.sh
+
+  [ "$status" -eq 0 ]
+  cmp -s "$DEFAULTS_DIR/omo.jsonc.managed" "$USER_HOME/.omo/omo.jsonc"
+  [ ! -f "$CONFIG_DIR/omo.jsonc" ]
+  [ "$(cat "$CONFIG_DIR/oh-my-openagent.jsonc")" = 'legacy backup' ]
+  [ "$(cat "$USER_HOME/.omo/custom.txt")" = 'user file' ]
+  teardown_init_test_env
+}
+
+@test "docker-init.sh preserves customized OmO config without a version upgrade" {
+  setup_init_test_env
+  mkdir -p "$USER_HOME/.omo"
+  printf '%s\n' 'user config' > "$USER_HOME/.omo/omo.jsonc"
+  printf '%s\n' '{"[opencode]":{"hashline_edit":true}}' > "$DEFAULTS_DIR/omo.jsonc.managed"
+  printf '%s\n' '27' > "$CONFIG_DIR/.opencode-docker-config-version"
+  printf '%s\n' '27' > "$DEFAULTS_DIR/.opencode-docker-config-version"
+
+  run bash scripts/docker-init.sh
+
+  [ "$status" -eq 0 ]
+  [ "$(cat "$USER_HOME/.omo/omo.jsonc")" = 'user config' ]
+  teardown_init_test_env
+}
+
+@test "docker-init.sh restores managed models with a newer backout version" {
+  setup_init_test_env
+  mkdir -p "$USER_HOME/.omo"
+  printf '%s\n' '{"[opencode]":{"agents":{"oracle":{"model":"openai/gpt-5.6-sol","variant":"medium"}},"categories":{"ultrabrain":{"model":"openai/gpt-5.6-sol","variant":"high"}}}}' > "$USER_HOME/.omo/omo.jsonc"
+  printf '%s\n' '{"[opencode]":{"agents":{"oracle":{"model":"openai/gpt-5.6-sol","variant":"high"}},"categories":{"ultrabrain":{"model":"openai/gpt-5.6-sol","variant":"xhigh"}}}}' > "$DEFAULTS_DIR/omo.jsonc.managed"
+  printf '%s\n' 'user file' > "$USER_HOME/.omo/custom.txt"
+  printf '%s\n' '28' > "$CONFIG_DIR/.opencode-docker-config-version"
+  printf '%s\n' '27' > "$DEFAULTS_DIR/.opencode-docker-config-version"
+
+  run bash scripts/docker-init.sh
+  [ "$status" -eq 0 ]
+  [ "$(jq -r '.["[opencode]"].agents.oracle.variant' "$USER_HOME/.omo/omo.jsonc")" = 'medium' ]
+
+  printf '%s\n' '29' > "$DEFAULTS_DIR/.opencode-docker-config-version"
+  run bash scripts/docker-init.sh
+
+  [ "$status" -eq 0 ]
+  [ "$(jq -r '.["[opencode]"].agents.oracle.variant' "$USER_HOME/.omo/omo.jsonc")" = 'high' ]
+  [ "$(jq -r '.["[opencode]"].categories.ultrabrain.variant' "$USER_HOME/.omo/omo.jsonc")" = 'xhigh' ]
+  [ "$(cat "$CONFIG_DIR/.opencode-docker-config-version")" = '29' ]
+  [ "$(cat "$USER_HOME/.omo/custom.txt")" = 'user file' ]
+  teardown_init_test_env
+}
+
 @test "docker-init.sh skips config when target already exists" {
   setup_init_test_env
   echo '{"test": true}' > "$DEFAULTS_DIR/opencode.json"

@@ -6,18 +6,23 @@ const { parse, printParseErrorCode } = require("jsonc-parser");
 const file = process.argv[2];
 
 if (!file) {
-  console.error("usage: assert-openai-gpt-5-6-map.js <file>");
+  console.error("usage: assert-openai-model-map.js <file>");
   process.exit(2);
 }
 
 const errors = [];
-const config = parse(fs.readFileSync(file, "utf8"), errors);
+const document = parse(fs.readFileSync(file, "utf8"), errors);
 
 if (errors.length > 0) {
   for (const error of errors) {
     console.error(`${file}:${error.offset}: ${printParseErrorCode(error.error)}`);
   }
   process.exit(1);
+}
+
+const config = document["[opencode]"];
+if (!config) {
+  throw new Error("OmO 5 requires an [opencode] harness section");
 }
 
 const expectedAgents = {
@@ -33,7 +38,8 @@ const expectedCategories = {
   ultrabrain: ["openai/gpt-5.6-sol", "xhigh"],
   "visual-engineering": ["openai/gpt-5.6-sol", "high"],
   "unspecified-high": ["openai/gpt-5.6-sol", "high"],
-  deep: ["openai/gpt-5.6-terra", "xhigh"],
+  "deep-low": ["openai/gpt-5.6-terra", "xhigh"],
+  "deep-high": ["openai/gpt-5.6-terra", "xhigh"],
   writing: ["openai/gpt-5.6-terra", "medium"],
   artistry: ["openai/gpt-5.6-sol", "xhigh"],
 };
@@ -49,6 +55,17 @@ for (const [name, [model, variant]] of Object.entries(expectedCategories)) {
   const actual = config.categories?.[name];
   if (actual?.model !== model || actual?.variant !== variant) {
     throw new Error(`unexpected ${name} mapping: ${JSON.stringify(actual)}`);
+  }
+}
+
+for (const scope of ["agents", "categories"]) {
+  for (const [name, value] of Object.entries(config[scope])) {
+    if (value.model?.startsWith("openai/gpt-6-astra")) {
+      throw new Error(`Astra is not approved for ${scope}.${name}`);
+    }
+    if (value.fallback_models?.some((model) => model.startsWith("openai/gpt-6-astra"))) {
+      throw new Error(`Astra must not be added as a fallback for ${scope}.${name}`);
+    }
   }
 }
 

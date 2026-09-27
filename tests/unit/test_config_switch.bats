@@ -61,12 +61,12 @@ config_dir() {
   assert_output --partial "task opencode -- auth login --provider openai --method"
 
   [ -f "$(config_dir)/opencode.json" ]
-  [ -f "$(config_dir)/oh-my-openagent.jsonc" ]
+  [ -f "$TEST_HOME_DIR/.omo/omo.jsonc" ]
   [ -f "$(config_dir)/AGENTS.md" ]
   [ -f "$(config_dir)/.opencode-docker-config-version" ]
 
   cmp -s bootstrap/config/variants/openai-chatgpt/opencode.json "$(config_dir)/opencode.json"
-  cmp -s bootstrap/config/variants/openai-chatgpt/oh-my-openagent.jsonc "$(config_dir)/oh-my-openagent.jsonc"
+  cmp -s bootstrap/config/variants/openai-chatgpt/omo.jsonc "$TEST_HOME_DIR/.omo/omo.jsonc"
 }
 
 @test "config-switch resolves repository paths from script location" {
@@ -74,7 +74,7 @@ config_dir() {
 
   assert_success
   cmp -s bootstrap/config/variants/openai-chatgpt/opencode.json "$(config_dir)/opencode.json"
-  cmp -s bootstrap/config/variants/openai-chatgpt/oh-my-openagent.jsonc "$(config_dir)/oh-my-openagent.jsonc"
+  cmp -s bootstrap/config/variants/openai-chatgpt/omo.jsonc "$TEST_HOME_DIR/.omo/omo.jsonc"
 }
 
 @test "config-switch writes zai-coding-plan runtime config to OPENCODE_HOME_DIR" {
@@ -85,7 +85,7 @@ config_dir() {
   assert_output --partial "Ensure OCD_ZHIPU_API_KEY is set"
 
   cmp -s bootstrap/config/variants/zai-coding-plan/opencode.json "$(config_dir)/opencode.json"
-  cmp -s bootstrap/config/variants/zai-coding-plan/oh-my-openagent.jsonc "$(config_dir)/oh-my-openagent.jsonc"
+  cmp -s bootstrap/config/variants/zai-coding-plan/omo.jsonc "$TEST_HOME_DIR/.omo/omo.jsonc"
 }
 
 @test "config-switch preserves existing runtime AGENTS.md" {

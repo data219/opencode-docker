@@ -95,11 +95,11 @@ task config-switch -- openai-chatgpt
 task config-switch -- zai-coding-plan
 ```
 
-The switch writes only these files under `${OPENCODE_HOME_DIR:-./data/home}/.config/opencode/`:
+The switch writes these managed files under `${OPENCODE_HOME_DIR:-./data/home}/`:
 
-- `opencode.json`
-- `oh-my-openagent.jsonc`
-- `.opencode-docker-config-version`
+- `.config/opencode/opencode.json`
+- `.omo/omo.jsonc`
+- `.config/opencode/.opencode-docker-config-version`
 
 `AGENTS.md` is seeded only when it does not already exist.
 
@@ -170,6 +170,14 @@ OpenSpec writes project-local `.opencode/skills/` and `.opencode/commands/opsx-*
 ### Model providers
 
 The default `openai-chatgpt` config uses OpenCode's built-in OpenAI provider and an OmO OpenAI-only model map through ChatGPT Plus/Pro OAuth. `OPENAI_API_KEY` is not used for subscription auth.
+
+OmO 5 loads its managed configuration from `~/.omo/omo.jsonc`. The tracked variant seeds use the `[opencode]` harness section to retain agent models, categories, fallbacks, prompts, and concurrency limits. Both `deep-low` and `deep-high` are explicitly configured so the upgrade keeps the previous deep-work model choice. `task config-switch` updates this file as well as OpenCode's config; existing legacy OmO files are left in place for reference.
+
+Automatic continuation uses OmO 5's enabled Goal mode. The removed `default_mode.ralph_loop`, `experimental.auto_resume`, and `browser_automation_engine.provider=agent-browser` settings are no longer valid in this version. The installed `agent-browser` CLI remains available independently of OmO's built-in browser-provider selection.
+
+The OmO 5 migration preserves the existing model assignments: Oracle stays on Sol `high`, Ultrabrain on Sol `xhigh`, and both deep categories on Terra `xhigh`. Model upgrades are a separate change.
+
+Before upgrading, back up the persisted home. A full downgrade to OmO 4 requires restoring its legacy config alongside the old image, not just reverting the image tag. To restore managed settings while keeping OmO 5, update the tracked seed and increment the config-version marker above the deployed value before rebuilding; a lower marker does not trigger re-seeding.
 
 Switch to `zai-coding-plan` for Z.AI/Gemini-driven defaults:
 
