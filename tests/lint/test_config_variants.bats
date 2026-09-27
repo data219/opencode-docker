@@ -56,7 +56,7 @@ assert_file_not_matches() {
 @test "config variants contain required files" {
   for variant in zai-coding-plan openai-chatgpt; do
     assert_file_exists "$(variant_file "$variant" opencode.json)"
-    assert_file_exists "$(variant_file "$variant" oh-my-openagent.jsonc)"
+    assert_file_exists "$(variant_file "$variant" omo.jsonc)"
   done
 }
 
@@ -70,7 +70,7 @@ assert_file_not_matches() {
 @test "variant Oh My OpenAgent JSONC files are parseable" {
   command -v node >/dev/null 2>&1 || skip "node is required for JSONC validation"
   for variant in zai-coding-plan openai-chatgpt; do
-    run assert_jsonc_valid "$(variant_file "$variant" oh-my-openagent.jsonc)"
+    run assert_jsonc_valid "$(variant_file "$variant" omo.jsonc)"
     assert_success
   done
 }
@@ -93,20 +93,20 @@ assert_file_not_matches() {
 }
 
 @test "openai-chatgpt variant does not reference non-OpenAI model providers" {
-  run assert_file_not_matches 'zai-coding-plan|google/|anthropic/|github-copilot/|opencode-go/|vercel/|kimi-for-coding/|moonshotai|aihubmix|ollama-cloud|firmware|venice/' "$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
+  run assert_file_not_matches 'zai-coding-plan|google/|anthropic/|github-copilot/|opencode-go/|vercel/|kimi-for-coding/|moonshotai|aihubmix|ollama-cloud|firmware|venice/' "$(variant_file openai-chatgpt omo.jsonc)"
   assert_success
 }
 
-@test "openai-chatgpt variant maps every GPT-5.5 role to GPT-5.6" {
-  file="$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
+@test "openai-chatgpt variant preserves existing models during the OmO 5 migration" {
+  file="$(variant_file openai-chatgpt omo.jsonc)"
 
   command -v node >/dev/null 2>&1 || skip "node is required for JSONC validation"
-  run node tests/jsonc/assert-openai-gpt-5-6-map.js "$file"
+  run node tests/jsonc/assert-openai-model-map.js "$file"
   assert_success
 }
 
 @test "openai-chatgpt variant keeps expected OpenAI fallback models and documented substitutions" {
-  file="$(variant_file openai-chatgpt oh-my-openagent.jsonc)"
+  file="$(variant_file openai-chatgpt omo.jsonc)"
 
   run assert_file_matches 'openai/gpt-5\.4-mini' "$file"
   assert_success
