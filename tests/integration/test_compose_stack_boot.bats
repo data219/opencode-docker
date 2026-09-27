@@ -197,7 +197,10 @@ start_test_stack() {
         .name == "Models"
         and .status == "pass"
         and .message == "11 agents, 9 categories, 20 overrides"
-        and (.details as $details | all([
+        and (.details | map(
+          sub("^\\s*[●○]\\s+"; "")
+          | sub(" \\[capabilities: [^]]+\\]$"; "")
+        ) | . as $details | all([
           "sisyphus: openai/gpt-6-sol (medium)",
           "hephaestus: openai/gpt-6-sol (medium)",
           "prometheus: openai/gpt-6-sol (high)",
@@ -218,7 +221,7 @@ start_test_stack() {
           "quick: openai/gpt-6-luna (low)",
           "unspecified-low: openai/gpt-6-sol (high)",
           "artistry: openai/gpt-6-sol (xhigh)"
-        ][]; . as $expected | any($details[]; contains($expected))))
+        ][]; . as $expected | any($details[]; . == $expected)))
       )
     '\'' "$doctor_dump" || { cat "$doctor_dump"; exit 1; }
   '
@@ -255,6 +258,9 @@ for (const name of ["astra", "sol", "luna"]) {
   for (const effort of ["low", "medium", "high", "xhigh", "max"]) {
     if (model.variants?.[effort]?.reasoningEffort !== effort) {
       throw new Error(`GPT-6 ${name} does not expose ${effort} reasoning`);
+    }
+    if (model.variants[effort].serviceTier === "priority") {
+      throw new Error(`Standard GPT-6 ${name} ${effort} variant must not use priority service`);
     }
   }
   console.log(`${model.id}: low/medium/high/xhigh/max supported, standard service`);
