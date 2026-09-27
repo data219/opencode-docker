@@ -175,9 +175,9 @@ OmO 5 loads its managed configuration from `~/.omo/omo.jsonc`. The tracked varia
 
 Automatic continuation uses OmO 5's enabled Goal mode. The removed `default_mode.ralph_loop`, `experimental.auto_resume`, and `browser_automation_engine.provider=agent-browser` settings are no longer valid in this version. The installed `agent-browser` CLI remains available independently of OmO's built-in browser-provider selection.
 
-The OmO 5 migration preserves the existing model assignments: Oracle stays on Sol `high`, Ultrabrain on Sol `xhigh`, and both deep categories on Terra `xhigh`. Model upgrades are a separate change.
+The OpenAI variant uses GPT-6 Astra at `high` effort only for `oracle` and `ultrabrain`, with GPT-5.6 Sol as their first fallback. Astra background concurrency is limited to one; this controls simultaneous work, not total quota usage. Hephaestus stays on Sol `medium`, Momus on Sol `xhigh`, and both deep categories on Terra `xhigh`. For exceptionally difficult `ultrabrain` tasks, Astra `max` is an optional escalation; keeping `high` is the initial quota-conscious choice.
 
-Before upgrading, back up the persisted home. A full downgrade to OmO 4 requires restoring its legacy config alongside the old image, not just reverting the image tag. To restore managed settings while keeping OmO 5, update the tracked seed and increment the config-version marker above the deployed value before rebuilding; a lower marker does not trigger re-seeding.
+To back out the Astra mappings while keeping OmO 5, restore Oracle to Sol `high` and Ultrabrain to Sol `xhigh` in the tracked OpenAI seed, remove the redundant Sol fallback and Astra concurrency entry, and increment the config-version marker above the deployed value before rebuilding. A lower marker does not trigger re-seeding. Before upgrading, back up the persisted home; a full downgrade to OmO 4 requires restoring its legacy config alongside the old image, not just reverting the image tag.
 
 Switch to `zai-coding-plan` for Z.AI/Gemini-driven defaults:
 

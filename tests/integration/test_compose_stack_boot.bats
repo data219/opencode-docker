@@ -196,8 +196,8 @@ start_test_stack() {
       and any(.results[];
         .name == "Models"
         and .message == "11 agents, 9 categories, 20 overrides"
-        and any(.details[]; contains("oracle: openai/gpt-5.6-sol (high)"))
-        and any(.details[]; contains("ultrabrain: openai/gpt-5.6-sol (xhigh)"))
+        and any(.details[]; contains("oracle: openai/gpt-6-astra (high)"))
+        and any(.details[]; contains("ultrabrain: openai/gpt-6-astra (high)"))
         and any(.details[]; contains("deep-low: openai/gpt-5.6-terra (xhigh)"))
         and any(.details[]; contains("deep-high: openai/gpt-5.6-terra (xhigh)"))
       )

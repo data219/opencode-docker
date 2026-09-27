@@ -97,7 +97,7 @@ assert_file_not_matches() {
   assert_success
 }
 
-@test "openai-chatgpt variant preserves existing models during the OmO 5 migration" {
+@test "openai-chatgpt variant limits Astra to oracle and ultrabrain" {
   file="$(variant_file openai-chatgpt omo.jsonc)"
 
   command -v node >/dev/null 2>&1 || skip "node is required for JSONC validation"

@@ -1,6 +1,7 @@
 // opencode-docker-config:1
 // OpenAI ChatGPT subscription variant.
 // Auth is handled by OpenCode's built-in OpenAI OAuth/device-login flow, not by OPENAI_API_KEY.
+// Astra high handles oracle and ultrabrain, with Sol as the first fallback.
 // Sol handles orchestration, Terra balanced execution, and Luna economical research fallbacks.
 // OmO upstream currently emits openai/gpt-5.4-mini-fast for explore/librarian, but the current
 // OpenCode/models.dev catalog does not expose that model id, so gpt-5.4-mini-fast is substituted with openai/gpt-5.4-mini.
@@ -51,9 +52,10 @@
         "prompt_append": "Critically evaluate plans. Identify gaps, risks, and improvements. Be thorough."
       },
       "oracle": {
-        "model": "openai/gpt-5.6-sol",
+        "model": "openai/gpt-6-astra",
         "variant": "high",
         "fallback_models": [
+          "openai/gpt-5.6-sol",
           "openai/gpt-5.4",
           "openai/gpt-5.4-mini",
           "openai/gpt-5.3-codex-spark"
@@ -116,9 +118,10 @@
     },
     "categories": {
       "ultrabrain": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "xhigh",
+        "model": "openai/gpt-6-astra",
+        "variant": "high",
         "fallback_models": [
+          "openai/gpt-5.6-sol",
           "openai/gpt-5.4",
           "openai/gpt-5.4-mini",
           "openai/gpt-5.3-codex-spark"
@@ -220,6 +223,7 @@
         "openai": 3
       },
       "modelConcurrency": {
+        "openai/gpt-6-astra": 1,
         "openai/gpt-5.6-sol": 2,
         "openai/gpt-5.6-terra": 2,
         "openai/gpt-5.6-luna": 2,

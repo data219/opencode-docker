@@ -30,12 +30,12 @@ const expectedAgents = {
   hephaestus: ["openai/gpt-5.6-sol", "medium"],
   prometheus: ["openai/gpt-5.6-sol", "high"],
   metis: ["openai/gpt-5.6-sol", "high"],
-  oracle: ["openai/gpt-5.6-sol", "high"],
+  oracle: ["openai/gpt-6-astra", "high"],
   momus: ["openai/gpt-5.6-sol", "xhigh"],
   atlas: ["openai/gpt-5.6-sol", "medium"],
 };
 const expectedCategories = {
-  ultrabrain: ["openai/gpt-5.6-sol", "xhigh"],
+  ultrabrain: ["openai/gpt-6-astra", "high"],
   "visual-engineering": ["openai/gpt-5.6-sol", "high"],
   "unspecified-high": ["openai/gpt-5.6-sol", "high"],
   "deep-low": ["openai/gpt-5.6-terra", "xhigh"],
@@ -58,9 +58,9 @@ for (const [name, [model, variant]] of Object.entries(expectedCategories)) {
   }
 }
 
-for (const scope of ["agents", "categories"]) {
+for (const [scope, allowed] of [["agents", "oracle"], ["categories", "ultrabrain"]]) {
   for (const [name, value] of Object.entries(config[scope])) {
-    if (value.model?.startsWith("openai/gpt-6-astra")) {
+    if (value.model?.startsWith("openai/gpt-6-astra") && name !== allowed) {
       throw new Error(`Astra is not approved for ${scope}.${name}`);
     }
     if (value.fallback_models?.some((model) => model.startsWith("openai/gpt-6-astra"))) {
@@ -83,6 +83,16 @@ for (const model of ["openai/gpt-5.6-sol", "openai/gpt-5.6-terra", "openai/gpt-5
   if (config.background_task?.modelConcurrency?.[model] !== 2) {
     throw new Error(`unexpected ${model} concurrency`);
   }
+}
+
+for (const target of [config.agents.oracle, config.categories.ultrabrain]) {
+  if (target.fallback_models?.[0] !== "openai/gpt-5.6-sol") {
+    throw new Error("Astra must fall back to GPT-5.6 Sol first");
+  }
+}
+
+if (config.background_task?.modelConcurrency?.["openai/gpt-6-astra"] !== 1) {
+  throw new Error("Astra background concurrency must be limited to one");
 }
 
 if (JSON.stringify(config).includes("openai/gpt-5.5")) {
