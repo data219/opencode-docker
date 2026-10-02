@@ -99,7 +99,7 @@ ARG TYPESCRIPT_LANGUAGE_SERVER_VERSION=6.0.1
 # renovate: datasource=npm depName=typescript
 ARG TYPESCRIPT_VERSION=7.0.2
 # renovate: datasource=npm depName=@vue/language-server
-ARG VUE_LANGUAGE_SERVER_VERSION=3.3.11
+ARG VUE_LANGUAGE_SERVER_VERSION=3.3.12
 # renovate: datasource=npm depName=yaml-language-server
 ARG YAML_LANGUAGE_SERVER_VERSION=1.24.0
 # renovate: datasource=github-releases depName=mikefarah/yq
