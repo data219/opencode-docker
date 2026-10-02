@@ -32,7 +32,7 @@ ARG DOKPLOY_CLI_VERSION=0.30.7
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
 ARG DOCKER_CLI_VERSION=29.4.1
 # renovate: datasource=github-releases depName=docker/compose versioning=semver
-ARG DOCKER_COMPOSE_VERSION=5.5.1
+ARG DOCKER_COMPOSE_VERSION=5.6.0
 # renovate: datasource=github-releases depName=cli/cli versioning=semver
 ARG GH_VERSION=2.102.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
