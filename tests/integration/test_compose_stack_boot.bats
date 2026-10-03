@@ -195,15 +195,125 @@ start_test_stack() {
       )
       and any(.results[];
         .name == "Models"
+        and .status == "pass"
         and .message == "11 agents, 9 categories, 20 overrides"
-        and any(.details[]; contains("oracle: openai/gpt-5.6-sol (high)"))
-        and any(.details[]; contains("ultrabrain: openai/gpt-5.6-sol (xhigh)"))
-        and any(.details[]; contains("deep-low: openai/gpt-5.6-terra (xhigh)"))
-        and any(.details[]; contains("deep-high: openai/gpt-5.6-terra (xhigh)"))
+        and (.details | map(
+          sub("^\\s*[●○]\\s+"; "")
+          | sub(" \\[capabilities: [^]]+\\]$"; "")
+        ) | . as $details | all([
+          "sisyphus: openai/gpt-6-sol (medium)",
+          "hephaestus: openai/gpt-6-sol (medium)",
+          "prometheus: openai/gpt-6-sol (high)",
+          "metis: openai/gpt-6-sol (high)",
+          "oracle: openai/gpt-6-astra (high)",
+          "momus: openai/gpt-6-astra (xhigh)",
+          "atlas: openai/gpt-6-sol (medium)",
+          "sisyphus-junior: openai/gpt-6-sol (medium)",
+          "explore: openai/gpt-6-luna (low)",
+          "librarian: openai/gpt-6-luna (low)",
+          "multimodal-looker: openai/gpt-6-sol (low)",
+          "ultrabrain: openai/gpt-6-astra (max)",
+          "visual-engineering: openai/gpt-6-sol (high)",
+          "unspecified-high: openai/gpt-6-sol (high)",
+          "deep-low: openai/gpt-6-sol (medium)",
+          "deep-high: openai/gpt-6-astra (xhigh)",
+          "writing: openai/gpt-6-sol (medium)",
+          "quick: openai/gpt-6-luna (low)",
+          "unspecified-low: openai/gpt-6-sol (high)",
+          "artistry: openai/gpt-6-sol (xhigh)"
+        ][]; . as $expected | any($details[]; . == $expected)))
       )
     '\'' "$doctor_dump" || { cat "$doctor_dump"; exit 1; }
   '
-  [ "$status" -eq 0 ]
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
+
+  # Check the ordered fallback ladders exposed in OpenCode's effective agent config.
+  run compose_ci exec -T -u opencode -e OPENAI_API_KEY=catalog-test-placeholder opencode sh -c '
+    config_dump="$(mktemp)"
+    opencode debug config > "$config_dump"
+    jq -e '\''
+      (.agent | with_entries(select(.value.fallback_models != null) | .value = .value.fallback_models)) == {
+        "Sisyphus - ultraworker": ["openai/gpt-6-luna"],
+        "Hephaestus - Deep Agent": ["openai/gpt-6-luna"],
+        "Prometheus - Plan Builder": ["openai/gpt-6-luna"],
+        "Atlas - Plan Executor": ["openai/gpt-6-luna"],
+        "explore": ["openai/gpt-6-sol"],
+        "librarian": ["openai/gpt-6-sol"],
+        "Metis - Plan Consultant": ["openai/gpt-6-luna"],
+        "Momus - Plan Critic": ["openai/gpt-6-sol", "openai/gpt-6-luna"],
+        "multimodal-looker": ["openai/gpt-6-luna"],
+        "oracle": ["openai/gpt-6-sol", "openai/gpt-6-luna"],
+        "plan": ["openai/gpt-6-luna"]
+      }
+    '\'' "$config_dump" >/dev/null || {
+      jq -c '\'' .agent | with_entries(select(.value.fallback_models != null) | .value = .value.fallback_models) '\'' "$config_dump"
+      exit 1
+    }
+  '
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
+}
+
+@test "compose stack preserves effective reasoning for Prometheus and Junior" {
+  export OPENCODE_CONFIG_VARIANT="openai-chatgpt"
+  prepare_test_stack
+  start_test_stack
+
+  run compose_ci exec -T -u opencode -e OPENAI_API_KEY=catalog-test-placeholder opencode sh -c '
+    for spec in "Prometheus - Plan Builder|high" "Sisyphus-Junior|medium"; do
+      name="${spec%%|*}"
+      effort="${spec#*|}"
+      agent_dump="$(mktemp)"
+      opencode debug agent "$name" > "$agent_dump"
+      jq -e --arg effort "$effort" '\''
+        .model.providerID == "openai"
+        and .model.modelID == "gpt-6-sol"
+        and .variant == $effort
+      '\'' "$agent_dump" || { cat "$agent_dump"; exit 1; }
+    done
+  '
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
+}
+
+@test "compose stack exposes GPT-6 standard models and reasoning efforts" {
+  export OPENCODE_CONFIG_VARIANT="openai-chatgpt"
+  prepare_test_stack
+  start_test_stack
+
+  # A dummy key makes the provider catalog visible without real credentials or inference.
+  run compose_ci exec -T -u opencode -e OPENAI_API_KEY=catalog-test-placeholder opencode sh -c '
+    model_dump="$(mktemp)"
+    opencode models openai --refresh >/dev/null
+    opencode models openai --verbose > "$model_dump"
+    node - "$model_dump" <<\NODE
+const fs = require("fs");
+const raw = fs.readFileSync(process.argv[2], "utf8");
+const models = new Map();
+for (const part of raw.split(/(?=^openai\/)/m)) {
+  const split = part.indexOf("\n");
+  const id = part.slice(0, split);
+  if (/^openai\/gpt-6-(astra|sol|luna)$/.test(id)) {
+    models.set(id, JSON.parse(part.slice(split)));
+  }
+}
+for (const name of ["astra", "sol", "luna"]) {
+  const model = models.get(`openai/gpt-6-${name}`);
+  if (!model) throw new Error(`Missing standard GPT-6 ${name} in runtime catalog`);
+  if (model.options?.serviceTier === "priority") {
+    throw new Error(`Standard GPT-6 ${name} must not use priority service`);
+  }
+  for (const effort of ["low", "medium", "high", "xhigh", "max"]) {
+    if (model.variants?.[effort]?.reasoningEffort !== effort) {
+      throw new Error(`GPT-6 ${name} does not expose ${effort} reasoning`);
+    }
+    if (model.variants[effort].serviceTier === "priority") {
+      throw new Error(`Standard GPT-6 ${name} ${effort} variant must not use priority service`);
+    }
+  }
+  console.log(`${model.id}: low/medium/high/xhigh/max supported, standard service`);
+}
+NODE
+  '
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
 }
 
 @test "compose stack provides bundled CLIs and defaults" {
