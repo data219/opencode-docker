@@ -193,17 +193,15 @@ start_test_stack() {
         and .status == "pass"
         and .message == "Configuration is valid"
       )
-      and any(.results[];
-        .name == "Models"
-        and .message == "11 agents, 9 categories, 20 overrides"
-        and any(.details[]; contains("oracle: openai/gpt-5.6-sol (high)"))
-        and any(.details[]; contains("ultrabrain: openai/gpt-5.6-sol (xhigh)"))
-        and any(.details[]; contains("deep-low: openai/gpt-5.6-terra (xhigh)"))
-        and any(.details[]; contains("deep-high: openai/gpt-5.6-terra (xhigh)"))
-      )
     '\'' "$doctor_dump" || { cat "$doctor_dump"; exit 1; }
   '
-  [ "$status" -eq 0 ]
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
+
+  # Doctor 5.1.29's model summary ignores canonical category chains and some efforts.
+  compose_ci cp tests/integration/assert_openai_runtime.sh opencode:/tmp/assert_openai_runtime.sh
+  run compose_ci exec -T -u opencode -e OPENAI_API_KEY=catalog-test-placeholder opencode \
+    bash /tmp/assert_openai_runtime.sh
+  [ "$status" -eq 0 ] || { printf "%s\n" "$output" >&2; return 1; }
 }
 
 @test "compose stack provides bundled CLIs and defaults" {

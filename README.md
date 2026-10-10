@@ -111,6 +111,8 @@ task opencode -- auth login --provider openai --method "ChatGPT Pro/Plus (headle
 
 This uses OpenCode's built-in OpenAI OAuth/device login for ChatGPT Plus/Pro subscriptions. It is not configured in `.env`, does not need `OPENAI_API_KEY`, and persists the login state in `OPENCODE_HOME_DIR`.
 
+Run this login inside the container. A host OpenCode 2 login using ChatGPT token sharing is a different OAuth flow and does not authenticate the pinned OpenCode 1 container. OpenCode remains on 1.18.35 until a compatible OmO V2 release is available.
+
 ### Optional build args
 
 The default image includes Python, Node.js, Go, PHP 8.4, Docker CLI, Docker Compose, platform CLIs, and OpenCode LSP server commands. Extra runtimes are build-time choices:
@@ -171,11 +173,11 @@ OpenSpec writes project-local `.opencode/skills/` and `.opencode/commands/opsx-*
 
 The default `openai-chatgpt` config uses OpenCode's built-in OpenAI provider and an OmO OpenAI-only model map through ChatGPT Plus/Pro OAuth. `OPENAI_API_KEY` is not used for subscription auth.
 
-OmO 5 loads its managed configuration from `~/.omo/omo.jsonc`. The tracked variant seeds use the `[opencode]` harness section to retain agent models, categories, fallbacks, prompts, and concurrency limits. Both `deep-low` and `deep-high` are explicitly configured so the upgrade keeps the previous deep-work model choice. `task config-switch` updates this file as well as OpenCode's config; existing legacy OmO files are left in place for reference.
+OmO 5 loads its managed configuration from `~/.omo/omo.jsonc`. The tracked variant seeds use the `[opencode]` harness section with explicit model chains, prompts, and concurrency limits. The OpenAI variant uses GPT-6.1 Sol for most work, GPT-6 Astra for Momus, `deep-high` and `ultrabrain`, and GPT-6 Luna for search and small tasks. See the [complete model matrix](docs/openai-model-map.md) for reasoning levels, upstream defaults and trade-offs. `task config-switch` updates the managed OmO and OpenCode files; existing legacy OmO files are left in place for reference.
+
+Automatic model fallbacks apply only to delegated tasks: Astra → Sol 6.1 → Luna, Sol 6.1 → Luna, and Luna → Sol 6.1, with an explicit reasoning level on every fallback. OmO 5.1.29's general runtime-fallback hook is disabled because it can lose category-specific chains; primary agents stop on model errors. A fallback to Luna can reduce result quality, while a fallback from Luna to Sol can consume more quota. The pinned reasoning adapter restores the missing Prometheus `high` and Sisyphus-Junior `medium` variants without overriding variants supplied upstream.
 
 Automatic continuation uses OmO 5's enabled Goal mode. The removed `default_mode.ralph_loop`, `experimental.auto_resume`, and `browser_automation_engine.provider=agent-browser` settings are no longer valid in this version. The installed `agent-browser` CLI remains available independently of OmO's built-in browser-provider selection.
-
-The OmO 5 migration preserves the existing model assignments: Oracle stays on Sol `high`, Ultrabrain on Sol `xhigh`, and both deep categories on Terra `xhigh`. Model upgrades are a separate change.
 
 Before upgrading, back up the persisted home. A full downgrade to OmO 4 requires restoring its legacy config alongside the old image, not just reverting the image tag. To restore managed settings while keeping OmO 5, update the tracked seed and increment the config-version marker above the deployed value before rebuilding; a lower marker does not trigger re-seeding.
 

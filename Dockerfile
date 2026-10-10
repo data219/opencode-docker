@@ -665,6 +665,7 @@ COPY bootstrap/config/variants/openai-chatgpt/opencode.json /opt/opencode-defaul
 COPY bootstrap/config/variants/openai-chatgpt/omo.jsonc /opt/opencode-defaults/omo.jsonc.managed
 COPY bootstrap/config/variants /opt/opencode-defaults/variants/
 COPY bootstrap/config/AGENTS.md /opt/opencode-defaults/AGENTS.md.managed
+COPY bootstrap/config/omo-reasoning-compat.mjs /opt/opencode-defaults/omo-reasoning-compat.mjs
 COPY bootstrap/config/.opencode-docker-config-version /opt/opencode-defaults/.opencode-docker-config-version
 COPY bootstrap/config/.gitmessage /opt/opencode-defaults/.gitmessage
 
