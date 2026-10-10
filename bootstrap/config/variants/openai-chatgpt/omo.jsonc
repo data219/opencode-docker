@@ -1,208 +1,207 @@
 // opencode-docker-config:1
-// OpenAI ChatGPT subscription variant.
-// Auth is handled by OpenCode's built-in OpenAI OAuth/device-login flow, not by OPENAI_API_KEY.
-// Sol handles orchestration, Terra balanced execution, and Luna economical research fallbacks.
-// OmO upstream currently emits openai/gpt-5.4-mini-fast for explore/librarian, but the current
-// OpenCode/models.dev catalog does not expose that model id, so gpt-5.4-mini-fast is substituted with openai/gpt-5.4-mini.
-// Codex with a ChatGPT account rejects gpt-5.3-codex, so those category mappings use openai/gpt-5.4.
-// GPT-5.3-Codex-Spark is available as a separate-rate-limit, low-latency coding model in ChatGPT/CLI preview.
+// OpenAI ChatGPT subscription variant; authenticate inside the pinned OpenCode V1 container.
+// Standard GPT-6.1 Sol, GPT-6 Astra and GPT-6 Luna only. See docs/openai-model-map.md.
+// Explicit model chains apply to delegated tasks; main agents stop on model errors.
+// Inline fallback reasoning avoids OmO 5.1.29 losing reasoning from fallback objects.
 {
-  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/ab725f3299cd5ba8727a999817db8f9d856f2440/assets/omo.schema.json",
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/6dfb41974556051b432c30ed71b134ed826c883a/assets/omo.schema.json",
   "[opencode]": {
     "agents": {
       "sisyphus": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "medium",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "medium"
+          },
+          "openai/gpt-6-luna:medium"
         ],
         "prompt_append": "Avoid long silent polling. Do not run sleeps longer than 30 seconds or multi-minute wait loops. For external review/CI waits, use bounded short polling with narrow JSON/JQ fields, persist pending state with the next exact poll command, and stop cleanly instead of calling it a harness interruption."
       },
       "hephaestus": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "medium",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "medium"
+          },
+          "openai/gpt-6-luna:medium"
         ],
         "prompt_append": "Follow established plans precisely. Ask for clarification when plans are ambiguous. Prefer small, testable changes. Use LSP and AST-grep aggressively."
       },
       "prometheus": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "high",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "high"
+          },
+          "openai/gpt-6-luna:high"
         ],
         "prompt_append": "Always interview first. Validate scope before planning. Build exhaustive plans with milestones, risks, and contingencies. Max 2 parallel background tasks."
       },
       "metis": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "high",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "high"
+          },
+          "openai/gpt-6-luna:high"
         ],
         "prompt_append": "Critically evaluate plans. Identify gaps, risks, and improvements. Be thorough."
       },
       "oracle": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "high",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "high"
+          },
+          "openai/gpt-6-luna:high"
         ]
       },
       "momus": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "xhigh",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6-astra",
+            "reasoning": "xhigh"
+          },
+          "openai/gpt-6.1-sol:xhigh",
+          "openai/gpt-6-luna:xhigh"
         ],
         "prompt_append": "Challenge all assumptions in plans. Look for edge cases, failure modes, and overlooked requirements."
       },
       "atlas": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "medium",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "medium"
+          },
+          "openai/gpt-6-luna:medium"
         ]
       },
       "sisyphus-junior": {
-        "model": "openai/gpt-5.3-codex-spark",
-        "fallback_models": [
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.4"
-        ],
-        "variant": "medium"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "medium"
+          },
+          "openai/gpt-6-luna:medium"
+        ]
       },
       "explore": {
-        "model": "openai/gpt-5.4-mini",
-        "fallback_models": [
-          "openai/gpt-5.3-codex-spark",
-          "openai/gpt-5.6-luna",
-          "openai/gpt-5.4"
+        "models": [
+          {
+            "model": "openai/gpt-6-luna",
+            "reasoning": "low"
+          },
+          "openai/gpt-6.1-sol:low"
         ],
         "prompt_append": "Prefer searching official documentation and library sources over general web search."
       },
       "librarian": {
-        "model": "openai/gpt-5.4-mini",
-        "fallback_models": [
-          "openai/gpt-5.3-codex-spark",
-          "openai/gpt-5.4",
-          "openai/gpt-5.6-luna"
+        "models": [
+          {
+            "model": "openai/gpt-6-luna",
+            "reasoning": "high"
+          },
+          "openai/gpt-6.1-sol:high"
         ],
         "prompt_append": "Focus on finding authoritative sources. Cross-reference results when possible. Keep research brief and decision-oriented: return only the facts needed for the current task, cite sources, and avoid exhaustive result dumps or broad background unless explicitly requested. Prefer a short answer with 3-5 high-signal bullets over long summaries."
       },
       "multimodal-looker": {
-        "model": "openai/gpt-5.4",
-        "variant": "medium",
-        "fallback_models": [
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark",
-          "openai/gpt-5.6-sol"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "low"
+          },
+          "openai/gpt-6-luna:low"
         ]
       }
     },
     "categories": {
       "ultrabrain": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "xhigh",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6-astra",
+            "reasoning": "max"
+          },
+          "openai/gpt-6.1-sol:max",
+          "openai/gpt-6-luna:max"
         ]
       },
       "visual-engineering": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "high",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "high"
+          },
+          "openai/gpt-6-luna:high"
         ]
       },
       "unspecified-high": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "high",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "high"
+          },
+          "openai/gpt-6-luna:high"
         ]
       },
       "deep-low": {
-        "model": "openai/gpt-5.6-terra",
-        "variant": "xhigh",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "medium"
+          },
+          "openai/gpt-6-luna:medium"
         ]
       },
       "deep-high": {
-        "model": "openai/gpt-5.6-terra",
-        "variant": "xhigh",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6-astra",
+            "reasoning": "high"
+          },
+          "openai/gpt-6.1-sol:high",
+          "openai/gpt-6-luna:high"
         ]
       },
       "writing": {
-        "model": "openai/gpt-5.6-terra",
-        "variant": "medium",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "medium"
+          },
+          "openai/gpt-6-luna:medium"
         ]
       },
       "quick": {
-        "model": "openai/gpt-5.3-codex-spark",
-        "fallback_models": [
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.4"
+        "models": [
+          {
+            "model": "openai/gpt-6-luna",
+            "reasoning": "low"
+          },
+          "openai/gpt-6.1-sol:low"
         ]
       },
       "unspecified-low": {
-        "model": "openai/gpt-5.4-mini",
-        "variant": "low",
-        "fallback_models": [
-          "openai/gpt-5.3-codex-spark",
-          "openai/gpt-5.4"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "medium"
+          },
+          "openai/gpt-6-luna:medium"
         ]
       },
       "artistry": {
-        "model": "openai/gpt-5.6-sol",
-        "variant": "xhigh",
-        "fallback_models": [
-          "openai/gpt-5.4",
-          "openai/gpt-5.4-mini",
-          "openai/gpt-5.3-codex-spark"
+        "models": [
+          {
+            "model": "openai/gpt-6.1-sol",
+            "reasoning": "xhigh"
+          },
+          "openai/gpt-6-luna:xhigh"
         ]
       }
     },
     "runtime_fallback": {
-      "enabled": true,
-      "retry_on_errors": [
-        429,
-        503,
-        529
-      ],
-      "max_fallback_attempts": 3,
-      "cooldown_seconds": 60
+      "enabled": false
     },
     "default_mode": {
       "ultrawork": true,
@@ -220,12 +219,9 @@
         "openai": 3
       },
       "modelConcurrency": {
-        "openai/gpt-5.6-sol": 2,
-        "openai/gpt-5.6-terra": 2,
-        "openai/gpt-5.6-luna": 2,
-        "openai/gpt-5.4": 2,
-        "openai/gpt-5.4-mini": 2,
-        "openai/gpt-5.3-codex-spark": 3
+        "openai/gpt-6.1-sol": 2,
+        "openai/gpt-6-astra": 1,
+        "openai/gpt-6-luna": 2
       }
     },
     "team_mode": {
@@ -246,6 +242,7 @@
     "experimental": {
       "aggressive_truncation": false,
       "task_system": true
-    }
+    },
+    "model_fallback": false
   }
 }

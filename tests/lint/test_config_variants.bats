@@ -97,39 +97,6 @@ assert_file_not_matches() {
   assert_success
 }
 
-@test "openai-chatgpt variant preserves existing models during the OmO 5 migration" {
-  file="$(variant_file openai-chatgpt omo.jsonc)"
-
-  command -v node >/dev/null 2>&1 || skip "node is required for JSONC validation"
-  run node tests/jsonc/assert-openai-model-map.js "$file"
-  assert_success
-}
-
-@test "openai-chatgpt variant keeps expected OpenAI fallback models and documented substitutions" {
-  file="$(variant_file openai-chatgpt omo.jsonc)"
-
-  run assert_file_matches 'openai/gpt-5\.4-mini' "$file"
-  assert_success
-
-  run assert_file_matches 'openai/gpt-5\.4' "$file"
-  assert_success
-
-  run assert_file_not_matches '"model": "openai/gpt-5\.3-codex"' "$file"
-  assert_success
-
-  run assert_file_matches 'openai/gpt-5\.3-codex-spark' "$file"
-  assert_success
-
-  run assert_file_not_matches '"model": "openai/gpt-5\.4-mini-fast"' "$file"
-  assert_success
-
-  run assert_file_matches 'gpt-5\.4-mini-fast is substituted with openai/gpt-5\.4-mini' "$file"
-  assert_success
-
-  run assert_file_matches 'gpt-5\.3-codex.*use openai/gpt-5\.4' "$file"
-  assert_success
-}
-
 @test "openai-chatgpt variant keeps OpenCode config on OmO plugin without API key requirement" {
   run jq -e '.plugin | index("oh-my-openagent")' "$(variant_file openai-chatgpt opencode.json)"
   assert_success
