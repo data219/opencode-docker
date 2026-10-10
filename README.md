@@ -179,8 +179,6 @@ Automatic model fallbacks apply only to delegated tasks: Astra → Sol 6.1 → L
 
 Automatic continuation uses OmO 5's enabled Goal mode. The removed `default_mode.ralph_loop`, `experimental.auto_resume`, and `browser_automation_engine.provider=agent-browser` settings are no longer valid in this version. The installed `agent-browser` CLI remains available independently of OmO's built-in browser-provider selection.
 
-The OmO 5 migration preserves the existing model assignments: Oracle stays on Sol `high`, Ultrabrain on Sol `xhigh`, and both deep categories on Terra `xhigh`. Model upgrades are a separate change.
-
 Before upgrading, back up the persisted home. A full downgrade to OmO 4 requires restoring its legacy config alongside the old image, not just reverting the image tag. To restore managed settings while keeping OmO 5, update the tracked seed and increment the config-version marker above the deployed value before rebuilding; a lower marker does not trigger re-seeding.
 
 Switch to `zai-coding-plan` for Z.AI/Gemini-driven defaults:

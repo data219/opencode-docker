@@ -23,7 +23,8 @@ while IFS='|' read -r name model effort; do
     exit 1
   }
 
-  # Junior consumes its chain through OmO delegation, not OpenCode agent metadata.
+  # OpenCode omits Junior's delegation chain from agent metadata. Junior/category
+  # retries are covered by the separate pinned-source Docker audit in the model map.
   if [ "$name" != 'Sisyphus-Junior' ]; then
     jq -e --arg name "$name" --arg model "$model" --arg effort "$effort" '
       .agent[$name].fallback_models == (
