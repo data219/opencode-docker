@@ -38,7 +38,7 @@ ARG GH_VERSION=2.102.0
 # renovate: datasource=gitlab-tags depName=gitlab-org/cli versioning=semver
 ARG GLAB_VERSION=1.123.0
 # renovate: datasource=github-releases depName=golangci/golangci-lint
-ARG GO_LINT_VERSION=2.14.0
+ARG GO_LINT_VERSION=2.15.0
 # renovate: datasource=golang-version depName=go
 ARG GO_VERSION=1.27.2
 # renovate: datasource=go depName=golang.org/x/tools/gopls
