@@ -22,7 +22,7 @@ ARG BASH_LANGUAGE_SERVER_VERSION=5.8.1
 # renovate: datasource=github-releases depName=oven-sh/bun
 ARG BUN_VERSION=1.3.12
 # renovate: datasource=github-releases depName=cloudflare/cloudflared versioning=semver
-ARG CLOUDFLARED_VERSION=2026.10.1
+ARG CLOUDFLARED_VERSION=2026.10.2
 # renovate: datasource=github-releases depName=contabo/cntb versioning=semver
 ARG CNTB_VERSION=1.6
 # renovate: datasource=github-releases depName=composer/composer
