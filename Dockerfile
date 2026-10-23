@@ -75,7 +75,7 @@ ARG OPENCODE_VERSION=1.19.4
 # renovate: datasource=npm depName=@fission-ai/openspec
 ARG OPENSPEC_VERSION=1.14.3
 # renovate: datasource=github-tags depName=pyenv/pyenv versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG PYENV_VERSION=v2.8.11
+ARG PYENV_VERSION=v2.8.13
 # renovate: datasource=npm depName=pyright
 ARG PYRIGHT_VERSION=1.1.414
 # renovate: datasource=npm depName=basedpyright
