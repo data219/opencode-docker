@@ -44,7 +44,7 @@ ARG GO_VERSION=1.27.3
 # renovate: datasource=go depName=golang.org/x/tools/gopls
 ARG GOPLS_VERSION=0.24.0
 # renovate: datasource=github-releases depName=tianon/gosu
-ARG GOSU_VERSION=1.19
+ARG GOSU_VERSION=1.20
 # renovate: datasource=git-refs depName=moovweb/gvm packageName=https://github.com/moovweb/gvm
 ARG GVM_REF=master
 ARG GVM_COMMIT=dd652539fa4b771840846f8319fad303c7d0a8d2
