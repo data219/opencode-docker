@@ -26,7 +26,7 @@ ARG CLOUDFLARED_VERSION=2026.10.6
 # renovate: datasource=github-releases depName=contabo/cntb versioning=semver
 ARG CNTB_VERSION=1.6
 # renovate: datasource=github-releases depName=composer/composer
-ARG COMPOSER_VERSION=2.11.0
+ARG COMPOSER_VERSION=2.11.1
 # renovate: datasource=npm depName=@dokploy/cli
 ARG DOKPLOY_CLI_VERSION=0.30.7
 # renovate: datasource=github-releases depName=moby/moby versioning=semver
