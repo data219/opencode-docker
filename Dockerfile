@@ -65,7 +65,7 @@ ARG TASK_VERSION=3.54.0
 # renovate: datasource=node-version depName=node versioning=node
 ARG NODE_VERSION=24.22.2
 # renovate: datasource=github-tags depName=nvm-sh/nvm versioning=semver extractVersion=^v(?<version>\d+\.\d+\.\d+)$
-ARG NVM_VERSION=v0.40.8
+ARG NVM_VERSION=v0.41.0
 # renovate: datasource=npm depName=oh-my-opencode
 ARG OMO_VERSION=5.1.60
 # renovate: datasource=npm depName=@openchamber/web
