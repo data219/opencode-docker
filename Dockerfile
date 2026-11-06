@@ -103,7 +103,7 @@ ARG VUE_LANGUAGE_SERVER_VERSION=3.3.14
 # renovate: datasource=npm depName=yaml-language-server
 ARG YAML_LANGUAGE_SERVER_VERSION=1.25.0
 # renovate: datasource=github-releases depName=mikefarah/yq
-ARG YQ_VERSION=4.54.1
+ARG YQ_VERSION=4.54.2
 
 # --- System packages (with BuildKit cache for apt) ---
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
