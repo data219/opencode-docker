@@ -49,6 +49,11 @@
 - Keep project tests focused on observable behavior, exit codes, ownership, health, command output, and file existence. Do not keep helper assertions whose primary purpose is checking file contents.
 - When mocking command execution in Bats, assert only the relevant invoked arguments or side effects; do not couple tests to the current host/container username unless that identity is the behavior under test.
 
+## Containerized Test Isolation
+
+- When tests create temporary files within the checkout, mount the source read-only and copy it into a writable container workspace before running them.
+- Keep temporary test artifacts inside that container workspace so the host checkout does not receive root-owned or generated files.
+
 ## Runtime Data
 
 - Treat `data/` as ignored runtime state created by the Docker stack.
